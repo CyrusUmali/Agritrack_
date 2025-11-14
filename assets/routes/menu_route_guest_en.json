@@ -1,0 +1,152 @@
+[
+  
+  {
+    "groupName": "Widgets",
+    "menuList": [
+      {
+        "icon": "assets/sidebar/dashboard.svg",
+        "menuName": "Dashboard",
+        "path": "/"
+      },
+      {
+        "icon": "assets/sidebar/map.svg",
+        "menuName": "Map",
+        "path": "/newPage"
+      },
+      {
+        "icon": "assets/sidebar/farm.svg",
+        "menuName": "Farms",
+        "path": "/farms"
+      },
+
+      {
+        "icon": "assets/sidebar/assocs.svg",
+        "menuName": "Assocs",
+        "path": "/assocs"
+      },
+      
+      {
+        "icon": "assets/sidebar/user.svg",
+        "menuName": "Users",
+        "path": "/usersPage"
+      },
+      {
+        "icon": "assets/sidebar/user.svg",
+        "menuName": "Farmers",
+        "path": "/farmers"
+      },
+      {
+        "icon": "assets/sidebar/products.svg",
+        "menuName": "Products",
+        "path": "/products"
+      },
+      {
+        "icon": "assets/sidebar/yield.svg",
+        "menuName": "Yields",
+        "path": "/yields"
+      },
+      {
+        "icon": "assets/sidebar/sector.svg",
+        "menuName": "Sectors",
+        "path": "/sectors"
+      },
+      {
+        "icon": "assets/sidebar/AI.svg",
+        "menuName": "Recommendation",
+        "path": "/recommendation"
+      },
+      {
+        "icon": "assets/sidebar/reports.svg",
+        "menuName": "Reports",
+        "path": "/reports"
+      },
+   
+   
+      {
+        "icon": "assets/sidebar/forms.svg",
+        "menuName": "Samples",
+        "childList": [
+
+          { 
+            "menuName": "Calendar",
+            "path": "/calendar"
+          },
+          { 
+            "menuName": "Invoice",
+            "path": "/invoice"
+          },
+
+          { 
+            "menuName": "Profile",
+            "path": "/profile"
+          },
+          {
+            "menuName": "FormElements",
+            "path": "/formElements"
+          },
+          {
+            "menuName": "FormLayout",
+            "path": "/formLayout"
+          }
+          ,    {
+            "menuName": "BasicTable",
+            "path": "/tables"
+          },
+          {
+            "menuName": "Contactssss",
+            "path": "/contacts"
+          },
+          {
+            "menuName": "AdvanceTable",
+            "path": "/advancetable"
+          },
+          { 
+            "menuName": "Settings",
+            "path": "/settings"
+          }
+,
+
+          {
+            "menuName": "Alerts",
+            "path": "/alerts"
+          },
+          {
+            "menuName": "Buttons",
+            "path": "/buttons"
+          },
+          {
+            "menuName": "Toast",
+            "path": "/toast"
+          },
+          {
+            "menuName": "Modal",
+            "path": "/modal"
+          },
+          {
+            "menuName": "BasicChart",
+            "path": "/basicChart"
+          },
+          {
+            "menuName": "SignIn",
+            "path": "/signIn",
+            "blank": true
+          },
+          {
+            "menuName": "SignUp",
+            "path": "/signUp",
+            "blank": true
+          },
+          {
+            "menuName": "ResetPassword",
+            "path": "/resetPwd",
+            "blank": true
+          }
+        ]
+      }
+   
+   
+      
+      
+    ]
+  }
+]

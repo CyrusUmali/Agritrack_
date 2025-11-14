@@ -1,0 +1,61 @@
+[ 
+  {
+    "groupName": "Widgets",
+    "menuList": [
+      {
+        "icon": "assets/sidebar/dashboard.svg",
+        "menuName": "Dashboard",
+        "path": "/"
+      },
+      {
+        "icon": "assets/sidebar/map.svg",
+        "menuName": "Map",
+        "path": "/map"
+      },
+      {
+        "icon": "assets/sidebar/farm.svg",
+        "menuName": "Farms",
+        "path": "/farms"
+      },
+ 
+      
+      
+     
+      {
+        "icon": "assets/sidebar/products.svg",
+        "menuName": "Products",
+        "path": "/products"
+      },
+      {
+        "icon": "assets/sidebar/yield.svg",
+        "menuName": "Yields",
+        "path": "/yields"
+      },
+     
+      {
+        "icon": "assets/sidebar/AI.svg",
+        "menuName": "Recommendation",
+        "path": "/recommendation"
+      },
+
+
+
+
+
+      {
+       
+          "icon": "assets/sidebar/chatbot.svg",
+            "menuName": "Chatbot",
+             "path": "/chatbot"
+         
+      },
+
+
+      {
+        "icon": "assets/sidebar/reports.svg",
+        "menuName": "Reports",
+        "path": "/reports"
+      }
+    ]
+  }
+]

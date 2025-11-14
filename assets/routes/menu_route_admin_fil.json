@@ -1,0 +1,59 @@
+[
+  {
+    "groupName": "Widgets",
+    "menuList": [
+      {
+        "icon": "assets/sidebar/dashboard.svg",
+        "menuName": "Dashboard",
+        "path": "/"
+      },
+      {
+        "icon": "assets/sidebar/map.svg",
+        "menuName": "Mapa",
+        "path": "/map"
+      },
+      {
+        "icon": "assets/sidebar/farm.svg",
+        "menuName": "Mga Sakahan",
+        "path": "/farms"
+      },
+      {
+        "icon": "assets/sidebar/assocs.svg",
+        "menuName": "Mga Samahan",
+        "path": "/assocs"
+      },
+      {
+        "icon": "assets/sidebar/user.svg",
+        "menuName": "Mga User",
+        "path": "/usersPage"
+      },
+      {
+        "icon": "assets/sidebar/farmer.svg",
+        "menuName": "Mga Magsasaka",
+        "path": "/farmers"
+      },
+      {
+        "icon": "assets/sidebar/products.svg",
+        "menuName": "Mga Produkto",
+        "path": "/products"
+      },
+      {
+        "icon": "assets/sidebar/yield.svg",
+        "menuName": "Mga Ani",
+        "path": "/yields"
+      },
+      {
+        "icon": "assets/sidebar/sector.svg",
+        "menuName": "Mga Sektor",
+        "path": "/sectors"
+      },
+    
+ 
+      {
+        "icon": "assets/sidebar/reports.svg",
+        "menuName": "Mga Ulat",
+        "path": "/reports"
+      }
+    ]
+  }
+]

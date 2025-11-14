@@ -1,0 +1,8 @@
+include: package:flutter_lints/flutter.yaml
+analyzer:
+  errors:
+    unnecessary_brace_in_string_interps: ignore
+    unnecessary_overrides: ignore
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options

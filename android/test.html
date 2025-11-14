@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Restricted Map Area</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw"></script>
+</head>
+
+<body>
+    <div id="map" style="height: 500px; width: 70%; float: left;"></div>
+    <button onclick="savePolygons()">Save Polygons</button>
+    <button onclick="toggleEditMode()" id="editToggle">Enable Edit Mode</button>
+    
+    <div id="infoPanel" style="width: 28%; float: right; margin-top: 10px; padding: 10px; border: 1px solid black;">
+        <h3>Polygon Information</h3>
+        <p><strong>Name:</strong> <span id="polygonName">N/A</span></p>
+        <p><strong>Color:</strong> <span id="polygonColor">N/A</span></p>
+    </div>
+
+    <script>
+        var bounds = [
+            [14.027557, 121.278938],
+            [14.127557, 121.378938]
+        ];
+
+        var map = L.map('map', {
+            center: [14.077557, 121.328938],
+            zoom: 15,
+            minZoom: 13,
+            maxBounds: bounds,
+            maxBoundsViscosity: 1.0
+        });
+
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: 'OSM' });
+        var GoogleSatellite = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { attribution: 'Satellite' });
+
+        var baseMaps = {
+            "OSM": osm,
+            "Satellite": GoogleSatellite
+        };
+
+        L.control.layers(baseMaps).addTo(map);
+        osm.addTo(map);
+
+        var drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        var drawControl = new L.Control.Draw({
+            edit: { featureGroup: drawnItems },
+            draw: {
+                polygon: true,
+                polyline: false,
+                rectangle: false,
+                circle: false,
+                marker: false
+            }
+        });
+
+        var editMode = false;
+
+        function toggleEditMode() {
+            editMode = !editMode;
+            var button = document.getElementById("editToggle");
+            if (editMode) {
+                map.addControl(drawControl);
+                button.innerText = "Disable Edit Mode";
+            } else {
+                map.removeControl(drawControl);
+                button.innerText = "Enable Edit Mode";
+            }
+        }
+
+        function getCentroid(latlngs) {
+            let latSum = 0, lngSum = 0, count = 0;
+            latlngs.forEach((latlng) => {
+                latSum += latlng.lat;
+                lngSum += latlng.lng;
+                count++;
+            });
+            return L.latLng(latSum / count, lngSum / count);
+        }
+
+        map.on(L.Draw.Event.CREATED, function (event) {
+            var layer = event.layer;
+            drawnItems.addLayer(layer);
+
+            var popupContent = document.createElement("div");
+
+            var input = document.createElement("input");
+            input.type = "text";
+            input.placeholder = "Enter field name...";
+            input.style.width = "150px";
+
+            var colorPicker = document.createElement("input");
+            colorPicker.type = "color";
+            colorPicker.value = "#ff0000";
+            colorPicker.style.marginLeft = "5px";
+
+            var button = document.createElement("button");
+            button.innerText = "Save";
+            button.style.marginLeft = "5px";
+
+            popupContent.appendChild(input);
+            popupContent.appendChild(colorPicker);
+            popupContent.appendChild(button);
+
+            layer.bindPopup(popupContent).openPopup();
+
+            button.addEventListener("click", function () {
+                var fieldName = input.value.trim();
+                var selectedColor = colorPicker.value;
+                if (fieldName) {
+                    layer.feature = layer.feature || {};
+                    layer.feature.properties = layer.feature.properties || {};
+                    layer.feature.properties.name = fieldName;
+                    layer.feature.properties.color = selectedColor;
+                    layer.setStyle({ color: selectedColor });
+
+                    layer.closePopup();
+
+                    var centroid = getCentroid(layer.getLatLngs()[0]);
+                    var label = L.marker(centroid, {
+                        icon: L.divIcon({
+                            className: 'polygon-label',
+                            html: `<b>${fieldName}</b>`,
+                            iconSize: [100, 30]
+                        })
+                    }).addTo(map);
+                    layer.labelMarker = label;
+
+                    layer.on("click", function () {
+                        document.getElementById("polygonName").innerText = fieldName;
+                        document.getElementById("polygonColor").innerText = selectedColor;
+                        document.getElementById("polygonColor").style.color = selectedColor;
+                    });
+                }
+            });
+
+            layer.on('edit', function () {
+                if (layer.labelMarker) {
+                    var centroid = getCentroid(layer.getLatLngs()[0]);
+                    layer.labelMarker.setLatLng(centroid);
+                }
+            });
+        });
+
+        function savePolygons() {
+            var geojsonData = drawnItems.toGeoJSON();
+            console.log("Polygon Data:", JSON.stringify(geojsonData, null, 2));
+        }
+    </script>
+
+    <style>
+        .polygon-label {
+            font-size: 14px;
+            color: black;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</body>
+
+</html>

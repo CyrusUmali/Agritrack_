@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "698351759800",
+    "project_id": "agritrack-fb6cf",
+    "storage_bucket": "agritrack-fb6cf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:698351759800:android:2b5edf4b5a3f51016d9f4d",
+        "android_client_info": {
+          "package_name": "top.flareline.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "698351759800-tvi88mtvtmqcb8vnrg1flppr7vua648d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "top.flareline.app",
+            "certificate_hash": "7e67227488e87333644391af3d7bc43ece38a832"
+          }
+        },
+        {
+          "client_id": "698351759800-oj9mn3kp30o679e7adtb61i5tkuh5qpo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD78ncX_b5UMyLx2bfe6hWw_ttDoEBgquE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "698351759800-oj9mn3kp30o679e7adtb61i5tkuh5qpo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "698351759800-8f4vt1mstqac7qa98bpjs92qml3n0d4q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "top.flareline.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

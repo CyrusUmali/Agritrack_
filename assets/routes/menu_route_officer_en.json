@@ -1,0 +1,65 @@
+[
+  
+  {
+    "groupName": "Widgets",
+    "menuList": [
+      {
+        "icon": "assets/sidebar/dashboard.svg",
+        "menuName": "Dashboard",
+        "path": "/"
+      },
+      {
+        "icon": "assets/sidebar/map.svg",
+        "menuName": "Map",
+        "path": "/map"
+      },
+      {
+        "icon": "assets/sidebar/farm.svg",
+        "menuName": "Farms",
+        "path": "/farms"
+      },
+      
+     
+
+
+      
+      {
+        "icon": "assets/sidebar/user.svg",
+        "menuName": "Farmers",
+        "path": "/farmers"
+      },
+      {
+        "icon": "assets/sidebar/products.svg",
+        "menuName": "Products",
+        "path": "/products"
+      },
+      {
+        "icon": "assets/sidebar/yield.svg",
+        "menuName": "Yields",
+        "path": "/yields"
+      },
+      {
+        "icon": "assets/sidebar/sector.svg",
+        "menuName": "Sectors",
+        "path": "/sectors"
+      },
+
+      {
+        "icon": "assets/sidebar/assocs.svg",
+        "menuName": "Assocs",
+        "path": "/assocs"
+      },
+    
+   
+       
+      {
+        "icon": "assets/sidebar/reports.svg",
+        "menuName": "Reports",
+        "path": "/reports"
+      }
+   
+      
+      
+    ]
+  }
+]
