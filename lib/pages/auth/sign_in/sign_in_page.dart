@@ -64,12 +64,13 @@ class SignInWidget extends BaseWidget<SignInProvider> {
                               alignment: Alignment.topRight,
                               child: _toggleButton(context, viewModel),
                             ),
-                          const SizedBox(height: 16),
+                          sizingInfo.isMobile ? SizedBox(height: 18) : SizedBox(),
+                    
                           SizedBox(
                             width: 80,
                             child: Image.asset('assets/DA_image.jpg'),
                           ),
-                          const SizedBox(height: 30),
+                      sizingInfo.isMobile ? SizedBox(height: 30) : SizedBox(),
                           Text(
                             "AgriTrack",
                             style: TextStyle(
@@ -77,7 +78,7 @@ class SignInWidget extends BaseWidget<SignInProvider> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 20),
+                       sizingInfo.isMobile ? SizedBox(height: 20) : SizedBox(),
                           // Show either sign-in form or download section
                           viewModel.showDownloadSection
                               ? _androidDownloadSection(context)
@@ -317,7 +318,7 @@ class SignInWidget extends BaseWidget<SignInProvider> {
             errorBorderColor: Colors.red,
           ),
 
-          const SizedBox(height: 8),
+      const SizedBox(height: 8),
           // Forgot password link
           Align(
             alignment: Alignment.centerRight,

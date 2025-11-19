@@ -55,7 +55,14 @@
         "icon": "assets/sidebar/reports.svg",
         "menuName": "Reports",
         "path": "/reports"
+      },
+
+      {
+        "icon": "assets/sidebar/contact_us.svg",
+        "menuName": "Contact Us",
+        "path": "/contactus"
       }
+
     ]
   }
 ]

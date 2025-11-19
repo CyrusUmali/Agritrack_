@@ -435,10 +435,11 @@ class _SectorYieldDataTableState extends State<SectorYieldDataTable> {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.group,
-                  size: 24,
-                ),
+                Opacity(
+  opacity: 0.6,
+  child: Icon(Icons.group, size: 24),
+)
+,
                 const SizedBox(width: 12),
                 Text(
                   'Sector Data',

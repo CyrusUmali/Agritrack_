@@ -52,6 +52,14 @@
         "menuName": "Mga Ulat",
         "path": "/reports"
       }
+,
+
+      {
+        "icon": "assets/sidebar/contact_us.svg",
+        "menuName": "Makipag-ugnayan sa Amin",
+        "path": "/contactus"
+      }
+
     ]
   }
 ]

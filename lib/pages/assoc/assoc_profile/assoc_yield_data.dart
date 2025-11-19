@@ -434,7 +434,11 @@ class _AssociationYieldDataTableState extends State<AssociationYieldDataTable> {
           children: [
             Row(
               children: [
-                Icon(Icons.group, size: 24, color: theme.primaryColor),
+                Opacity(
+  opacity: 0.6,
+  child: Icon(Icons.group, size: 24),
+)
+,
                 const SizedBox(width: 12),
                 Text(
                   'Association Data',

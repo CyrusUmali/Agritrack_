@@ -10,8 +10,7 @@ Widget buildComboBox({
   double? width,
   double? height , 
 }) {
-
-  print(height);
+ 
   // Helper function to format display text - removes "1: ", "2: ", etc.
   String getDisplayText(String value) {
     // if (value.isEmpty || value == 'All') return value;

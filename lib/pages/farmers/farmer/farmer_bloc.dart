@@ -241,7 +241,7 @@ class FarmerBloc extends Bloc<FarmerEvent, FarmerState> {
       filteredFarmers.sort((a, b) {
         int compareResult;
         switch (_sortColumn) {
-          case 'Farmer Name':
+          case 'Name':
             compareResult = (a.name ?? '').compareTo(b.name ?? '');
             break;
           case 'Sector':

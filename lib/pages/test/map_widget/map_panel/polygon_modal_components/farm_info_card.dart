@@ -59,11 +59,7 @@ class FarmInfoCard {
     final barangay = polygon.parentBarangay ?? 'Select barangay';
     final lake = polygon.lake ?? 'Select lake';
     final products = polygon.products ?? [];
-
-    print('selected sector: ${polygon.pinStyle}');
-    print('pinStyle type: ${polygon.pinStyle.runtimeType}');
-    print('pinStyle toString: ${polygon.pinStyle.toString()}');
-    print('Comparison result: ${polygon.pinStyle.toString() == 'Fishery'}');
+ 
 
     // Get farm owner names from the passed farmers list
     final farmOwnerNames = farmers.map((farmer) => farmer.name).toList();

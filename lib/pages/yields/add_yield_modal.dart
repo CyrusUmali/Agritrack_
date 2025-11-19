@@ -443,8 +443,7 @@ class _AddYieldModalContentState extends State<_AddYieldModalContent> {
           ? null
           : double.tryParse(areaHaController.text.trim());
 
-      print('areaHa-------');
-      print(areaHa);
+     
       widget.onYieldAdded(
         selectedProduct!.id,
         selectedFarmer!.id,

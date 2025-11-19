@@ -235,8 +235,7 @@ class _YieldDataTableState extends State<YieldDataTable> {
       if (state is YieldsLoaded && mounted) {
         setState(() {
           _yields = state.yields;
-
-          print(_yields[0]);
+ 
 
           final currentProducts = _getUniqueProducts();
           if (currentProducts.isNotEmpty &&

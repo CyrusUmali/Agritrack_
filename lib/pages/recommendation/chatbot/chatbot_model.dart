@@ -1,9 +1,6 @@
-// Updated chatbot_model.dart
-import 'package:flareline/pages/recommendation/api_uri.dart';
+// Updated chatbot_model.dart - No API dependencies, Gemini only
 import 'package:flareline/providers/language_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:uuid/uuid.dart';
 import 'dart:async';
@@ -23,9 +20,6 @@ class ChatbotModel extends ChangeNotifier {
   String _currentStreamingText = '';
 
   List<String> _latestSuggestions = [];
-
-  final uri = Uri.parse(ApiConstants.chatbot);
-  final streamUri = Uri.parse('${ApiConstants.baseUrl}/chat/stream');
 
   late GenerativeModel _geminiModel;
   late ChatSession _geminiChatSession;
@@ -98,7 +92,7 @@ MAHALAGA: Pagkatapos ng iyong sagot, magdagdag ng 3-4 nauugnay na tanong na maaa
 Gawing praktikal, maikli, at direktang nauugnay sa iyong sagot ang mga tanong.'''
   };
 
-  static const List<String> availableModels = ['Gemini', 'GPT-4', 'Claude', 'Llama'];
+  static const List<String> availableModels = ['Gemini'];
 
   List<types.Message> get messages => _messages;
   bool get isTyping => _isTyping;
@@ -177,7 +171,7 @@ Gawing praktikal, maikli, at direktang nauugnay sa iyong sagot ang mga tanong.''
     _currentStreamingText = '';
     _latestSuggestions = [];
 
-    if (_currentModel == 'Gemini' && _geminiApiKey != null) {
+    if (_geminiApiKey != null) {
       _geminiChatSession = _geminiModel.startChat();
     }
 
@@ -307,13 +301,7 @@ Gawing praktikal, maikli, at direktang nauugnay sa iyong sagot ang mga tanong.''
   }
 
   Future<void> getBotResponse(String userMessage, {bool useStreaming = true}) async {
-    if (_currentModel == 'Gemini' && _geminiApiKey != null) {
-      await _getBotResponseGemini(userMessage);
-    } else if (useStreaming) {
-      await _getBotResponseStreaming(userMessage);
-    } else {
-      await _getBotResponseRegular(userMessage);
-    }
+    await _getBotResponseGemini(userMessage);
   }
 
   Future<void> _getBotResponseGemini(String userMessage) async {
@@ -342,90 +330,11 @@ Gawing praktikal, maikli, at direktang nauugnay sa iyong sagot ang mga tanong.''
           }
         },
         onError: _handleStreamError,
-        onDone: () => _handleStreamDone(isGemini: true),
+        onDone: () => _handleStreamDone(),
       );
     } catch (e) {
       print('Error in Gemini response: $e');
       _addErrorMessage('Failed to get response: $e');
-    }
-  }
-
-  Future<void> _getBotResponseStreaming(String userMessage) async {
-    try {
-      await _streamSubscription?.cancel();
-
-      final chatHistory = _prepareChatHistory();
-
-      _currentStreamingMessageId = const Uuid().v4();
-      _currentStreamingText = '';
-
-      final initialMessage = types.TextMessage(
-        author: _bot,
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-        id: _currentStreamingMessageId,
-        text: '',
-      );
-
-      _messages.insert(0, initialMessage);
-      notifyListeners();
-
-      final request = http.Request('POST', streamUri);
-      request.headers.addAll({
-        'Content-Type': 'application/json',
-        'X-Model': _currentModel,
-        'Accept': 'text/event-stream',
-        'X-Language': languageProvider.currentLanguageCode,
-      });
-
-      request.body = jsonEncode({
-        'message': userMessage,
-        'chat_history': chatHistory,
-        'model': _currentModel,
-        'language': languageProvider.currentLanguageCode,
-      });
-
-      final streamedResponse = await request.send();
-
-      if (streamedResponse.statusCode == 200) {
-        _streamSubscription = streamedResponse.stream
-            .transform(utf8.decoder)
-            .transform(const LineSplitter())
-            .listen(
-              _handleStreamData,
-              onError: _handleStreamError,
-              onDone: () => _handleStreamDone(isGemini: false),
-            );
-      } else {
-        throw Exception('Stream request failed with status: ${streamedResponse.statusCode}');
-      }
-    } catch (e) {
-      print('Streaming error: $e');
-      await _getBotResponseRegular(userMessage);
-    }
-  }
-
-  void _handleStreamData(String line) {
-    if (line.startsWith('data: ')) {
-      final jsonStr = line.substring(6);
-
-      if (jsonStr.trim().isEmpty) return;
-
-      try {
-        final data = jsonDecode(jsonStr);
-        final chunk = data['chunk'] as String?;
-        final isComplete = data['is_complete'] as bool? ?? false;
-
-        if (chunk != null && chunk.isNotEmpty) {
-          _currentStreamingText += chunk;
-          _updateStreamingMessage(_currentStreamingText);
-        }
-
-        if (isComplete) {
-          _finishStreaming();
-        }
-      } catch (e) {
-        print('Error parsing stream data: $e');
-      }
     }
   }
 
@@ -486,65 +395,10 @@ Gawing praktikal, maikli, at direktang nauugnay sa iyong sagot ang mga tanong.''
     notifyListeners();
   }
 
-  void _handleStreamDone({required bool isGemini}) {
+  void _handleStreamDone() {
     if (_isTyping) {
       _finishStreaming();
     }
-  }
-
-  Future<void> _getBotResponseRegular(String userMessage) async {
-    try {
-      final chatHistory = _prepareChatHistory();
-
-      final response = await http.post(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Model': _currentModel,
-          'X-Language': languageProvider.currentLanguageCode,
-        },
-        body: jsonEncode({
-          'message': userMessage,
-          'chat_history': chatHistory,
-          'model': _currentModel,
-          'language': languageProvider.currentLanguageCode,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final botResponse = data['response'] as String;
-
-        final extracted = _extractSuggestionsFromResponse(botResponse);
-        _addBotMessage(extracted['response'] as String);
-        _latestSuggestions = extracted['suggestions'] as List<String>;
-      } else {
-        final localResponse = generateLocalResponse(userMessage);
-        _addBotMessage(localResponse);
-        _latestSuggestions = _getLocalizedSuggestions('fallback');
-      }
-    } catch (e) {
-      final localResponse = generateLocalResponse(userMessage);
-      _addBotMessage(localResponse);
-      _latestSuggestions = _getLocalizedSuggestions('fallback');
-    } finally {
-      _isTyping = false;
-      notifyListeners();
-    }
-  }
-
-  List<Map<String, dynamic>> _prepareChatHistory() {
-    return _messages.reversed
-        .where((message) => message is types.TextMessage)
-        .map((message) {
-          final textMessage = message as types.TextMessage;
-          return {
-            'role': textMessage.author.id == _user.id ? 'user' : 'assistant',
-            'content': textMessage.text,
-          };
-        })
-        .take(20)
-        .toList();
   }
 
   void _addBotMessage(String text) {

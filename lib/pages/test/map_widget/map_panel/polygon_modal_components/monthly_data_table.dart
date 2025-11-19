@@ -28,15 +28,11 @@ class _MonthlyDataTableState extends State<MonthlyDataTable> {
     );
     
     if (!hasData) {
-      print('DEBUG: No area data available in monthlyData');
-      print('DEBUG: monthlyData keys: ${widget.monthlyData.keys}');
-      print('DEBUG: monthlyData values:');
+      
       widget.monthlyData.forEach((month, data) {
-        print('  $month: $data');
-        if (data['areaHarvested'] == null) {
-          print('    -> areaHarvested is null for $month');
-        } else if (data['areaHarvested'] == 0) {
-          print('    -> areaHarvested is 0 for $month');
+       
+        if (data['areaHarvested'] == null) { 
+        } else if (data['areaHarvested'] == 0) { 
         }
       });
     }
@@ -58,8 +54,7 @@ class _MonthlyDataTableState extends State<MonthlyDataTable> {
       } else {
         // Calculate yield per hectare (kg/ha)
         if (areaHarvested <= 0) {
-          print('DEBUG: Cannot calculate yield for $month - areaHarvested: $areaHarvested, volume: $volume');
-        }
+       }
         displayData[month] = areaHarvested > 0 ? volume / areaHarvested : 0;
       }
     }
@@ -77,10 +72,7 @@ class _MonthlyDataTableState extends State<MonthlyDataTable> {
   @override
   void initState() {
     super.initState();
-    // Debug print when widget is first created
-    print('DEBUG: MonthlyDataTable created with product: ${widget.product}, year: ${widget.year}');
-    print('DEBUG: monthlyData keys: ${widget.monthlyData.keys}');
-    print('DEBUG: monthlyData values: ${widget.monthlyData.values}');
+  
   }
 
   @override
@@ -88,9 +80,7 @@ class _MonthlyDataTableState extends State<MonthlyDataTable> {
     super.didUpdateWidget(oldWidget);
     // Debug print when widget updates
     if (widget.monthlyData != oldWidget.monthlyData) {
-      print('DEBUG: monthlyData updated');
-      print('DEBUG: New monthlyData keys: ${widget.monthlyData.keys}');
-      print('DEBUG: New monthlyData values: ${widget.monthlyData.values}');
+    
     }
   }
 
@@ -100,10 +90,7 @@ class _MonthlyDataTableState extends State<MonthlyDataTable> {
     final displayData = _getDisplayData();
 
     if (displayData.isEmpty || displayData.values.every((v) => v == 0)) {
-      print('DEBUG: No display data available or all values are zero');
-      print('DEBUG: displayData: $displayData');
-      print('DEBUG: _hasAreaData: $_hasAreaData');
-      print('DEBUG: _displayMode: $_displayMode');
+ 
       
       return Container(
         padding: const EdgeInsets.all(32),
@@ -263,8 +250,7 @@ class _MonthlyDataTableState extends State<MonthlyDataTable> {
             label: 'Volume',
             icon: Icons.inventory,
             isSelected: _displayMode == DataTableDisplayMode.volume,
-            onTap: () {
-              print('DEBUG: Switching to Volume display mode');
+            onTap: () { 
               setState(() => _displayMode = DataTableDisplayMode.volume);
             },
             theme: theme,
@@ -278,9 +264,7 @@ class _MonthlyDataTableState extends State<MonthlyDataTable> {
             label: 'Kg/Ha',
             icon: Icons.agriculture,
             isSelected: _displayMode == DataTableDisplayMode.yieldPerHa,
-            onTap: () {
-              print('DEBUG: Switching to Yield per Hectare display mode');
-              print('DEBUG: _hasAreaData: $_hasAreaData');
+            onTap: () { 
               setState(() => _displayMode = DataTableDisplayMode.yieldPerHa);
             },
             theme: theme,

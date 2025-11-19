@@ -18,7 +18,7 @@ class RoleGuard {
       '/map',
       '/farms',
       '/chatbot',
-      '/sectors',
+      '/sectors', 
     ],
     'officer': [
       '/',
@@ -34,7 +34,7 @@ class RoleGuard {
       '/map',
       '/farms',
         '/chatbot',
-      '/sectors',
+      '/sectors', 
     ],
     'farmer': [
       '/',
@@ -48,6 +48,7 @@ class RoleGuard {
       '/map',
         '/chatbot',
       '/farms',
+      '/contactus'
     ],
   };
 

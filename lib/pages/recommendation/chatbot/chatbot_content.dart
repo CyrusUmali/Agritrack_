@@ -1,4 +1,3 @@
-// Updated chatbot_widget.dart
 import 'dart:ui';
 import 'package:flareline/pages/recommendation/recommendation_page.dart';
 import 'package:flareline/services/lanugage_extension.dart';
@@ -23,63 +22,54 @@ class ChatbotContentState extends State<ChatbotWidget> {
   final GlobalKey _navigationMenuKey = GlobalKey();
   late ChatbotModel _chatbotModel;
   String _selectedModel = 'Gemini';
-  bool _showQuickChat = true;
   bool _conversationStarted = false;
   final TextEditingController _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
   final List<String> _availableModels = ['Gemini', 'GPT-4', 'Claude', 'Llama'];
 
-  // Quick options will now use translation keys
+  // Quick options with shorter, more Reddit-like text
   List<Map<String, dynamic>> _getQuickOptions(BuildContext context) {
     return [
       {
         'icon': Icons.eco,
         'titleKey': 'Soil Health',
         'messageKey': 'Tell me about soil health and pH levels',
-        'color': Colors.brown,
       },
       {
         'icon': Icons.agriculture,
         'titleKey': 'Crop Selection',
         'messageKey': 'What crops should I grow in my region?',
-        'color': Colors.green,
       },
       {
         'icon': Icons.bug_report,
         'titleKey': 'Pest Control',
         'messageKey': 'How do I control pests organically?',
-        'color': Colors.red,
       },
       {
         'icon': Icons.water_drop,
-        'titleKey': 'Irrigation',
+        'titleKey': 'Irrigation Tips',
         'messageKey': 'What are the best irrigation practices?',
-        'color': Colors.blue,
       },
       {
         'icon': Icons.scatter_plot,
         'titleKey': 'Fertilizers',
         'messageKey': 'Which fertilizers should I use for my crops?',
-        'color': Colors.orange,
       },
       {
         'icon': Icons.calendar_today,
         'titleKey': 'Planting Season',
         'messageKey': 'When is the best time to plant crops?',
-        'color': Colors.purple,
       },
       {
         'icon': Icons.healing,
         'titleKey': 'Plant Disease',
         'messageKey': 'How do I identify and treat plant diseases?',
-        'color': Colors.teal,
       },
       {
         'icon': Icons.wb_sunny,
         'titleKey': 'Weather Impact',
         'messageKey': 'How does weather affect crop growth?',
-        'color': Colors.amber,
       },
     ];
   }
@@ -87,7 +77,6 @@ class ChatbotContentState extends State<ChatbotWidget> {
   @override
   void initState() {
     super.initState();
-    // Initialize chatbot model with language provider
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     _chatbotModel = ChatbotModel(languageProvider: languageProvider);
     _chatbotModel.addListener(_onChatbotModelChanged);
@@ -105,27 +94,8 @@ class ChatbotContentState extends State<ChatbotWidget> {
     if (_chatbotModel.messages.length > 1 && !_conversationStarted) {
       setState(() {
         _conversationStarted = true;
-        _showQuickChat = false;
       });
     }
-  }
-
-  void hideQuickChat() {
-    setState(() {
-      _showQuickChat = false;
-    });
-  }
-
-  void showQuickChat() {
-    setState(() {
-      _showQuickChat = true;
-    });
-  }
-
-  void toggleQuickChat() {
-    setState(() {
-      _showQuickChat = !_showQuickChat;
-    });
   }
 
   void _handleSendPressed() {
@@ -163,9 +133,6 @@ class ChatbotContentState extends State<ChatbotWidget> {
                   if (!_conversationStarted)
                     _buildResponsiveHeader(isMobile, isTablet, isDarkMode),
                   if (!_conversationStarted) const SizedBox(height: 16),
-                  if (!_conversationStarted)
-                    _buildQuickOptionsSection(isMobile, isDarkMode),
-                  if (!_conversationStarted) const SizedBox(height: 16),
                   Expanded(
                     child: _buildChatInterfaceCard(isMobile, isDarkMode),
                   ),
@@ -178,39 +145,34 @@ class ChatbotContentState extends State<ChatbotWidget> {
     );
   }
 
-
-
- 
-
-Widget _buildHorizontalScrollSuggestions(
-    List<String> suggestions, bool isDarkMode) {
-  return Container(
-    height: 60,
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    child: ScrollConfiguration(
-      behavior: ScrollConfiguration.of(context).copyWith(
-        scrollbars: true,
-        dragDevices: {
-          // Enable scrolling with mouse drag on web
-          PointerDeviceKind.touch,
-          PointerDeviceKind.mouse,
-          PointerDeviceKind.stylus,
-          PointerDeviceKind.trackpad,
-        },
+  Widget _buildHorizontalScrollSuggestions(
+      List<String> suggestions, bool isDarkMode) {
+    return Container(
+      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(
+          scrollbars: true,
+          dragDevices: {
+            PointerDeviceKind.touch,
+            PointerDeviceKind.mouse,
+            PointerDeviceKind.stylus,
+            PointerDeviceKind.trackpad,
+          },
+        ),
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          itemCount: suggestions.length,
+          separatorBuilder: (context, index) => const SizedBox(width: 8),
+          itemBuilder: (context, index) {
+            return _buildSuggestionChip(suggestions[index], isDarkMode);
+          },
+        ),
       ),
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemCount: suggestions.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          return _buildSuggestionChip(suggestions[index], isDarkMode);
-        },
-      ),
-    ),
-  );
-}
- 
+    );
+  }
+
   Widget _buildSuggestionChip(String suggestion, bool isDarkMode) {
     return InkWell(
       onTap: () => _handleSuggestionTap(suggestion),
@@ -257,122 +219,54 @@ Widget _buildHorizontalScrollSuggestions(
         useStreaming: _chatbotModel.useStreaming);
   }
 
-  Widget _buildQuickOptionsSection(bool isMobile, bool isDarkMode) {
-    return Consumer<ChatbotModel>(
-      builder: (context, model, child) {
-        final quickOptions = _getQuickOptions(context);
-        
-        return Card(
-          elevation: 2,
-          color: isDarkMode ? FlarelineColors.darkerBackground : Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.flash_on, color: Colors.amber[700], size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          context.translate('Quick Topics'),
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: isDarkMode ? Colors.grey[300] : Theme.of(context).cardTheme.color,
-                              ),
-                        ),
-                      ],
-                    ),
-                    IconButton(
-                      icon: AnimatedRotation(
-                        turns: _showQuickChat ? 0 : 0.5,
-                        duration: const Duration(milliseconds: 300),
-                        child: Icon(
-                          Icons.expand_less,
-                          size: 24,
-                          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                      ),
-                      onPressed: toggleQuickChat,
-                      tooltip: _showQuickChat
-                          ? context.translate('Hide Quick Topics')
-                          : context.translate('Show Quick Topics'),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  child: _showQuickChat
-                      ? Column(
-                          children: [
-                            const SizedBox(height: 12),
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: isMobile ? 2 : 4,
-                                childAspectRatio: isMobile ? 2.5 : 4.0,
-                                crossAxisSpacing: 8,
-                                mainAxisSpacing: 8,
-                              ),
-                              itemCount: quickOptions.length,
-                              itemBuilder: (context, index) {
-                                final option = quickOptions[index];
-                                return _buildQuickOptionCard(option, isMobile, isDarkMode);
-                              },
-                            ),
-                          ],
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ],
-            ),
+  // Reddit-style quick option pill button (smaller and animated)
+  Widget _buildRedditStylePill(Map<String, dynamic> option, bool isDarkMode) {
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 300),
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: 0.8 + (0.2 * value),
+          child: Opacity(
+            opacity: value,
+            child: child,
           ),
         );
       },
-    );
-  }
-
-  Widget _buildQuickOptionCard(Map<String, dynamic> option, bool isMobile, bool isDarkMode) {
-    return InkWell(
-      onTap: () => _handleQuickOption(context.translate(option['messageKey'])),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: EdgeInsets.all(isMobile ? 8 : 12),
-        decoration: BoxDecoration(
-          border: Border.all(color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!),
-          borderRadius: BorderRadius.circular(12),
-          color: isDarkMode ? Theme.of(context).cardTheme.color : Colors.grey[50],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              option['icon'],
-              color: option['color'],
-              size: isMobile ? 20 : 24,
+      child: InkWell(
+        onTap: () => _handleQuickOption(context.translate(option['messageKey'])),
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: isDarkMode 
+                ? Colors.grey[850]
+                : Colors.grey[100],
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
+              width: 1,
             ),
-            SizedBox(width: isMobile ? 4 : 6),
-            Flexible(
-              child: Text(
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                option['icon'],
+                size: 14,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+              ),
+              const SizedBox(width: 6),
+              Text(
                 context.translate(option['titleKey']),
                 style: TextStyle(
-                  fontSize: isMobile ? 11 : 12,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                  color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
                 ),
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 2,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -384,54 +278,6 @@ Widget _buildHorizontalScrollSuggestions(
   }
 
   Widget _buildResponsiveHeader(bool isMobile, bool isTablet, bool isDarkMode) {
-    void _showNavigationMenu() async { 
-      final RenderBox? renderBox =
-          _navigationMenuKey.currentContext?.findRenderObject() as RenderBox?;
-      if (renderBox == null) return;
-
-      final Offset buttonPosition = renderBox.localToGlobal(Offset.zero);
-      final Size buttonSize = renderBox.size;
-
-      final result = await showMenu(
-        context: context,
-        position: RelativeRect.fromLTRB(
-          buttonPosition.dx,
-          buttonPosition.dy + buttonSize.height,
-          buttonPosition.dx + 200,
-          buttonPosition.dy + buttonSize.height + 100,
-        ),
-        color: Theme.of(context).cardTheme.color,
-        items: [
-          PopupMenuItem(
-            value: 'back',
-            child: ListTile(
-              title: Text(context.translate('Crop Recommendations')),
-            ),
-          ),
-          PopupMenuItem(
-            value: 'suitability',
-            child: ListTile(
-              title: Text(context.translate('Crop Suitability')),
-            ),
-          ),
-        ],
-      );
-
-      if (result == 'back') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const RecommendationPage(),
-          ),
-        );
-      } else if (result == 'suitability') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const SuitabilityPage()),
-        );
-      }
-    }
-
     if (!isMobile && !isTablet) {
       return Consumer<ChatbotModel>(
         builder: (context, model, child) {
@@ -472,7 +318,7 @@ Widget _buildHorizontalScrollSuggestions(
     return Consumer<ChatbotModel>(
       builder: (context, model, child) {
         return Container(
-          height: 90,
+          height: 40,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
@@ -509,22 +355,37 @@ Widget _buildHorizontalScrollSuggestions(
     );
   }
 
- 
-  Widget _buildCustomInput(bool isMobile, bool isDarkMode) {
-    return Consumer<ChatbotModel>(
-      builder: (context, model, child) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_conversationStarted && !model.isTyping)
-              _buildDynamicSuggestions(isMobile, isDarkMode),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(24),
-              ),
+
+
+
+Widget _buildCustomInput(bool isMobile, bool isDarkMode) {
+  return Consumer<ChatbotModel>(
+    builder: (context, model, child) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_conversationStarted && !model.isTyping)
+            _buildDynamicSuggestions(isMobile, isDarkMode),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: RawKeyboardListener(
+              focusNode: FocusNode(),
+              onKey: (RawKeyEvent event) {
+                if (event is RawKeyDownEvent) {
+                  if (event.logicalKey == LogicalKeyboardKey.enter && 
+                      !event.isShiftPressed) {
+                    // Prevent default behavior
+                    if (_textController.text.trim().isNotEmpty) {
+                      _handleSendPressed();
+                    }
+                  }
+                }
+              },
               child: Row(
                 children: [
                   Expanded(
@@ -548,7 +409,6 @@ Widget _buildHorizontalScrollSuggestions(
                       ),
                       maxLines: null,
                       textCapitalization: TextCapitalization.sentences,
-                      onSubmitted: (_) => _handleSendPressed(),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -564,9 +424,61 @@ Widget _buildHorizontalScrollSuggestions(
                 ],
               ),
             ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+  // Reddit-style empty state with flowing pill buttons (animated)
+  Widget _buildQuickTopicsEmptyState(bool isMobile, bool isDarkMode) {
+    final quickOptions = _getQuickOptions(context);
+    
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Welcome message
+            Text(
+              context.translate('How can I help you today?'),
+              style: TextStyle(
+                fontSize: isMobile ? 18 : 22,
+                fontWeight: FontWeight.w600,
+                color: isDarkMode ? Colors.grey[200] : Colors.grey[900],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            
+            // Reddit-style flowing pill buttons with staggered animation
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              alignment: WrapAlignment.center,
+              children: List.generate(quickOptions.length, (index) {
+                return TweenAnimationBuilder<double>(
+                  duration: Duration(milliseconds: 400 + (index * 50)),
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Transform.translate(
+                      offset: Offset(0, 20 * (1 - value)),
+                      child: Opacity(
+                        opacity: value,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: _buildRedditStylePill(quickOptions[index], isDarkMode),
+                );
+              }),
+            ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -581,76 +493,80 @@ Widget _buildHorizontalScrollSuggestions(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.max,
               children: [
-                Container(
-                  height: 60,
-                  child: Row(
-                    children: [],
-                  ),
-                ),
-                const SizedBox(height: 16),
                 Expanded(
-                  child: Chat(
-                    messages: model.messages,
-                    onSendPressed: (p) {},
-                    user: model.user,
-                    showUserAvatars: true,
-                    showUserNames: true,
-                    usePreviewData: false,
-                    customBottomWidget: _buildCustomInput(isMobile, isDarkMode),
-                    theme: DefaultChatTheme(
-                      backgroundColor: isDarkMode ? FlarelineColors.darkerBackground : Colors.white,
-                      primaryColor: isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200,
-                      secondaryColor: isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200,
-                      inputBackgroundColor: isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200,
-                      inputTextColor: isDarkMode ? Colors.white : Colors.black87,
-                      inputBorderRadius: BorderRadius.circular(24),
-                      inputMargin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      userAvatarNameColors: [isDarkMode ? Colors.grey[300]! : Colors.black],
-                      receivedMessageBodyTextStyle: TextStyle(
-                        color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
-                        fontSize: isMobile ? 14 : 16,
-                        height: 1.4,
-                      ),
-                      sentMessageBodyTextStyle: TextStyle(
-                        color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
-                        fontSize: 14,
-                        height: 1.4,
-                      ),
-                      receivedMessageBodyLinkTextStyle: TextStyle(
-                        color: isDarkMode ? Colors.blue[200]! : Colors.blue,
-                        fontSize: isMobile ? 14 : 16,
-                        height: 1.4,
-                      ),
-                      sendButtonIcon: Icon(
-                        Icons.send,
-                        color: isDarkMode ? Colors.grey[400] : Colors.grey,
-                        size: 22,
-                      ),
-                    ),
-                    typingIndicatorOptions: TypingIndicatorOptions(
-                      typingUsers: model.isTyping ? [model.bot] : [],
-                    ),
-                    avatarBuilder: (userId) {
-                      final bool isBot = userId == model.bot.id;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: CircleAvatar(
-                          backgroundColor: isBot
-                              ? (isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200)
-                              : (isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey[200]!),
-                          child: Icon(
-                            isBot ? Icons.agriculture : Icons.person,
-                            color: isBot
-                                ? (isDarkMode ? Colors.grey[400] : Colors.grey.shade800)
-                                : (isDarkMode ? Colors.grey.shade200 : Colors.grey.shade800),
-                            size: 20,
+                  child: model.messages.length <= 1
+                      ? _buildQuickTopicsEmptyState(isMobile, isDarkMode)
+                      : Chat(
+                          messages: model.messages,
+                          onSendPressed: (p) {},
+                          user: model.user,
+                          showUserAvatars: true,
+                          showUserNames: true,
+                          usePreviewData: false,
+                          customBottomWidget: _buildCustomInput(isMobile, isDarkMode),
+                          theme: DefaultChatTheme(
+                            backgroundColor: isDarkMode ? FlarelineColors.darkerBackground : Colors.white,
+                            primaryColor: isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200,
+                            secondaryColor: isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200,
+                            inputBackgroundColor: isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200,
+                            inputTextColor: isDarkMode ? Colors.white : Colors.black87,
+                            inputBorderRadius: BorderRadius.circular(24),
+                            inputMargin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            userAvatarNameColors: [isDarkMode ? Colors.grey[300]! : Colors.black],
+                            receivedMessageBodyTextStyle: TextStyle(
+                              color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+                              fontSize: isMobile ? 14 : 16,
+                              height: 1.4,
+                            ),
+                            sentMessageBodyTextStyle: TextStyle(
+                              color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+                              fontSize: 14,
+                              height: 1.4,
+                            ),
+                            receivedMessageBodyLinkTextStyle: TextStyle(
+                              color: isDarkMode ? Colors.blue[200]! : Colors.blue,
+                              fontSize: isMobile ? 14 : 16,
+                              height: 1.4,
+                            ),
+                            sendButtonIcon: Icon(
+                              Icons.send,
+                              color: isDarkMode ? Colors.grey[400] : Colors.grey,
+                              size: 22,
+                            ),
                           ),
-                          radius: 18,
+                          typingIndicatorOptions: TypingIndicatorOptions(
+                            typingUsers: model.isTyping ? [model.bot] : [],
+                          ),
+                          avatarBuilder: (userId) {
+                            final bool isBot = userId == model.bot.id;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: CircleAvatar(
+                                backgroundColor: isBot
+                                    ? (isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200)
+                                    : (isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey[200]!),
+                                child: isBot 
+                                    ? Icon(
+                                        Icons.person,
+                                        color: isDarkMode ? Colors.grey.shade200 : Colors.grey.shade800,
+                                        size: 20,
+                                      )
+                                    : ClipOval(
+                                        child: Image.asset(
+                                          'assets/DA_image.jpg',
+                                          width: 36,
+                                          height: 36,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                radius: 18,
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ),
+                if (model.messages.length <= 1)
+                  _buildCustomInput(isMobile, isDarkMode),
               ],
             ),
           ),
@@ -658,7 +574,4 @@ Widget _buildHorizontalScrollSuggestions(
       },
     );
   }
-
-
-
 }

@@ -72,8 +72,7 @@ class ModalContentState extends State<ModalContent> {
   @override
   void initState() {
     super.initState();
-
-    print('polygonid' + widget.polygon.id.toString());
+ 
     final center = widget.polygon.center;
     latController = TextEditingController(
       text: center?.latitude.toStringAsFixed(6) ?? '0.0',

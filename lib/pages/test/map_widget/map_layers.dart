@@ -542,6 +542,12 @@ class MapLayersHelper {
     "CyclOSM":
         "https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png",
     "Humanitarian": "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+
+    
+    
+    
+    
+    
   };
 }
 

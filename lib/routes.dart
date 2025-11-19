@@ -17,6 +17,10 @@ import 'package:flareline/pages/alerts/alert_page.dart' deferred as alert;
 import 'package:flareline/pages/button/button_page.dart' deferred as button;
 import 'package:flareline/pages/form/form_elements_page.dart'
     deferred as formElements;
+
+import 'package:flareline/pages/contactus/contact_us.dart'
+    deferred as contactUs;
+
 import 'package:flareline/pages/form/form_layout_page.dart'
     deferred as formLayout;
 import 'package:flareline/pages/auth/sign_in/sign_in_page.dart'
@@ -84,6 +88,15 @@ final List<Map<String, Object>> MAIN_PAGES = [
     'widget': DeferredWidget(
         formElements.loadLibrary, () => formElements.FormElementsPage()),
   },
+
+
+{
+    'routerPath': '/contactus',
+    'widget': DeferredWidget(
+        contactUs.loadLibrary, () => contactUs.ContactUsPage())
+  },
+
+
   {
     'routerPath': '/formLayout',
     'widget': DeferredWidget(

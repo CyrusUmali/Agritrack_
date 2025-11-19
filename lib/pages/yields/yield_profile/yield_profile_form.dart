@@ -44,8 +44,7 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
 
   @override
   void initState() {
-    print(widget.yieldData);
-
+    
     super.initState();
     _imageHandler.existingImages = widget.yieldData.images
             ?.where((img) => img != null)

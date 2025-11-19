@@ -198,21 +198,20 @@ class _LargeScreenDialogState extends State<_LargeScreenDialog> {
       }
     }
 
-    print(
-        'LargeScreenDialog initialized with ${_currentFarmers.length} farmers');
+ 
   }
 
   void _retryLoadFarmers() {
-    print('Retry Load Farmers button pressed in large screen dialog');
+  
     setState(() {
       isLoadingFarmers = true;
     });
 
     try {
       context.read<FarmerBloc>().add(LoadFarmers());
-      print('LoadFarmers event dispatched from large screen dialog');
+      
     } catch (e) {
-      print('Error loading farmers in large screen dialog: $e');
+   
       setState(() {
         isLoadingFarmers = false;
       });
@@ -230,10 +229,9 @@ class _LargeScreenDialogState extends State<_LargeScreenDialog> {
   Widget build(BuildContext context) {
     return BlocListener<FarmerBloc, FarmerState>(
       listener: (context, state) {
-        print('FarmerBloc state changed in large dialog: $state');
+      
         if (state is FarmersLoaded) {
-          print(
-              'Farmers loaded in large dialog: ${state.farmers.length} farmers');
+  
           setState(() {
             _currentFarmers = state.farmers;
             isLoadingFarmers = false;
@@ -251,7 +249,7 @@ class _LargeScreenDialogState extends State<_LargeScreenDialog> {
             }
           });
         } else if (state is FarmersError) {
-          print('Error loading farmers in large dialog: ${state.message}');
+        
           setState(() {
             isLoadingFarmers = false;
           });
@@ -660,8 +658,7 @@ class _ModalContentState extends State<_ModalContent> {
 
     // Update validation state initially
     _updateValidationState();
-
-    print('ModalContent initialized with ${_currentFarmers.length} farmers');
+ 
   }
 
   void _updateValidationState() {
@@ -670,16 +667,15 @@ class _ModalContentState extends State<_ModalContent> {
   }
 
   void _retryLoadFarmers() {
-    print('Retry Load Farmers button pressed in small screen modal');
+ 
     setState(() {
       isLoadingFarmers = true;
     });
 
     try {
       context.read<FarmerBloc>().add(LoadFarmers());
-      print('LoadFarmers event dispatched from small screen modal');
-    } catch (e) {
-      print('Error loading farmers in small screen modal: $e');
+ 
+    } catch (e) { 
       setState(() {
         isLoadingFarmers = false;
       });
@@ -689,8 +685,7 @@ class _ModalContentState extends State<_ModalContent> {
   void _updateFarmers(List<Farmer> newFarmers) {
     setState(() {
       _currentFarmers = newFarmers;
-      isLoadingFarmers = false;
-      print('Farmers updated to ${_currentFarmers.length} farmers');
+      isLoadingFarmers = false; 
 
       // Re-validate farmer selection if we have farmers now
       if (_currentFarmers.isNotEmpty && selectedFarmerId != null) {
@@ -719,12 +714,11 @@ class _ModalContentState extends State<_ModalContent> {
   Widget build(BuildContext context) {
     return BlocListener<FarmerBloc, FarmerState>(
       listener: (context, state) {
-        print('FarmerBloc state changed: $state');
+    
         if (state is FarmersLoaded) {
-          print('Farmers loaded: ${state.farmers.length} farmers');
+       
           _updateFarmers(state.farmers);
-        } else if (state is FarmersError) {
-          print('Error loading farmers: ${state.message}');
+        } else if (state is FarmersError) { 
           setState(() {
             isLoadingFarmers = false;
           });

@@ -2,7 +2,9 @@ library flareline_uikit;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flareline/core/theme/global_colors.dart';
+import 'package:flareline/pages/announcement/announcements_page.dart';  
 import 'package:flareline/pages/farmers/farmer_profile.dart';
+import 'package:flareline/pages/notification/notification.dart';
 import 'package:flareline/pages/users/da_personel_profile.dart';
 import 'package:flareline/pages/users/farmer_registration.dart';
 import 'package:flareline/pages/users/settings/settings_page.dart';
@@ -12,8 +14,8 @@ import 'package:flareline_uikit/service/sidebar_provider.dart';
 import 'package:flareline_uikit/service/year_picker_provider.dart';
 import 'package:flareline_uikit/service/theme_provider.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart'; 
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart'; 
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
 import 'package:iconify_flutter_plus/icons/mdi.dart';
 import 'package:provider/provider.dart';
@@ -38,153 +40,178 @@ class ToolBarWidget extends StatelessWidget {
     return _toolsBarWidget(context);
   }
 
+  Widget _toolsBarWidget(BuildContext context) {
+    final sidebarProvider =
+        Provider.of<SidebarProvider>(context, listen: false);
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
 
 
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.user; 
+    final farmerId = userProvider.farmer?.id;
+       final isFarmer = userProvider.isFarmer;
 
-Widget _toolsBarWidget(BuildContext context) {
-  final sidebarProvider = Provider.of<SidebarProvider>(context, listen: false);
-  final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    // Auto-detect if we should show year picker based on current route
+    final bool shouldShowYearPicker = _shouldShowYearPicker(context);
 
-  // Auto-detect if we should show year picker based on current route
-  final bool shouldShowYearPicker = _shouldShowYearPicker(context);
+    return Container(
+      color: Theme.of(context).appBarTheme.backgroundColor,
+      padding: const EdgeInsets.all(10),
+      child: Row(children: [
+        ResponsiveBuilder(
+          builder: (context, sizingInformation) {
+            final showMoreButton = (showMore ?? false) ||
+                sizingInformation.deviceScreenType != DeviceScreenType.desktop;
 
-  return Container(
-    color: Theme.of(context).appBarTheme.backgroundColor,
-    padding: const EdgeInsets.all(10),
-    child: Row(children: [
-      ResponsiveBuilder(
-        builder: (context, sizingInformation) {
-          final showMoreButton = (showMore ?? false) ||
-              sizingInformation.deviceScreenType != DeviceScreenType.desktop;
-
-          // Automatically pin the sidebar when the more button is shown
-          if (showMoreButton) {
-            final provider = Provider.of<SidebarProvider>(context, listen: false);
-            if (!provider.isPinned) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                provider.togglePin(); // Ensure sidebar is pinned
-              });
+            // Automatically pin the sidebar when the more button is shown
+            if (showMoreButton) {
+              final provider =
+                  Provider.of<SidebarProvider>(context, listen: false);
+              if (!provider.isPinned) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  provider.togglePin(); // Ensure sidebar is pinned
+                });
+              }
             }
-          }
 
-          return Row(
-            children: [
-              // Only show toggle button when sidebar is NOT visible AND not showing more button
-              if (!showMoreButton && sidebarProvider.isPinned)
-        InkWell(
-  child: Container(
-    padding: const EdgeInsets.all(5),
-    margin: const EdgeInsets.only(right: 10),
-    decoration: BoxDecoration(
-      border: Border.all(
-        color:Theme.of(context).brightness == Brightness.dark
-              ?  FlarelineColors.background 
-              :      Colors.grey.shade200,
-        width: 1,
-      ),
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(45), // Added rounded corners
-    ),
-     child:
+            return Row(
+              children: [
+                // Only show toggle button when sidebar is NOT visible AND not showing more button
+//                 if (!showMoreButton && sidebarProvider.isPinned)
+                 
+//               Material(
+//   color: Colors.transparent,
+//   child: Ink(
+//     decoration: BoxDecoration(
+//       border: Border.all(
+//         color: Theme.of(context).brightness == Brightness.dark
+//             ? FlarelineColors.background
+//             : Colors.grey.shade200,
+//         width: 1,
+//       ),
+//       borderRadius: BorderRadius.circular(45),
+//     ),
+//     child: InkWell(
+//       borderRadius: BorderRadius.circular(45),
+//       hoverColor: Colors.grey.withOpacity(0.1),   // Works correctly now
+//       onTap: () {
+//         Provider.of<SidebarProvider>(context, listen: false).togglePin();
+//       },
+//       child: Padding(
+//         padding: const EdgeInsets.all(5),
+//         child: Iconify(
+//           Mdi.dock_left,
+//           color: Theme.of(context).brightness == Brightness.dark
+//               ? FlarelineColors.background
+//               : Colors.grey.shade700,
+//         ),
+//       ),
+//     ),
+//   ),
+// ),
 
-
-// const Icon(Icons.more_vert),
-
-
-      Iconify(
-      Mdi.dock_left,
-      // color: Colors.grey.shade700,  
-color: 
-
-Theme.of(context).brightness == Brightness.dark
-              ?  FlarelineColors.background 
-              :  Colors.grey.shade700,
-
-    ),
-  ),
-  onTap: () {
-    final provider = Provider.of<SidebarProvider>(context, listen: false);
-    provider.togglePin();
-    if (kDebugMode) {}
-  },
-),
-              if (showMoreButton) // Show more button when appropriate
-                InkWell(
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          color: Theme.of(context).cardTheme.surfaceTintColor ??
-                              Colors.grey.shade200,
-                          width: 1),
+                if (showMoreButton) // Show more button when appropriate
+                  InkWell(
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color:
+                                Theme.of(context).cardTheme.surfaceTintColor ??
+                                    Colors.grey.shade200,
+                            width: 1),
+                      ),
+                      child: const Icon(Icons.more_vert),
                     ),
-                    child: const Icon(Icons.more_vert),
+                    onTap: () {
+                      Scaffold.of(context).openDrawer();
+                    },
                   ),
-                  onTap: () {
-                    Scaffold.of(context).openDrawer();
-                  },
-                ),
-            ],
-          );
-        },
-      ),
+              ],
+            );
+          },
+        ),
 
-      const Spacer(),
+        const Spacer(),
 
-      // Year Picker - conditionally show based on route or override
-      if (forceShowYearPicker ?? shouldShowYearPicker)
-        const YearPickerWidget(),
+        // Year Picker - conditionally show based on route or override
+        if (forceShowYearPicker ?? shouldShowYearPicker)
+          const YearPickerWidget(),
 
-      if (forceShowYearPicker ?? shouldShowYearPicker)
+        if (forceShowYearPicker ?? shouldShowYearPicker)
+          const SizedBox(width: 10),
+
         const SizedBox(width: 10),
 
-      const SizedBox(width: 10),
+        // Theme toggle
+        if (showChangeTheme ?? false)
+          ToggleWidget(themeProvider: themeProvider),
 
-      // Theme toggle
-      if (showChangeTheme ?? false)
-        ToggleWidget(themeProvider: themeProvider),
+        const SizedBox(width: 10),
 
-      const SizedBox(width: 10),
+        // User info
+        if (userInfoWidget != null) userInfoWidget!,
 
-      // User info
-      if (userInfoWidget != null) userInfoWidget!,
+        // User menu dropdown
+        InkWell(
+          child: Container(
+            margin: const EdgeInsets.only(left: 6),
+            child: const Icon(Icons.arrow_drop_down),
+          ),
+          onTap: () async {
+            await showMenu(
+              color: Theme.of(context).cardTheme.color,
+              context: context,
+              position: RelativeRect.fromLTRB(
+                  MediaQuery.of(context).size.width - 100, 80, 0, 0),
+              items: <PopupMenuItem<String>>[
+                PopupMenuItem<String>(
+                  value: 'profile',
+                  child: const Text('My Profile'),
+                  onTap: () => _handleProfileNavigation(context),
+                ),
+                PopupMenuItem<String>(
+                  value: 'settings',
+                  child: const Text('Settings'),
+                  onTap: () => _handleSettingsNavigation(context),
+                ),
 
-      // User menu dropdown
-      InkWell(
-        child: Container(
-          margin: const EdgeInsets.only(left: 6),
-          child: const Icon(Icons.arrow_drop_down),
-        ),
-        onTap: () async {
-          await showMenu(
-            color: Theme.of(context).cardTheme.color,
-            context: context,
-            position: RelativeRect.fromLTRB(
-                MediaQuery.of(context).size.width - 100, 80, 0, 0),
-            items: <PopupMenuItem<String>>[
-              PopupMenuItem<String>(
-                value: 'profile',
-                child: const Text('My Profile'),
-                onTap: () => _handleProfileNavigation(context),
-              ),
-              PopupMenuItem<String>(
-                value: 'settings',
-                child: const Text('Settings'),
-                onTap: () => _handleSettingsNavigation(context),
-              ),
-              PopupMenuItem<String>(
-                value: 'logout',
-                child: const Text('Log out'),
-                onTap: () => onLogoutClick(context),
-              ),
-            ],
-          );
-        },
+          if(!isFarmer)      
+  PopupMenuItem<String>(
+                  value: 'announcement',
+                  child: const Text('Announcement'),
+                  onTap: () =>   Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AnnouncementsPage( ),
       ),
-    ]),
-  );
-}
+    ),
+                ),
 
+if (isFarmer)
+  PopupMenuItem<String>(
+                  value: 'notifications',
+                  child: const Text('Notifications'),
+                  onTap: () =>   Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => NotificationsPage(farmerId: farmerId!),
+      ),
+    ),
+                ), 
+
+                PopupMenuItem<String>(
+                  value: 'logout',
+                  child: const Text('Log out'),
+                  onTap: () => onLogoutClick(context),
+                ),
+              ],
+            );
+          },
+        ),
+      ]),
+    );
+  }
 
   bool _shouldShowYearPicker(BuildContext context) {
     // Get current route
@@ -234,8 +261,7 @@ Theme.of(context).brightness == Brightness.dark
     final user = userProvider.user;
     final farmerId = userProvider.farmer?.id;
 
-    print('user:');
-    print(user);
+   
 
     if (user == null) {
       Navigator.of(context).pushNamed('/profile');

@@ -8,6 +8,365 @@ class SectorService {
 
   SectorService(this._apiService);
 
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+  Future<Map<String, dynamic>> fetchFarmerAnnouncements(int farmerId) async {
+    try {
+      final response = await _apiService.get(
+        '/auth/notifications/$farmerId',
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'] ?? response.data;
+        
+        // Fix the specific type conversion issue with read_count
+        if (data is List) {
+          for (var item in data) {
+            if (item is Map<String, dynamic> && item['read_count'] is String) {
+              item['read_count'] = int.tryParse(item['read_count']) ?? 0;
+            }
+          }
+        }
+        
+        return {
+          'success': true,
+          'data': data,
+          'message': response.data['message'] ?? 'Farmer announcements fetched successfully',
+        };
+      }
+
+      throw Exception('Failed to fetch farmer announcements: ${response.statusCode}');
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw Exception('Server error: ${e.response!.data['message'] ?? e.response!.statusMessage}');
+      } else {
+        throw Exception('Network error: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('Failed to fetch farmer announcements: ${e.toString()}');
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteFarmerNotification(
+    int notificationId, 
+    int farmerId
+  ) async {
+    try {
+      final response = await _apiService.delete(
+        '/auth/notifications/$notificationId',
+      );
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'Notification deleted successfully',
+        };
+      }
+
+      throw Exception('Failed to delete notification: ${response.statusCode}');
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw Exception('Server error: ${e.response!.data['message'] ?? e.response!.statusMessage}');
+      } else {
+        throw Exception('Network error: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('Failed to delete notification: ${e.toString()}');
+    }
+  }
+
+ 
+
+
+
+Future<Map<String, dynamic>> deleteAnnouncement(String announcementId) async {
+  try {
+    final response = await _apiService.delete(
+      '/auth/announcements/$announcementId',
+    );
+
+    if (response.statusCode == 200) {
+      return {
+        'success': true,
+        'message': response.data['message'] ?? 'Announcement deleted successfully',
+      };
+    }
+
+    throw Exception('Failed to delete announcement: ${response.statusCode}');
+  } on DioException catch (e) {
+    if (e.response != null) {
+      throw Exception('Server error: ${e.response!.data['message'] ?? e.response!.statusMessage}');
+    } else {
+      throw Exception('Network error: ${e.message}');
+    }
+  } catch (e) {
+    throw Exception('Failed to delete announcement: ${e.toString()}');
+  }
+}
+
+Future<Map<String, dynamic>> fetchAnnouncements() async {
+  try {
+    final response = await _apiService.get(
+      '/auth/announcements',
+    );
+
+    if (response.statusCode == 200) {
+      final data = response.data['data'] ?? response.data;
+      
+      // Fix the specific type conversion issue with read_count
+      if (data is List) {
+        for (var item in data) {
+          if (item is Map<String, dynamic> && item['read_count'] is String) {
+            item['read_count'] = int.tryParse(item['read_count']) ?? 0;
+          }
+        }
+      }
+      
+      return {
+        'success': true,
+        'data': data,
+        'message': response.data['message'] ?? 'Announcements fetched successfully',
+      };
+    }
+
+    throw Exception('Failed to fetch announcements: ${response.statusCode}');
+  } on DioException catch (e) {
+    if (e.response != null) {
+      throw Exception('Server error: ${e.response!.data['message'] ?? e.response!.statusMessage}');
+    } else {
+      throw Exception('Network error: ${e.message}');
+    }
+  } catch (e) {
+    throw Exception('Failed to fetch announcements: ${e.toString()}');
+  }
+}
+
+
+Future<Map<String, dynamic>> sendAnnouncement({
+  required String title,
+  required String message,
+  required String recipientType,
+  String? farmerId,
+}) async {
+  try {
+    final Map<String, dynamic> body = {
+      'title': title,
+      'message': message,
+      'recipient_type': recipientType,
+      if (farmerId != null && recipientType == 'specific') 'farmer_id': farmerId,
+    };
+
+    final response = await _apiService.post(
+      '/auth/announcements',
+      data: body,
+    );
+
+    // Simply return the API response data directly
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return response.data; // Return the API response as-is
+    } else {
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'Failed to send announcement',
+      };
+    }
+  } on DioException catch (e) {
+    if (e.response != null) {
+      return {
+        'success': false,
+        'message': e.response!.data['message'] ?? e.response!.statusMessage ?? 'Server error',
+      };
+    } else {
+      return {
+        'success': false,
+        'message': e.message ?? 'Network error',
+      };
+    }
+  } catch (e) {
+    return {
+      'success': false,
+      'message': 'Failed to send announcement: ${e.toString()}',
+    };
+  }
+}
+
+ Future<Map<String, dynamic>> sendReply({
+  required String ticketId,
+  required int userId,
+  required String message,
+  required String subject,
+}) async {
+  try {
+    final Map<String, dynamic> body = {
+      'ticket_id': ticketId,
+      'user_id': userId,
+      'message': message,
+      'subject': subject,
+    };
+
+    final response = await _apiService.post(
+      '/auth/reply', // Adjust the endpoint as needed
+      data: body,
+    );
+
+    if (response.statusCode == 200) {
+      return {
+        'success': true,
+        'message': response.data['message'] ?? 'Reply sent successfully',
+        'data': response.data['data'] ?? response.data,
+      };
+    }
+
+    throw Exception('Failed to send reply: ${response.statusCode}');
+  } on DioException catch (e) {
+    if (e.response != null) {
+      throw Exception('Server error: ${e.response!.data['message'] ?? e.response!.statusMessage}');
+    } else {
+      throw Exception('Network error: ${e.message}');
+    }
+  } catch (e) {
+    throw Exception('Failed to send reply: ${e.toString()}');
+  }
+}
+
+Future<Map<String, dynamic>> fetchInbox({
+  int? userId,
+  String? status,
+  int page = 1,
+  int limit = 20, 
+}) async {
+  try {
+    final Map<String, dynamic> queryParams = {
+      if (userId != null) 'userId': userId,
+      if (status != null) 'status': status,
+      'page': page,
+      'limit': limit, 
+    };  
+
+    final response = await _apiService.get(
+      '/auth/inbox',
+      queryParameters: queryParams,
+    );
+
+    if (response.statusCode == 200) {
+      return {
+        'success': true,
+        'tickets': response.data['tickets'] ?? response.data['data'] ?? response.data,
+        'currentPage': response.data['currentPage'] ?? page,
+        'totalPages': response.data['totalPages'] ?? 1,
+        'totalCount': response.data['totalCount'] ?? 0,
+      };
+    }
+
+    throw Exception('Failed to fetch inbox: ${response.statusCode}');
+  } on DioException catch (e) {
+    if (e.response != null) {
+      throw Exception('Server error: ${e.response!.data['message'] ?? e.response!.statusMessage}');
+    } else {
+      throw Exception('Network error: ${e.message}');
+    }
+  } catch (e) {
+    throw Exception('Failed to fetch inbox: ${e.toString()}');
+  }
+}
+
+
+Future<Map<String, dynamic>> fetchSentMessages({
+  int? userId,
+  int page = 1,
+  int limit = 20,
+}) async {
+  try {
+    final Map<String, dynamic> queryParams = {
+      if (userId != null) 'userId': userId,
+      'page': page,
+      'limit': limit,
+    };
+
+    final response = await _apiService.get(
+      '/auth/sent-messages', // New endpoint for sent messages
+      queryParameters: queryParams,
+    );
+
+    if (response.statusCode == 200) {
+      return {
+        'success': true,
+        'data': response.data['data'] ?? [],
+        'currentPage': response.data['pagination']?['page'] ?? page,
+        'totalPages': response.data['pagination']?['pages'] ?? 1,
+        'totalCount': response.data['pagination']?['total'] ?? 0,
+      };
+    }
+
+    throw Exception('Failed to fetch sent messages: ${response.statusCode}');
+  } on DioException catch (e) {
+    // Error handling...
+    if (e.response != null) {
+      throw Exception('Server error: ${e.response!.data['message'] ?? e.response!.statusMessage}');
+    } else {
+      throw Exception('Network error: ${e.message}');
+    }
+  }
+  throw Exception('Unexpected error occurred while fetching sent messages.');
+}
+
+
+// In your existing SectorService class
+Future<Map<String, dynamic>> submitContactForm({
+  required String problemDescription, 
+  int? senderId,
+  int? recieverId,
+}) async {
+  try {
+    final Map<String, dynamic> formData = {
+      'problemDescription': problemDescription, 
+      'senderId': senderId,
+       'recieverId': recieverId,
+      'submittedAt': DateTime.now().toIso8601String(),
+    };
+
+    // Remove null values
+    formData.removeWhere((key, value) => value == null);
+
+    final response = await _apiService.post(
+      '/auth/submit-issue',
+      data: formData,
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return {
+        'success': true,
+        'ticketId': response.data['ticketId'] ?? 'TECH-${DateTime.now().millisecondsSinceEpoch}',
+        'message': response.data['message'] ?? 'Issue reported successfully',
+      };
+    }
+
+    throw Exception('Failed to submit contact form: ${response.statusCode}');
+  } on DioException catch (e) {
+    if (e.response != null) {
+      throw Exception('Server error: ${e.response!.data['message'] ?? e.response!.statusMessage}');
+    } else {
+      throw Exception('Network error: ${e.message}');
+    }
+  } catch (e) {
+    throw Exception('Failed to submit contact form: ${e.toString()}');
+  }
+}
+
+
+
+
   Future<List<Yield>> fetchSectorYieldData(
       {required String sectorId, int? year}) async {
     try {

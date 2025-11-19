@@ -48,11 +48,14 @@ class FarmsList {
               ],
             ),
           ),
-          if (farms.isEmpty)
-            Padding(
+         if (farms.isEmpty)
+            Container(
               padding: const EdgeInsets.all(16),
+              alignment: Alignment.center,
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.search_off,
@@ -78,6 +81,7 @@ class FarmsList {
                 ],
               ),
             )
+     
           else
             ListView.builder(
               shrinkWrap: true,
@@ -137,6 +141,22 @@ class FarmsList {
                   );
                 }
 
+                // Function to clean product names by removing IDs
+                String cleanProductName(String product) {
+                  // Remove everything before the colon and the colon itself
+                  // This will transform "122 : Bangus" to "Bangus"
+                  final colonIndex = product.indexOf(':');
+                  if (colonIndex != -1) {
+                    return product.substring(colonIndex + 1).trim();
+                  }
+                  return product.trim();
+                }
+
+                // Function to get cleaned product list
+                List<String> getCleanedProducts(List<String> products) {
+                  return products.map(cleanProductName).toList();
+                }
+
                 return Container(
                   margin: EdgeInsets.only(bottom: 4),
                   child: ListTile(
@@ -182,7 +202,7 @@ class FarmsList {
                           ),
                         if (farm.products != null && farm.products!.isNotEmpty)
                           Text(
-                            'Products: ${farm.products!.join(', ')}',
+                            'Products: ${getCleanedProducts(farm.products!).join(', ')}',
                             style: TextStyle(
                               fontSize: 11,
                               color: Colors.grey.shade600,

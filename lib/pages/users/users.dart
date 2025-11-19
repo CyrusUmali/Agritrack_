@@ -89,7 +89,7 @@ if (screenHeight < 400) {
   height = screenHeight * 0.50;  
 } else if (screenHeight < 800) {
   height = screenHeight * 0.56;  
-} else if (screenHeight < 1000) {
+} else if (screenHeight < 1500) {
   height = screenHeight * 0.63;  
 }  else {
   height = screenHeight * 0.3;  
@@ -924,18 +924,17 @@ class UsersViewModel extends BaseTableProvider {
 
   @override
   Future loadData(BuildContext context) async {
-    const headers = ["Username", "UserRole", "Email", "Status", "Action"];
+    const headers = ["Name", "UserRole", "Email", "Status", "Action"];
 
     List<List<TableDataRowsTableDataRows>> rows = [];
 
     for (var user in users) {
       List<TableDataRowsTableDataRows> row = [];
-
-      // Username
+ 
       var userNameCell = TableDataRowsTableDataRows()
         ..text = user['name']
         ..dataType = CellDataType.TEXT.type
-        ..columnName = 'Username'
+        ..columnName = 'Name'
         ..id = user['id'].toString();
       row.add(userNameCell);
 

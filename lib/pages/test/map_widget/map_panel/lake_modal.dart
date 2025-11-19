@@ -218,7 +218,7 @@ class _LakeContentState extends State<_LakeContent> {
                       horizontal: 16,
                       vertical: 12,
                     ),
-                    decoration: BoxDecoration(
+                    decoration: BoxDecoration( 
                       color: _showFarmsList
                           ? widget.theme.colorScheme.primary
                           : Colors.transparent,

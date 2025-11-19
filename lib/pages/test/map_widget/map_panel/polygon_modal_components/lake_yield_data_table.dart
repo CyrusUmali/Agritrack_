@@ -139,10 +139,8 @@ class _LakeYieldDataTableState extends State<LakeYieldDataTable> {
     yieldBloc.stream.listen((state) {
       if (state is YieldsLoaded && mounted) {
         setState(() {
-          _yields = state.yields;
-          print('Yields loaded: ${_yields.length}');
-          // print(_yields.map((y) => y.areaHarvested).toSet());
-          print(_yields[0]);
+          _yields = state.yields; 
+     
           final currentProducts = _getUniqueProducts();
           if (currentProducts.isNotEmpty &&
               !currentProducts.contains(_selectedProduct)) {

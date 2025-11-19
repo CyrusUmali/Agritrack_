@@ -37,33 +37,26 @@ class YieldProfileActions extends StatefulWidget {
 class _YieldProfileActionsState extends State<YieldProfileActions> {
   @override
   void initState() {
-    super.initState();
-    print('YieldProfileActions initialized');
+    super.initState(); 
   }
 
   @override
   void didUpdateWidget(YieldProfileActions oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    // Print when any of the loading states change
-    if (widget.isLoading != oldWidget.isLoading) {
-      print(
-          'isLoading changed from ${oldWidget.isLoading} to ${widget.isLoading}');
+ 
+    if (widget.isLoading != oldWidget.isLoading) { 
     }
     if (widget.isDeleting != oldWidget.isDeleting) {
-      print(
-          'isDeleting changed from ${oldWidget.isDeleting} to ${widget.isDeleting}');
+       
     }
     if (widget.isAccepting != oldWidget.isAccepting) {
-      print(
-          'isAccepting changed from ${oldWidget.isAccepting} to ${widget.isAccepting}');
+ 
     }
     if (widget.isRejecting != oldWidget.isRejecting) {
-      print(
-          'isRejecting changed from ${oldWidget.isRejecting} to ${widget.isRejecting}');
+     
     }
 
-    print('YieldProfileActions didUpdateWidget - rebuild triggered');
+    
   }
 
   // Helper methods to determine which buttons to show
@@ -79,15 +72,12 @@ class _YieldProfileActionsState extends State<YieldProfileActions> {
 
   @override
   Widget build(BuildContext context) {
-    print('YieldProfileActions build method called');
-    print('Yield status: ${widget.yieldStatus}');
-    print('Show Accept: $_shouldShowAcceptButton');
-    print('Show Reject: $_shouldShowRejectButton');
+  
 
     return Consumer<UserProvider>(
       builder: (context, userProvider, child) {
         final isFarmer = userProvider.isFarmer;
-        print('Consumer rebuild - isFarmer: $isFarmer');
+        
 
         final buttonWidth = widget.isMobile ? double.infinity : 180.0;
 
@@ -112,7 +102,7 @@ class _YieldProfileActionsState extends State<YieldProfileActions> {
                           btnText: "Save Changes",
                           textColor: FlarelineColors.background,
                           onTap: () {
-                            print('Save button pressed');
+                        
                             widget.onSave();
                           },
                           type: ButtonType.primary.type,
@@ -129,7 +119,7 @@ class _YieldProfileActionsState extends State<YieldProfileActions> {
                           btnText: "Delete Record",
                           textColor: FlarelineColors.background,
                           onTap: () {
-                            print('Delete button pressed');
+                         
                             widget.onDelete();
                           },
                           type: ButtonType.danger.type,
@@ -158,7 +148,7 @@ class _YieldProfileActionsState extends State<YieldProfileActions> {
                                   btnText: "Reject",
                                   textColor: FlarelineColors.background,
                                   onTap: () {
-                                    print('Reject button pressed');
+                                   
                                     widget.onReject();
                                   },
                                   type: ButtonType.danger.type,
@@ -176,7 +166,7 @@ class _YieldProfileActionsState extends State<YieldProfileActions> {
                                   btnText: "Accept",
                                   textColor: FlarelineColors.background,
                                   onTap: () {
-                                    print('Accept button pressed');
+                                   
                                     widget.onAccept();
                                   },
                                   type: ButtonType.success.type,
@@ -198,7 +188,7 @@ class _YieldProfileActionsState extends State<YieldProfileActions> {
                                     btnText: "Reject",
                                     textColor: FlarelineColors.background,
                                     onTap: () {
-                                      print('Reject button pressed');
+                                 
                                       widget.onReject();
                                     },
                                     type: ButtonType.danger.type,
@@ -219,7 +209,7 @@ class _YieldProfileActionsState extends State<YieldProfileActions> {
                                     btnText: "Accept",
                                     textColor: FlarelineColors.background,
                                     onTap: () {
-                                      print('Accept button pressed');
+                                     
                                       widget.onAccept();
                                     },
                                     type: ButtonType.success.type,

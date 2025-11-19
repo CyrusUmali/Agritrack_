@@ -91,7 +91,7 @@ if (screenHeight < 400) {
   height = screenHeight * 0.50;  
 } else if (screenHeight < 800) {
   height = screenHeight * 0.56;  
-} else if (screenHeight < 1000) {
+} else if (screenHeight < 1500) {
   height = screenHeight * 0.63;  
 }  else {
   height = screenHeight * 0.3;  
@@ -795,7 +795,7 @@ class FarmersViewModel extends BaseTableProvider {
   @override
   Future loadData(BuildContext context) async {
     const headers = [
-      "Farmer Name",
+      "Name",
       "Sector",
       "Barangay",
       "Association",
@@ -811,7 +811,7 @@ class FarmersViewModel extends BaseTableProvider {
       var farmerNameCell = TableDataRowsTableDataRows()
         ..text = farmer.name
         ..dataType = CellDataType.IMAGE_TEXT.type
-        ..columnName = 'Farmer Name'
+        ..columnName = 'Name'
         ..imageUrl = farmer.imageUrl
         ..id = farmer.id.toString();
       row.add(farmerNameCell);
