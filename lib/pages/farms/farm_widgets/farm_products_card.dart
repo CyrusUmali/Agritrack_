@@ -87,9 +87,7 @@ class _FarmProductsCardState extends State<FarmProductsCard> {
 
   @override
   Widget build(BuildContext context) {
-
-// print("farm");
-//     print(widget.farm);
+ 
 
     final products = (widget.farm['products'] as List?)
             ?.whereType<Map<String, dynamic>>()

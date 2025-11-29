@@ -401,7 +401,9 @@ class YearPickerWidget extends StatelessWidget {
       builder: (BuildContext context) {
         return Theme(
           data: Theme.of(context).copyWith(
+            
             colorScheme: ColorScheme.light(
+               primary: GlobalColors.primary, // Selected year background
               onPrimary: Colors.white, // Text color on primary
               onSurface: Theme.of(context).brightness == Brightness.dark
                   ? Colors.white

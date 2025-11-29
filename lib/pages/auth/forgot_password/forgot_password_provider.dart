@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flareline/services/api_service.dart';
 import 'package:flareline_uikit/core/mvvm/base_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -37,14 +38,16 @@ class ForgotPasswordProvider extends BaseViewModel {
       if (response.statusCode == 200) {
         otpSent = true;
         showSuccessToast('OTP sent to ${emailController.text}', context);
-        print('emailController.text');
-        print(emailController.text);
       } else {
         throw Exception(
             'Failed to send OTP: ${response.data['message'] ?? 'Unknown error'}');
       }
+    } on DioException catch (e) {
+      final errorMessage = _extractErrorMessage(e);
+      showErrorToast(errorMessage, context);
+      rethrow;
     } catch (e) {
-      showErrorToast(e.toString(), context);
+      showErrorToast(e.toString().replaceAll('Exception: ', ''), context);
       rethrow;
     } finally {
       isLoading = false;
@@ -79,8 +82,12 @@ class ForgotPasswordProvider extends BaseViewModel {
         throw Exception(
             'Failed to verify OTP: ${response.data['message'] ?? 'Unknown error'}');
       }
+    } on DioException catch (e) {
+      final errorMessage = _extractErrorMessage(e);
+      showErrorToast(errorMessage, context);
+      rethrow;
     } catch (e) {
-      showErrorToast(e.toString(), context);
+      showErrorToast(e.toString().replaceAll('Exception: ', ''), context);
       rethrow;
     } finally {
       isLoading = false;
@@ -124,12 +131,52 @@ class ForgotPasswordProvider extends BaseViewModel {
         throw Exception(
             'Failed to reset password: ${response.data['message'] ?? 'Unknown error'}');
       }
+    } on DioException catch (e) {
+      final errorMessage = _extractErrorMessage(e);
+      showErrorToast(errorMessage, context);
+      rethrow;
     } catch (e) {
-      showErrorToast(e.toString(), context);
+      showErrorToast(e.toString().replaceAll('Exception: ', ''), context);
       rethrow;
     } finally {
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+  /// Extracts a user-friendly error message from DioException
+  String _extractErrorMessage(DioException e) {
+    // Try to get the message from the response data
+    if (e.response?.data != null) {
+      final data = e.response!.data;
+      
+      // Handle your API response format
+      if (data is Map<String, dynamic>) {
+        // First, try to get the main message
+        if (data['message'] != null) {
+          return data['message'].toString();
+        }
+        
+        // Then try to get error details
+        if (data['error'] != null && data['error'] is Map) {
+          final error = data['error'] as Map<String, dynamic>;
+          if (error['details'] != null) {
+            return error['details'].toString();
+          }
+        }
+      }
+    }
+
+    // Fallback to default error messages based on status code
+    switch (e.response?.statusCode) {
+      case 400:
+        return 'Invalid request. Please check your input.';
+      case 404:
+        return 'User not found. Please check your email address.';
+      case 500:
+        return 'Server error. Please try again later.';
+      default:
+        return e.message ?? 'An unexpected error occurred';
     }
   }
 
@@ -140,8 +187,8 @@ class ForgotPasswordProvider extends BaseViewModel {
       style: ToastificationStyle.flat,
       title: Text(
         message,
-        overflow: TextOverflow.visible, // Prevent ellipsis
-        maxLines: 3, // Allow multiple lines
+        overflow: TextOverflow.visible,
+        maxLines: 3,
       ),
       autoCloseDuration: const Duration(seconds: 5),
     );
@@ -154,8 +201,8 @@ class ForgotPasswordProvider extends BaseViewModel {
       style: ToastificationStyle.flat,
       title: Text(
         message,
-        overflow: TextOverflow.visible, // Prevent ellipsis
-        maxLines: 3, // Allow multiple lines
+        overflow: TextOverflow.visible,
+        maxLines: 3,
       ),
       autoCloseDuration: const Duration(seconds: 5),
     );

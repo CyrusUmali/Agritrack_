@@ -59,8 +59,7 @@ class _AssocKpiState extends State<AssocKpi> {
           await sectorService.fetchAssociations(year: selectedYear);
       setState(() {
         _associations = associations;
-
-        // print(associations);
+ 
         _isLoading = false;
       });
     } catch (e) {

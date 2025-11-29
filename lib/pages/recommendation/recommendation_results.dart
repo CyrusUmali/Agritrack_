@@ -252,8 +252,25 @@ class RecommendationResults extends StatelessWidget {
     List<dynamic> alternatives,
     double padding,
   ) {
+    double calculateHeight() {
+      int maxModels = 0;
+      for (var alternative in alternatives) {
+        final models = alternative['supporting_models'] as List;
+        if (models.length > maxModels) {
+          maxModels = models.length;
+        }
+      }
+
+      // Fixed heights: one for single model, another for multiple models
+      if (maxModels <= 1) {
+        return 270.0; // Height for single model
+      } else {
+        return 420.0; // Height for multiple models
+      }
+    }
+
     return SizedBox(
-      height: 280,
+      height: calculateHeight(),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: padding),
@@ -280,16 +297,18 @@ class RecommendationResults extends StatelessWidget {
     List<dynamic> alternatives,
     double padding,
   ) {
+
+   final hasMultipleModels = alternatives.any((alt) => alt['model_used'] != null && alt['model_used'].length > 1);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: padding),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
-          childAspectRatio: 0.8,
+           childAspectRatio: hasMultipleModels ? 0.8 : 1.2,
         ),
         itemCount: alternatives.length,
         itemBuilder: (context, index) {
@@ -300,334 +319,193 @@ class RecommendationResults extends StatelessWidget {
     );
   }
 
+  Widget _buildAlternativeCard(
+    BuildContext context,
+    dynamic recommendation,
+    bool isSmallScreen,
+    int index,
+  ) {
+    final hasWarning = recommendation['warning'] == 'low_confidence';
+    final confidence = recommendation['confidence'] as double;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+  
 
 
-
-Widget _buildAlternativeCard(
-  BuildContext context,
-  dynamic recommendation,
-  bool isSmallScreen,
-  int index,
-) {
-  final hasWarning = recommendation['warning'] == 'low_confidence';
-  final confidence = recommendation['confidence'] as double;
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-
-  return Container(
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(12),
-      color: Theme.of(context).cardTheme.color,
-      border: Border.all(
-        color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(context).cardTheme.color,
+        border: Border.all(
+          color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withOpacity(0.3)
+                : Colors.grey.withOpacity(0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      boxShadow: [
-        BoxShadow(
-          color: isDark
-              ? Colors.black.withOpacity(0.3)
-              : Colors.grey.withOpacity(0.1),
-          blurRadius: 6,
-          offset: const Offset(0, 2),
-        ),
-      ],
-    ),
-    child: Stack(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min, // Added this line
-            children: [
-              // Rank badge and warning in a row to save space
-              Row(
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.blue[900]!.withOpacity(0.3)
-                          : Colors.blue[100],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '#${index + 2}',
-                      style: TextStyle(
-                        color: isDark ? Colors.blue[300] : Colors.blue[700],
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  if (hasWarning) ...[
-                    const SizedBox(width: 8),
-                    _buildCompactWarningBadge(context),
-                  ],
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              // Crop name and confidence - made more compact
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          recommendation['crop'].toString().toUpperCase(),
-                          style: TextStyle(
-                            fontSize: isSmallScreen ? 16 : 18,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.blue[300] : Colors.blue[800],
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getConfidenceColor(confidence, isDark)
-                          .withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '${(confidence * 100).toStringAsFixed(1)}%',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: _getConfidenceColor(confidence, isDark),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              // Compact image with fixed height
-              SizedBox(
-                height: isSmallScreen ? 80 : 100, // Fixed height
-                child: _buildImageContainer(
-                  recommendation,
-                  false, // isPrimary
-                  isSmallScreen,
-                  isDark,
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // Compact model votes with limited height
-              SizedBox(
-                height: 60, // Fixed height for model votes
-                child: _buildCompactModelVotesSection(
-                  context,
-                  recommendation,
-                  isSmallScreen,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Floating detail button
-        Positioned(
-          top: 8,
-          right: 8,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardTheme.color,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isDark ? Colors.grey[600]! : Colors.grey[300]!,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? Colors.black.withOpacity(0.3)
-                      : Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: IconButton(
-              icon: Icon(
-                Icons.info_outline,
-                color: isDark ? Colors.blue[300] : Colors.blue[600],
-                size: 18,
-              ),
-              tooltip: context.translate('View Details'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        ProductProfile(product: recommendation),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-// Add this compact version of the warning badge
-Widget _buildCompactWarningBadge(BuildContext context) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-    decoration: BoxDecoration(
-      color: isDark ? Colors.orange[900]!.withOpacity(0.3) : Colors.orange[50],
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all(
-        color: isDark ? Colors.orange[700]! : Colors.orange[300]!,
-      ),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          Icons.warning_amber_rounded,
-          size: 12,
-          color: isDark ? Colors.orange[300] : Colors.orange[700],
-        ),
-        const SizedBox(width: 2),
-        Text(
-          context.translate('Low'),
-          style: TextStyle(
-            color: isDark ? Colors.orange[300] : Colors.orange[700],
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-// Add this compact version of model votes
-Widget _buildCompactModelVotesSection(
-  BuildContext context,
-  dynamic recommendation,
-  bool isSmallScreen,
-) {
-  final models = recommendation['supporting_models'] as List;
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
+      child: Stack(
         children: [
-          Icon(
-            Icons.how_to_vote,
-            size: 14,
-            color: isDark ? Colors.blue[400] : Colors.blue[600],
-          ),
-          const SizedBox(width: 4),
-          Text(
-            context.translate('Models'),
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.grey[300] : Colors.grey[700],
-              fontSize: 12,
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min, // Added this line
+              children: [
+                // Rank badge and warning in a row to save space
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.blue[900]!.withOpacity(0.3)
+                            : Colors.blue[100],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '#${index + 2}',
+                        style: TextStyle(
+                          color: isDark ? Colors.blue[300] : Colors.blue[700],
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    if (hasWarning) ...[
+                      const SizedBox(width: 8),
+                      _buildCompactWarningBadge(context),
+                    ],
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+ 
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            recommendation['crop'].toString().toUpperCase(),
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 16 : 18,
+                              fontWeight: FontWeight.bold,
+                              color:
+                                  isDark ? Colors.blue[300] : Colors.blue[800],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getConfidenceColor(confidence, isDark)
+                            .withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${(confidence * 100).toStringAsFixed(1)}%',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: _getConfidenceColor(confidence, isDark),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // Compact image with fixed height
+                SizedBox(
+                  height: isSmallScreen ? 80 : 100, // Fixed height
+                  child: _buildImageContainer(
+                    recommendation,
+                    false, // isPrimary
+                    isSmallScreen,
+                    isDark,
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Compact model votes with limited height
+                SizedBox(
+      //    
+      height: 80,
+  
+                  child: _buildModelVotesSection(
+                    context,
+                    recommendation,
+                    isSmallScreen,
+                    false
+                  ),
+                ),
+            
+            
+              ],
             ),
           ),
         ],
       ),
-      const SizedBox(height: 6),
-      
-      // Only show first 2 models to save space
-      ...List.generate(
-        models.length > 2 ? 2 : models.length,
-        (index) {
-          final model = models[index];
-          final probability = model['probability'] as double;
+    );
+  }
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.grey[850] : Colors.grey[50],
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _abbreviateModelName(model['model']),
-                    style: TextStyle(
-                      color: isDark ? Colors.grey[300] : Colors.grey[800],
-                      fontSize: 10,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '${(probability * 100).toStringAsFixed(0)}%',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.grey[300] : Colors.grey[800],
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+// Add this compact version of the warning badge
+  Widget _buildCompactWarningBadge(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color:
+            isDark ? Colors.orange[900]!.withOpacity(0.3) : Colors.orange[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? Colors.orange[700]! : Colors.orange[300]!,
+        ),
       ),
-      
-      // Show "+X more" if there are more models
-      if (models.length > 2)
-        Padding(
-          padding: const EdgeInsets.only(top: 2),
-          child: Text(
-            '+${models.length - 2} more',
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.warning_amber_rounded,
+            size: 12,
+            color: isDark ? Colors.orange[300] : Colors.orange[700],
+          ),
+          const SizedBox(width: 2),
+          Text(
+            context.translate('Low'),
             style: TextStyle(
-              color: isDark ? Colors.grey[500] : Colors.grey[600],
+              color: isDark ? Colors.orange[300] : Colors.orange[700],
               fontSize: 10,
-              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w600,
             ),
           ),
-        ),
-    ],
-  );
-}
+        ],
+      ),
+    );
+  }
 
-// Helper function to abbreviate model names
-String _abbreviateModelName(String modelName) {
-  if (modelName.length <= 12) return modelName;
-  
-  // Common model name abbreviations
-  final abbreviations = {
-    'RandomForest': 'RF',
-    'GradientBoosting': 'GB',
-    'NeuralNetwork': 'NN',
-    'SupportVectorMachine': 'SVM',
-    'DecisionTree': 'DT',
-    'KNeighbors': 'KNN',
-  };
-  
-  return abbreviations[modelName] ?? modelName.substring(0, 10) + '..';
-}
-
-
+ 
+ 
   Widget _buildImageContainer(
     dynamic recommendation,
     bool isPrimary,

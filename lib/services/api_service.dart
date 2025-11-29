@@ -1,6 +1,5 @@
 // lib/core/services/api_service.dart
 import 'dart:async';
-
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -8,6 +7,13 @@ class ApiService {
   final Dio _dio;
   Timer? _wakeUpTimer;
   DateTime? _firstWakeUpTime;
+
+  // Servers to wake up
+  static const List<String> wakeUpServers = [
+    'https://agritrack-server.onrender.com',
+    'https://aicrop.onrender.com',
+  ];
+
   static const Duration _wakeUpInterval = Duration(minutes: 10);
   static const Duration _maxWakeUpDuration = Duration(hours: 3);
 
@@ -28,73 +34,67 @@ class ApiService {
     ));
   }
 
-  // Ping the server to wake it up (retry if needed) and schedule periodic wake-ups
+  // Wake all servers (only once per session) and start periodic wakeups
   Future<void> wakeUpServer() async {
-    // If this is the first wake-up call, start the periodic timer
     if (_firstWakeUpTime == null) {
       _firstWakeUpTime = DateTime.now();
       _startPeriodicWakeUps();
     }
 
-    await _performWakeUpCall();
+    await _wakeAllServers();
   }
 
-  // Perform a single wake-up call with retries
-  Future<void> _performWakeUpCall() async {
-    const maxRetries = 3;
+  // Ping all servers once
+  Future<void> _wakeAllServers() async {
+    for (final server in wakeUpServers) {
+      await _pingServer(server);
+    }
+  }
+
+  // Ping one server with retry logic
+  Future<void> _pingServer(String url) async {
+    const int maxRetries = 3;
     const retryDelay = Duration(seconds: 2);
 
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        await _dio.get('/wakeup').timeout(const Duration(seconds: 5));
-        // print("Server wake-up successful (attempt $attempt)");
-        return; // Success, server is awake
+        await _dio
+            .get('$url/wakeup')
+            .timeout(const Duration(seconds: 5));
+        return;
       } catch (e) {
-        // print("Server wake-up attempt $attempt failed: $e");
         if (attempt < maxRetries) {
           await Future.delayed(retryDelay);
         }
       }
     }
-    // print("Warning: Server wake-up failed after $maxRetries attempts");
   }
 
-  // Start periodic wake-up calls every 10 minutes for 3 hours
   void _startPeriodicWakeUps() {
-    // print(
-    //     "Starting periodic server wake-up calls every 10 minutes for 3 hours");
+    _wakeAllServers();
 
-    // Immediate first call (already done in wakeUpServer, but we'll do it here too for safety)
-    _performWakeUpCall();
-
-    // Set up periodic timer
     _wakeUpTimer = Timer.periodic(_wakeUpInterval, (timer) {
-      // Check if we've exceeded the 3-hour limit
       if (_firstWakeUpTime != null &&
-          DateTime.now().difference(_firstWakeUpTime!) >= _maxWakeUpDuration) {
+          DateTime.now().difference(_firstWakeUpTime!) >=
+              _maxWakeUpDuration) {
         _stopPeriodicWakeUps();
-        // print("Stopped periodic server wake-up calls after 3 hours");
         return;
       }
 
-      _performWakeUpCall();
+      _wakeAllServers();
     });
   }
 
-  // Stop the periodic wake-up calls
   void _stopPeriodicWakeUps() {
     _wakeUpTimer?.cancel();
     _wakeUpTimer = null;
     _firstWakeUpTime = null;
   }
 
-  // Public method to manually stop wake-up calls if needed
   void stopWakeUpCalls() {
     _stopPeriodicWakeUps();
-    // print("Manual stop: Server wake-up calls cancelled");
   }
 
-  // Clean up when the service is no longer needed
   void dispose() {
     _stopPeriodicWakeUps();
     _dio.close();

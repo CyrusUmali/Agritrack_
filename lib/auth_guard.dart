@@ -8,21 +8,9 @@ class AuthGuard {
     '/signIn',
     '/signUp',
     '/resetPwd',
-    '/calendar',
-    '/invoice',
-    '/profile',
-    '/formElements',
-    '/formLayout',
-    '/tables',
-    '/contacts',
-    '/advancetable',
-    '/settings',
-    '/alerts',
-    '/buttons',
-    '/toast',
-    '/modal',
-    '/basicChart',
-    '/forgotPwd',
+        '/invoice',
+  
+    '/forgotPwd', 
     // '/assocs'
   ];
 

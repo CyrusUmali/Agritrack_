@@ -31,6 +31,9 @@ class AnnouncementsPage extends LayoutWidget {
   final ValueNotifier<bool> isSendingNotifier = ValueNotifier(false);
   final ValueNotifier<bool> isDeletingNotifier = ValueNotifier(false);
 
+
+ @override
+  EdgeInsetsGeometry? get customPadding => const EdgeInsets.all(9);
   @override
   String breakTabTitle(BuildContext context) {
     return 'Announcements';
@@ -327,11 +330,11 @@ Future<void> _loadAnnouncements(BuildContext context, List<Farmer> farmers) asyn
       announcementsNotifier.value = announcements;
     } else {
       announcementsNotifier.value = [];
-      print('Failed to load announcements: ${result['message']}');
+     
     }
   } catch (e) {
     announcementsNotifier.value = [];
-    print('Error loading announcements: $e');
+ 
     ToastHelper.showErrorToast(
       'Error loading announcements',
       context,
@@ -341,33 +344,31 @@ Future<void> _loadAnnouncements(BuildContext context, List<Farmer> farmers) asyn
   }
 }
 
+
+
+
+
+ // Update the _createAnnouncementFromData function to handle both field names
 Announcement _createAnnouncementFromData(Map<String, dynamic> data, List<Farmer> farmers) {
+  // Handle both 'recipient' and 'recipient_type' field names
+  final recipientType = data['recipient_type'] ?? data['recipient'] ?? 'everyone';
+  
   return Announcement(
     id: data['id']?.toString() ?? '',
     title: data['title'] ?? '',
     message: data['message'] ?? '',
-    recipient: data['recipient_type'] ?? 'everyone',
-    recipientName: _getRecipientName(data, farmers),
+    recipient: recipientType, // Use the resolved recipient type
+    recipientName: _getRecipientName(data, farmers, recipientType),
     date: _parseDateTime(data['created_at']),
     status: data['status'] ?? 'sent',
     farmerId: data['farmer_id']?.toString(),
-    readCount: data['read_count'] ?? 0,
-    totalRecipients: data['total_recipients'] ?? 0,
+    readCount: data['read_count'] is String ? int.tryParse(data['read_count']) ?? 0 : data['read_count'] ?? 0,
+    totalRecipients: data['total_recipients'] is String ? int.tryParse(data['total_recipients']) ?? 0 : data['total_recipients'] ?? 0,
   );
 }
 
-DateTime _parseDateTime(dynamic dateString) {
-  try {
-    if (dateString == null) return DateTime.now();
-    return DateTime.parse(dateString.toString());
-  } catch (e) {
-    return DateTime.now();
-  }
-}
-
-String _getRecipientName(Map<String, dynamic> data, List<Farmer> farmers) {
-  final recipientType = data['recipient_type'] ?? 'everyone';
-  
+// Update the _getRecipientName function to accept recipientType parameter
+String _getRecipientName(Map<String, dynamic> data, List<Farmer> farmers, String recipientType) {
   if (recipientType == 'everyone') {
     return 'All Farmers';
   } else if (recipientType == 'specific') {
@@ -379,7 +380,8 @@ String _getRecipientName(Map<String, dynamic> data, List<Farmer> farmers) {
         );
         return farmer.name;
       } catch (e) {
-        return 'Farmer ID: $farmerId';
+        // Fallback to farmer_name from API if available
+        return data['farmer_name'] ?? 'Farmer ID: $farmerId';
       }
     }
   }
@@ -388,6 +390,16 @@ String _getRecipientName(Map<String, dynamic> data, List<Farmer> farmers) {
 }
 
 
+DateTime _parseDateTime(dynamic dateString) {
+  try {
+    if (dateString == null) return DateTime.now();
+    return DateTime.parse(dateString.toString());
+  } catch (e) {
+    return DateTime.now();
+  }
+}
+
+ 
 
 Future<void> _sendAnnouncement(BuildContext context, List<Farmer> farmers) async {
   if (titleController.text.trim().isEmpty) {
@@ -417,12 +429,7 @@ Future<void> _sendAnnouncement(BuildContext context, List<Farmer> farmers) async
   isSendingNotifier.value = true;
 
   try {
-    print('Sending announcement...');
-    print('Title: ${titleController.text.trim()}');
-    print('Message: ${messageController.text.trim()}');
-    print('Recipient Type: ${recipientTypeNotifier.value}');
-    print('Farmer ID: ${selectedFarmerNotifier.value}');
-
+  
     final sectorService = RepositoryProvider.of<SectorService>(context);
     
     final result = await sectorService.sendAnnouncement(
@@ -432,10 +439,10 @@ Future<void> _sendAnnouncement(BuildContext context, List<Farmer> farmers) async
       farmerId: recipientTypeNotifier.value == 'specific' ? selectedFarmerNotifier.value : null,
     );
 
-    print('Send announcement result: $result');
+ 
 
     if (result['success'] == true) {
-      print('Announcement sent successfully, reloading...');
+   
       // Reload announcements to get the latest from server
       await _loadAnnouncements(context, farmers);
 
@@ -452,15 +459,14 @@ Future<void> _sendAnnouncement(BuildContext context, List<Farmer> farmers) async
         context,
       );
     } else {
-      print('Send announcement failed: ${result['message']}');
+  
       ToastHelper.showErrorToast(
         'Failed to send announcement: ${result['message']}',
         context,
       );
     }
   } catch (e, stackTrace) {
-    print('Exception caught in _sendAnnouncement: $e');
-    print('Stack trace: $stackTrace');
+ 
     ToastHelper.showErrorToast(
       'Failed to send announcement: $e',
       context,
@@ -582,6 +588,10 @@ Future<void> _performDelete(BuildContext context, String announcementId) async {
   }
 }
 
+
+
+
+
 class Announcement {
   final String id;
   final String title;
@@ -589,7 +599,7 @@ class Announcement {
   final String recipient;
   final String recipientName;
   final DateTime date;
-  final String status;
+  final String status; // This can be 'read' or 'unread'
   final String? farmerId;
   final int readCount;
   final int totalRecipients;
@@ -601,9 +611,15 @@ class Announcement {
     required this.recipient,
     required this.recipientName,
     required this.date,
-    required this.status,
+    required this.status, // 'read' or 'unread'
     this.farmerId,
-    this.readCount = 0,
-    this.totalRecipients = 0,
+    required this.readCount,
+    required this.totalRecipients,
   });
+
+  // Helper method to check if notification is read
+  bool get isRead => status.toLowerCase() == 'read';
+
+   // Getter for recipient type that handles both field names
+  String get recipientType => recipient;
 }

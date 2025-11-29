@@ -335,7 +335,11 @@ class _LinkUserModalContentState extends State<_LinkUserModalContent> {
                   vertical: screenWidth < 600 ? 10.0 : 16.0,
                   horizontal: 10.0,
                 ),
-                errorStyle: const TextStyle(fontSize: 12),
+                   errorStyle: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w100,
+                    color: Colors.redAccent,
+                  ),
                 errorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: Colors.red.shade400,
@@ -377,7 +381,11 @@ class _LinkUserModalContentState extends State<_LinkUserModalContent> {
                   vertical: screenWidth < 600 ? 10.0 : 16.0,
                   horizontal: 10.0,
                 ),
-                errorStyle: const TextStyle(fontSize: 12),
+                   errorStyle: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w100,
+                    color: Colors.redAccent,
+                  ),
                 errorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: Colors.red.shade400,
@@ -438,7 +446,11 @@ class _LinkUserModalContentState extends State<_LinkUserModalContent> {
                     vertical: screenWidth < 600 ? 10.0 : 16.0,
                     horizontal: 10.0,
                   ),
-                  errorStyle: const TextStyle(fontSize: 12),
+                     errorStyle: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w100,
+                    color: Colors.redAccent,
+                  ),
                   errorBorder: OutlineInputBorder(
                     borderSide: BorderSide(
                       color: Colors.red.shade400,
@@ -519,7 +531,11 @@ class _LinkUserModalContentState extends State<_LinkUserModalContent> {
                         suffixIcon: const Icon(Icons.arrow_drop_down),
                         contentPadding: const EdgeInsets.symmetric(
                             vertical: 12, horizontal: 12),
-                        errorStyle: const TextStyle(fontSize: 12),
+                           errorStyle: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w100,
+                    color: Colors.redAccent,
+                  ),
                         errorBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Colors.red.shade400,

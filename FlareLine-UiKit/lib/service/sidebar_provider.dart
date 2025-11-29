@@ -11,7 +11,7 @@ class SidebarProvider with ChangeNotifier {
     if (!_isPinned) {
       _isCollapsed = !_isCollapsed;
       if (kDebugMode) {
-        // print('Sidebar collapsed: $_isCollapsed');
+    
       }
       notifyListeners();
     }
@@ -27,10 +27,7 @@ class SidebarProvider with ChangeNotifier {
       _isCollapsed = true;
     }
 
-    if (kDebugMode) {
-      // print('Sidebar pinned: $_isPinned');
-      // print('Sidebar collapsed: $_isCollapsed');
-    }
+    
     notifyListeners();
   }
 
@@ -38,7 +35,7 @@ class SidebarProvider with ChangeNotifier {
     if (!_isPinned) {
       _isCollapsed = value;
       if (kDebugMode) {
-        // print('Sidebar set collapsed: $_isCollapsed');
+    
       }
       notifyListeners();
     }

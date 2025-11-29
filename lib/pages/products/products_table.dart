@@ -138,21 +138,18 @@ if (screenHeight < 400) {
    
  double height;
  
-
-print('heigt');
-print(screenHeight);
-
+ 
 if (screenHeight < 400) {
   height = screenHeight * 0.6;  
-  print('ths');
+ 
 } else if (screenHeight < 600) {
-  height = screenHeight * 0.50;    print('thss 600');
+  height = screenHeight * 0.50;    
 } else if (screenHeight < 800) {
-  height = screenHeight * 0.70;    print('ths 800');
+  height = screenHeight * 0.70;    
 } else if (screenHeight < 1000) {
-  height = screenHeight * 0.73;    print('ths 1000');
+  height = screenHeight * 0.73;    
 }  else {
-  height = screenHeight * 0.3;    print('ths 3');
+  height = screenHeight * 0.3;    
 }
 
 

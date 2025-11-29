@@ -48,7 +48,7 @@ class MapLayersHelper {
 
     // print(zoom);
 
-    // print('zoom');
+    // print('zoom'); 
     if (zoom < 13) return IconDetailLevel.minimal;
     if (zoom < 15) return IconDetailLevel.detailed;
     return IconDetailLevel.detailed;
@@ -67,6 +67,138 @@ class MapLayersHelper {
           .toList(),
     );
   }
+
+
+
+
+ /// ADVANCED: Cached version with polygon simplification at low zoom
+  static PolygonLayer createOptimizedBarangayLayer(
+    List<PolygonData> barangays, {
+    required double currentZoom,
+  }) {
+    // Don't render at very low zoom
+    if (currentZoom < 12) {
+      return PolygonLayer(polygons: const []);
+    }
+
+    // Simplify polygons at lower zoom levels
+    final shouldSimplify = currentZoom < 14;
+    
+    return PolygonLayer(
+      polygons: barangays.map((barangay) {
+        final vertices = shouldSimplify 
+            ? _simplifyPolygon(barangay.vertices, tolerance: 0.001)
+            : barangay.vertices;
+
+        return Polygon(
+          points: vertices,
+          color: const Color.fromARGB(255, 255, 255, 0).withOpacity(0.1),
+          borderStrokeWidth: currentZoom < 13 ? 0.5 : 1.0,
+          borderColor: const Color.fromARGB(255, 223, 212, 1),
+          isFilled: true,
+          // label: currentZoom >= 14 ? barangay.name : null,
+        );
+      }).toList(),
+    );
+  }
+
+
+
+ /// ADVANCED: Cached version for lakes with simplification
+  static PolygonLayer createOptimizedLakeLayer(
+    List<PolygonData> lakes, {
+    required double currentZoom,
+  }) {
+    if (currentZoom < 12) {
+      return PolygonLayer(polygons: const []);
+    }
+
+    final shouldSimplify = currentZoom < 14;
+    
+    return PolygonLayer(
+      polygons: lakes.map((lake) {
+        final vertices = shouldSimplify 
+            ? _simplifyPolygon(lake.vertices, tolerance: 0.001)
+            : lake.vertices;
+
+        return Polygon(
+          points: vertices,
+          color: const Color.fromARGB(255, 59, 107, 145).withOpacity(0.15),
+          borderStrokeWidth: currentZoom < 13 ? 0.5 : 1.0,
+          borderColor: const Color.fromARGB(255, 59, 107, 145),
+          isFilled: true,
+          // label: currentZoom >= 14 ? lake.name : null,
+        );
+      }).toList(),
+    );
+  }
+
+
+static List<LatLng> _simplifyPolygon(List<LatLng> points, {required double tolerance}) {
+    if (points.length <= 3) return points;
+
+    // Find the point with maximum distance from line segment
+    double maxDistance = 0;
+    int maxIndex = 0;
+    final end = points.length - 1;
+
+    for (int i = 1; i < end; i++) {
+      final distance = _perpendicularDistance(
+        points[i],
+        points[0],
+        points[end],
+      );
+      if (distance > maxDistance) {
+        maxDistance = distance;
+        maxIndex = i;
+      }
+    }
+
+    // If max distance is greater than tolerance, recursively simplify
+    if (maxDistance > tolerance) {
+      final left = _simplifyPolygon(
+        points.sublist(0, maxIndex + 1),
+        tolerance: tolerance,
+      );
+      final right = _simplifyPolygon(
+        points.sublist(maxIndex),
+        tolerance: tolerance,
+      );
+
+      return [...left.sublist(0, left.length - 1), ...right];
+    } else {
+      return [points[0], points[end]];
+    }
+  }
+
+  /// Calculate perpendicular distance from point to line
+  static double _perpendicularDistance(LatLng point, LatLng lineStart, LatLng lineEnd) {
+    final dx = lineEnd.longitude - lineStart.longitude;
+    final dy = lineEnd.latitude - lineStart.latitude;
+
+    // Normalize
+    final mag = (dx * dx + dy * dy);
+    if (mag == 0) return 0;
+
+    final u = ((point.longitude - lineStart.longitude) * dx +
+            (point.latitude - lineStart.latitude) * dy) /
+        mag;
+
+    final closestPoint = LatLng(
+      lineStart.latitude + u * dy,
+      lineStart.longitude + u * dx,
+    );
+
+    return _distance(point, closestPoint);
+  }
+
+  /// Simple distance calculation (not geodesic, but fast)
+  static double _distance(LatLng p1, LatLng p2) {
+    final dx = p1.longitude - p2.longitude;
+    final dy = p1.latitude - p2.latitude;
+    return (dx * dx + dy * dy);
+  }
+
 
   static PolygonLayer createLakeLayer(List<PolygonData> lakes) {
     return PolygonLayer(
@@ -118,198 +250,94 @@ class MapLayersHelper {
     );
   }
 
-  /// Creates a zoom-responsive layer for barangay centers
-  static MarkerLayer createBarangayCenterFallbackLayer(
-    List<PolygonData> barangays,
-    Function(PolygonData) onTap, {
-    Color circleColor = Colors.blue,
-    Color iconColor = Colors.white,
-    double size = 36.0,
-    List<String>? filteredBarangays,
-    required double currentZoom, // NEW: Required zoom level parameter
-  }) {
-    final iconSize = getIconSizeForZoom(currentZoom);
-    final opacity = getIconOpacityForZoom(currentZoom);
-    final showLabels = shouldShowLabelsForZoom(currentZoom);
-    final detailLevel = getIconDetailForZoom(currentZoom);
+static MarkerLayer createBarangayCenterFallbackLayer(
+  List<PolygonData> barangays,
+  Function(PolygonData) onTap, {
+  Color circleColor = Colors.blue,
+  Color iconColor = Colors.white,
+  double size = 36.0,
+  List<String>? filteredBarangays,
+  required double currentZoom,
+}) {
+  final iconSize = getIconSizeForZoom(currentZoom);
+  final opacity = getIconOpacityForZoom(currentZoom);
+  final showLabels = shouldShowLabelsForZoom(currentZoom);
+  final detailLevel = getIconDetailForZoom(currentZoom);
 
-    return MarkerLayer(
-      markers: barangays.map((barangay) {
-        final isFiltered = filteredBarangays != null &&
-            filteredBarangays.contains(barangay.name);
-        
-        return Marker(
-          point: MapLayersHelper.calculateCenter(barangay.vertices),
-          width: iconSize + (showLabels ? 60 : 0),
-          height: iconSize + (showLabels ? 30 : 0),
+  return MarkerLayer(
+    markers: barangays.map((barangay) {
+      final isFiltered = filteredBarangays != null &&
+          filteredBarangays.contains(barangay.name);
+      
+      return Marker(
+        point: MapLayersHelper.calculateCenter(barangay.vertices),
+        width: iconSize + (showLabels ? 60 : 0),
+        height: iconSize + (showLabels ? 30 : 0),
+        child: RepaintBoundary( // ADDED: Prevents unnecessary repaints
           child: GestureDetector(
             onTap: () => onTap(barangay),
-            child: Opacity(
+            child: _CachedBarangayMarker( // ADDED: Extracted to separate widget
+              iconSize: iconSize,
               opacity: opacity,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: iconSize,
-                    height: iconSize,
-                    decoration: BoxDecoration(
-                      color: isFiltered ? Colors.green : circleColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: detailLevel == IconDetailLevel.detailed ? 2.5 : 1.5,
-                      ),
-                      boxShadow: detailLevel != IconDetailLevel.minimal
-                          ? [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
-                          : [],
-                    ),
-                    child: Center(
-                      child: detailLevel == IconDetailLevel.detailed
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.account_balance,
-                                  color: isFiltered ? Colors.white : iconColor,
-                                  size: iconSize * 0.45,
-                                ),
-                                Text(
-                                  'Brgy',
-                                  style: TextStyle(
-                                    color: isFiltered ? Colors.white : iconColor,
-                                    fontSize: iconSize * 0.18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Icon(
-                              Icons.account_balance,
-                              color: isFiltered ? Colors.white : iconColor,
-                              size: iconSize * 0.6,
-                            ),
-                    ),
-                  ),
-                  if (showLabels)
-                    Container(
-                      margin: const EdgeInsets.only(top: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        barangay.name ?? 'Unknown',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: currentZoom >= 16 ? 11 : 9,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                ],
-              ),
+              showLabels: showLabels,
+              detailLevel: detailLevel,
+              barangay: barangay,
+              isFiltered: isFiltered,
+              circleColor: circleColor,
+              iconColor: iconColor,
+              currentZoom: currentZoom,
             ),
           ),
-        );
-      }).toList(),
-    );
-  }
+        ),
+      );
+    }).toList(),
+  );
+}
 
-  /// Creates a zoom-responsive layer for lake centers
-  static MarkerLayer createLakeCenterFallbackLayer(
-    List<PolygonData> lakes,
-    Function(PolygonData) onTap, {
-    Color circleColor = Colors.blue,
-    Color iconColor = Colors.white,
-    double size = 36.0,
-    List<String>? filteredLakes,
-    required double currentZoom, // NEW: Required zoom level parameter
-  }) {
-    final iconSize = getIconSizeForZoom(currentZoom);
-    final opacity = getIconOpacityForZoom(currentZoom);
-    final showLabels = shouldShowLabelsForZoom(currentZoom);
-    final detailLevel = getIconDetailForZoom(currentZoom);
 
-    return MarkerLayer(
-      markers: lakes.map((lake) {
-        final isFiltered =
-            filteredLakes != null && filteredLakes.contains(lake.name);
-        
-        return Marker(
-          point: MapLayersHelper.calculateCenter(lake.vertices),
-          width: iconSize + (showLabels ? 60 : 0),
-          height: iconSize + (showLabels ? 30 : 0),
+/// Similarly optimized version for lake markers
+static MarkerLayer createLakeCenterFallbackLayer(
+  List<PolygonData> lakes,
+  Function(PolygonData) onTap, {
+  Color circleColor = Colors.blue,
+  Color iconColor = Colors.white,
+  double size = 36.0,
+  List<String>? filteredLakes,
+  required double currentZoom,
+}) {
+  final iconSize = getIconSizeForZoom(currentZoom);
+  final opacity = getIconOpacityForZoom(currentZoom);
+  final showLabels = shouldShowLabelsForZoom(currentZoom);
+  final detailLevel = getIconDetailForZoom(currentZoom);
+
+  return MarkerLayer(
+    markers: lakes.map((lake) {
+      final isFiltered = filteredLakes != null && filteredLakes.contains(lake.name);
+      
+      return Marker(
+        point: MapLayersHelper.calculateCenter(lake.vertices),
+        width: iconSize + (showLabels ? 60 : 0),
+        height: iconSize + (showLabels ? 30 : 0),
+        child: RepaintBoundary(
           child: GestureDetector(
             onTap: () => onTap(lake),
-            child: Opacity(
+            child: _CachedLakeMarker(
+              iconSize: iconSize,
               opacity: opacity,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: iconSize,
-                    height: iconSize,
-                    decoration: BoxDecoration(
-                      color: isFiltered ? Colors.green : circleColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: detailLevel == IconDetailLevel.detailed ? 2.5 : 1.5,
-                      ),
-                      boxShadow: detailLevel != IconDetailLevel.minimal
-                          ? [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
-                          : [],
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.water_drop_outlined,
-                        color: isFiltered ? Colors.white : iconColor,
-                        size: iconSize * 0.6,
-                      ),
-                    ),
-                  ),
-                  if (showLabels)
-                    Container(
-                      margin: const EdgeInsets.only(top: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        lake.name ?? 'Unknown',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: currentZoom >= 16 ? 11 : 9,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                ],
-              ),
+              showLabels: showLabels,
+              detailLevel: detailLevel,
+              lake: lake,
+              isFiltered: isFiltered,
+              circleColor: circleColor,
+              iconColor: iconColor,
+              currentZoom: currentZoom,
             ),
           ),
-        );
-      }).toList(),
-    );
-  }
+        ),
+      );
+    }).toList(),
+  );
+}
 
   static PolylineLayer createPolylineLayer(List<List<LatLng>> polygons,
       List<LatLng> currentPolygon, LatLng? previewPoint, bool isDrawing) {
@@ -556,4 +584,279 @@ enum IconDetailLevel {
   minimal,  // Just icon, small size
   medium,   // Icon with slight detail
   detailed, // Full icon with labels and effects
+}
+
+
+
+
+
+/// Separate stateless widget for cached marker rendering
+class _CachedBarangayMarker extends StatelessWidget {
+
+  final double iconSize;
+  final double opacity;
+  final bool showLabels;
+  final IconDetailLevel detailLevel;
+  final PolygonData barangay;
+  final bool isFiltered;
+  final Color circleColor;
+  final Color iconColor;
+  final double currentZoom;
+
+  const _CachedBarangayMarker({
+    required this.iconSize,
+    required this.opacity,
+    required this.showLabels,
+    required this.detailLevel,
+    required this.barangay,
+    required this.isFiltered,
+    required this.circleColor,
+    required this.iconColor,
+    required this.currentZoom,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: opacity,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: iconSize,
+            height: iconSize,
+            decoration: BoxDecoration(
+              color: isFiltered ? Colors.green : circleColor,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white,
+                width: detailLevel == IconDetailLevel.detailed ? 2.5 : 1.5,
+              ),
+              boxShadow: detailLevel != IconDetailLevel.minimal
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null, // CHANGED: null instead of empty list
+            ),
+            child: Center(
+              child: detailLevel == IconDetailLevel.detailed
+                  ? _buildDetailedIcon()
+                  : _buildSimpleIcon(),
+            ),
+          ),
+          if (showLabels) _buildLabel(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailedIcon() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.account_balance,
+          color: isFiltered ? Colors.white : iconColor,
+          size: iconSize * 0.45,
+        ),
+        Text(
+          'Brgy',
+          style: TextStyle(
+            color: isFiltered ? Colors.white : iconColor,
+            fontSize: iconSize * 0.18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSimpleIcon() {
+    return Icon(
+      Icons.account_balance,
+      color: isFiltered ? Colors.white : iconColor,
+      size: iconSize * 0.6,
+    );
+  }
+
+  Widget _buildLabel() {
+    return Container(
+      margin: const EdgeInsets.only(top: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        barangay.name ?? 'Unknown',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: currentZoom >= 16 ? 11 : 9,
+          fontWeight: FontWeight.w600,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    
+    return other is _CachedBarangayMarker &&
+        other.iconSize == iconSize &&
+        other.opacity == opacity &&
+        other.showLabels == showLabels &&
+        other.detailLevel == detailLevel &&
+        other.barangay == barangay &&
+        other.isFiltered == isFiltered &&
+        other.circleColor == circleColor &&
+        other.iconColor == iconColor;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      iconSize,
+      opacity,
+      showLabels,
+      detailLevel,
+      barangay,
+      isFiltered,
+      circleColor,
+      iconColor,
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+class _CachedLakeMarker extends StatelessWidget {
+  final double iconSize;
+  final double opacity;
+  final bool showLabels;
+  final IconDetailLevel detailLevel;
+  final PolygonData lake;
+  final bool isFiltered;
+  final Color circleColor;
+  final Color iconColor;
+  final double currentZoom;
+
+  const _CachedLakeMarker({
+    required this.iconSize,
+    required this.opacity,
+    required this.showLabels,
+    required this.detailLevel,
+    required this.lake,
+    required this.isFiltered,
+    required this.circleColor,
+    required this.iconColor,
+    required this.currentZoom,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: opacity,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: iconSize,
+            height: iconSize,
+            decoration: BoxDecoration(
+              color: isFiltered ? Colors.green : circleColor,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white,
+                width: detailLevel == IconDetailLevel.detailed ? 2.5 : 1.5,
+              ),
+              boxShadow: detailLevel != IconDetailLevel.minimal
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Center(
+              child: Icon(
+                Icons.water_drop_outlined,
+                color: isFiltered ? Colors.white : iconColor,
+                size: iconSize * 0.6,
+              ),
+            ),
+          ),
+          if (showLabels) _buildLabel(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLabel() {
+    return Container(
+      margin: const EdgeInsets.only(top: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        lake.name ?? 'Unknown',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: currentZoom >= 16 ? 11 : 9,
+          fontWeight: FontWeight.w600,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    
+    return other is _CachedLakeMarker &&
+        other.iconSize == iconSize &&
+        other.opacity == opacity &&
+        other.showLabels == showLabels &&
+        other.detailLevel == detailLevel &&
+        other.lake == lake &&
+        other.isFiltered == isFiltered &&
+        other.circleColor == circleColor &&
+        other.iconColor == iconColor;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      iconSize,
+      opacity,
+      showLabels,
+      detailLevel,
+      lake,
+      isFiltered,
+      circleColor,
+      iconColor,
+    );
+  }
 }

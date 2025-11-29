@@ -72,23 +72,22 @@ class _FarmsTableWidgetState extends State<FarmsTableWidget> {
   Widget _farmsWeb(BuildContext context) {
 
 
+final userProvider = Provider.of<UserProvider>(context, listen: false);
+final _isFarmer = userProvider.isFarmer;
 
-  final screenHeight = MediaQuery.of(context).size.height;
-   
- double height;
- 
-
+final screenHeight = MediaQuery.of(context).size.height;
+double height; 
 if (screenHeight < 400) {
-  height = screenHeight * 0.6;  
+  height = screenHeight * (_isFarmer ? 0.7 : 0.6); // 10% more for farmers
 } else if (screenHeight < 600) {
-  height = screenHeight * 0.50;  
+  height = screenHeight * (_isFarmer ? 0.65 : 0.50);
 } else if (screenHeight < 800) {
-  height = screenHeight * 0.56;  
+  height = screenHeight * (_isFarmer ? 0.72 : 0.56);
 } else if (screenHeight < 1500) {
-  height = screenHeight * 0.63;  
-}  else {
-  print(screenHeight);
-  height = screenHeight * 0.3;  
+  height = screenHeight * (_isFarmer ? 0.79 : 0.63);
+} else {
+
+  height = screenHeight * (_isFarmer ? 0.33 : 0.3);
 }
 
 
@@ -221,7 +220,7 @@ if (screenHeight < 400) {
 
   Widget _buildSearchBarMobile(BuildContext context) {
     return SizedBox(
-      height: 48,
+      height: 50,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Wrap(

@@ -19,9 +19,7 @@ class YieldRepository extends BaseRepository {
 
       final yieldsData = response.data['yields'] as List;
 
-      print('lake:');
-      print('lake: $lake');
-      print('yieldsData: $yieldsData');
+    
       return yieldsData.map((json) => Yield.fromJson(json)).toList();
     } catch (e) {
       handleError(e,

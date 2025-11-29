@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flareline_uikit/components/card/common_card.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:provider/provider.dart';
+import 'package:syncfusion_flutter_charts/charts.dart'; 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flareline/pages/widget/network_error.dart';
 import 'package:flareline/pages/sectors/sector_service.dart';
@@ -82,10 +81,77 @@ class _SectorBarChartState extends State<SectorBarChart> {
       future: RepositoryProvider.of<SectorService>(context)
           .fetchSectors(year: selectedYear),
       builder: (context, snapshot) {
+        // Loading state wrapped in CommonCard
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return CommonCard(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: useVerticalHeader
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Align(
+                                alignment: Alignment.center,
+                                child: Text(
+                                  'Sector Performance',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Align(
+                                alignment: Alignment.center,
+                                child: _buildYearSelector(context),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Sector Performance',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              _buildYearSelector(context),
+                            ],
+                          ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    height: 300,
+                    child: const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text(
+                            'Loading sector data...',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
         }
 
+        // Error state
         if (snapshot.hasError) {
           return CommonCard(
             child: Padding(
@@ -103,6 +169,7 @@ class _SectorBarChartState extends State<SectorBarChart> {
           );
         }
 
+        // Success state
         final sectors = snapshot.data ?? [];
 
         return CommonCard(

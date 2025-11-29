@@ -69,8 +69,7 @@ class SupportMessagesPage extends LayoutWidget {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final userId = userProvider.user?.id;
 
-  print('userId');
-    print(userId);
+  
     
     if (userId == null) {
       throw Exception('User ID not found');
@@ -81,13 +80,11 @@ class SupportMessagesPage extends LayoutWidget {
     // Fetch inbox messages (received)
     final inboxResponse = await sectorService.fetchInbox(userId: userId);
 
-    print('inboxResponse');
-    print(inboxResponse);
-    
+ 
     if (inboxResponse['success'] == true) {
       // Use 'data' instead of 'tickets' - the backend now returns 'data'
       final tickets = inboxResponse['tickets'] as List<dynamic>? ?? [];
-      print('Found ${tickets.length} tickets in inbox');
+ 
       
       final receivedMessages = tickets.map((ticket) {
         return Message(
@@ -106,9 +103,9 @@ class SupportMessagesPage extends LayoutWidget {
       // REMOVE THE FILTERING - show all messages from inbox endpoint
       // The backend should already be filtering appropriately
       receivedMessagesNotifier.value = receivedMessages;
-      print('Parsed ${receivedMessages.length} received messages');
+ 
     } else {
-      print('Inbox response was not successful');
+    
     }
 
     // Fetch sent messages
@@ -117,7 +114,7 @@ class SupportMessagesPage extends LayoutWidget {
     if (sentResponse['success'] == true) {
       // Use 'data' instead of 'tickets' for sent messages too
       final sentTickets = sentResponse['data'] as List<dynamic>? ?? [];
-      print('Found ${sentTickets.length} sent tickets');
+   
       
       final sentMessages = sentTickets.map((ticket) {
         return Message(
@@ -134,13 +131,13 @@ class SupportMessagesPage extends LayoutWidget {
       }).toList();
       
       sentMessagesNotifier.value = sentMessages;
-      print('Parsed ${sentMessages.length} sent messages');
+    
     } else {
-      print('Sent messages response was not successful');
+     
     }
 
   } catch (e) {
-    print('Error loading messages: $e');
+   
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -208,7 +205,7 @@ Future<void> _sendReply(BuildContext context, Message originalMessage) async {
       throw Exception(response['message'] ?? 'Failed to send reply');
     }
   } catch (e) {
-    print('Error sending reply: $e');
+ 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Failed to send reply: $e'),
@@ -586,8 +583,7 @@ Future<void> _sendReply(BuildContext context, Message originalMessage) async {
           // Check if this is an inbox message (received message)
           final isInboxMessage = receivedMessagesNotifier.value.any((m) => m.id == message.id);
 
-          print
-('isInboxMessage');
+        
           return Column(
             children: [
               // Message Header

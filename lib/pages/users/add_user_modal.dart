@@ -172,8 +172,12 @@ class _AddUserModalContentState extends State<_AddUserModalContent> {
                 contentPadding: EdgeInsets.symmetric(
                   vertical: screenWidth < 600 ? 10.0 : 16.0,
                   horizontal: 10.0,
-                ),
-                errorStyle: const TextStyle(fontSize: 12),
+                ), 
+                   errorStyle: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w100,
+                    color: Colors.redAccent,
+                  ),
                 errorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: Colors.red.shade400,
@@ -214,7 +218,11 @@ class _AddUserModalContentState extends State<_AddUserModalContent> {
                   vertical: screenWidth < 600 ? 10.0 : 16.0,
                   horizontal: 10.0,
                 ),
-                errorStyle: const TextStyle(fontSize: 12),
+                   errorStyle: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w100,
+                    color: Colors.redAccent,
+                  ),
                 errorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: Colors.red.shade400,
@@ -261,7 +269,11 @@ class _AddUserModalContentState extends State<_AddUserModalContent> {
                   vertical: screenWidth < 600 ? 10.0 : 16.0,
                   horizontal: 10.0,
                 ),
-                errorStyle: const TextStyle(fontSize: 12),
+                   errorStyle: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w100,
+                    color: Colors.redAccent,
+                  ),
                 errorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: Colors.red.shade400,

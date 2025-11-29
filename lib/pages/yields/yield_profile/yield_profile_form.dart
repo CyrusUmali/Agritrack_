@@ -32,6 +32,8 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
   late TextEditingController _volumeController;
   late TextEditingController _valueController;
   late TextEditingController _notesController;
+    bool _toastShown = false; // Add this
+
   DateTime? _selectedHarvestDate;
 
   bool _isSaving = false;
@@ -46,6 +48,7 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
   void initState() {
     
     super.initState();
+     _toastShown = false; // Initialize
     _imageHandler.existingImages = widget.yieldData.images
             ?.where((img) => img != null)
             .cast<String>()
@@ -183,6 +186,7 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
         // print('BlocListener triggered with state: ${state.runtimeType}');
 
         if (state is YieldUpdated) {
+           _toastShown = true;
           // print('YieldUpdated received, resetting loading states');
           _resetLoadingStates();
           _showToast('Yield updated successfully', isError: false);
@@ -201,6 +205,14 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
             );
             widget.onYieldUpdated!(updatedYield);
           }
+
+             Future.delayed(const Duration(seconds: 2), () {
+              if (mounted) {
+                setState(() {
+                  _toastShown = false;
+                });
+              }
+            });
         } else if (state is YieldsLoaded) {
           if (state.message?.contains('deleted') == true) {
             // print('Yield deleted successfully');

@@ -26,6 +26,9 @@ class NotificationsPage extends LayoutWidget {
     return 'Notifications';
   }
 
+   @override
+  EdgeInsetsGeometry? get customPadding => const EdgeInsets.all(8);
+
   @override
   Widget contentDesktopWidget(BuildContext context) {
     return MultiRepositoryProvider(
@@ -79,6 +82,7 @@ class NotificationsPage extends LayoutWidget {
                   selectedNotificationNotifier: selectedNotificationNotifier,
                   onDeleteNotification: (notificationId) => _deleteNotification(context, notificationId),
                   isLoadingNotifier: isLoadingNotifier,
+
                 ),
               ),
             ),
@@ -168,31 +172,30 @@ class NotificationsPage extends LayoutWidget {
       
       if (result['success'] == true) {
         final List<dynamic> notificationData = result['data'] ?? [];
-        final List<Announcement> notifications = notificationData.map((data) {
-          return Announcement(
-            id: data['id'].toString(),
-            title: data['announcement_title'] ?? '',
-            message: data['announcement_content'] ?? '',
-            recipient: data['recipient_type'] ?? 'everyone',
-            recipientName: 'Admin', // Always from Admin for farmer notifications
-            date: DateTime.parse(data['created_at'] ?? DateTime.now().toString()),
-            status: data['status'] ?? 'sent',
-            farmerId: data['farmer_id']?.toString(),
-            readCount: data['read_count'] ?? 0,
-            totalRecipients: data['total_recipients'] ?? 0,
-          );
-        }).toList();
+  final List<Announcement> notifications = notificationData.map((data) {
+  return Announcement(
+    id: data['id'].toString(),
+    title: data['announcement_title'] ?? '',
+    message: data['announcement_content'] ?? '',
+    recipient: data['recipient_type'] ?? 'everyone',
+    recipientName: 'Admin',
+    date: DateTime.parse(data['created_at'] ?? DateTime.now().toString()),
+    status: data['status'] ?? 'unread', // Default to 'unread' if not provided
+    farmerId: data['farmer_id']?.toString(),
+    readCount: data['read_count'] ?? 0,
+    totalRecipients: data['total_recipients'] ?? 0,
+  );
+}).toList();
 
-        print(notifications.map((n) => n.message).toList());
+    
         
         notificationsNotifier.value = notifications;
       } else {
         notificationsNotifier.value = [];
-        print('Failed to load notifications: ${result['message']}');
+   
       }
     } catch (e) {
-      notificationsNotifier.value = [];
-      print('Error loading notifications: $e');
+      notificationsNotifier.value = []; 
     } finally {
       isLoadingNotifier.value = false;
     }

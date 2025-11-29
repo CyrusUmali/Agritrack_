@@ -1,7 +1,7 @@
 import 'package:flareline/pages/flareline_layout.dart';
 import 'package:flareline/pages/toolbar.dart';
 import 'package:flareline/providers/user_provider.dart';
-import 'package:flareline/providers/language_provider.dart'; // Add this import
+import 'package:flareline/providers/language_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -10,9 +10,9 @@ abstract class LayoutWidget extends FlarelineLayoutWidget {
 
   @override
   String sideBarAsset(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final languageProvider =
-        Provider.of<LanguageProvider>(context, listen: false);
+    // Remove listen: false to listen for changes
+    final userProvider = Provider.of<UserProvider>(context);
+    final languageProvider = Provider.of<LanguageProvider>(context);
 
     final role = userProvider.user?.role ?? 'guest';
     final languageCode = languageProvider.currentLanguageCode;

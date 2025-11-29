@@ -1,15 +1,11 @@
 import 'dart:ui';
-import 'package:flareline/pages/recommendation/recommendation_page.dart';
-import 'package:flareline/services/lanugage_extension.dart';
+import 'dart:math' as math;
 import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:flareline/pages/recommendation/suitability/suitability_page.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:provider/provider.dart';
-import 'chatbot_model.dart';
-import 'package:flareline/providers/language_provider.dart';
+import 'chatbot_model.dart'; 
 import 'package:flutter/services.dart';
-
 
 class ChatbotWidget extends StatefulWidget {
   const ChatbotWidget({super.key});
@@ -18,58 +14,56 @@ class ChatbotWidget extends StatefulWidget {
   ChatbotContentState createState() => ChatbotContentState();
 }
 
-class ChatbotContentState extends State<ChatbotWidget> {
-  final GlobalKey _navigationMenuKey = GlobalKey();
+class ChatbotContentState extends State<ChatbotWidget> with SingleTickerProviderStateMixin {
   late ChatbotModel _chatbotModel;
-  String _selectedModel = 'Gemini';
+  late AnimationController _dotAnimationController;
+  late Animation<double> _dotAnimation;
   bool _conversationStarted = false;
   final TextEditingController _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
-  final List<String> _availableModels = ['Gemini', 'GPT-4', 'Claude', 'Llama'];
-
-  // Quick options with shorter, more Reddit-like text
-  List<Map<String, dynamic>> _getQuickOptions(BuildContext context) {
+  // Quick options - Tagalog only
+  List<Map<String, dynamic>> _getQuickOptions() {
     return [
       {
         'icon': Icons.eco,
-        'titleKey': 'Soil Health',
-        'messageKey': 'Tell me about soil health and pH levels',
+        'title': 'Kalusugan ng Lupa',
+        'message': 'Sabihin mo sa akin ang tungkol sa kalusugan ng lupa at mga antas ng pH',
       },
       {
         'icon': Icons.agriculture,
-        'titleKey': 'Crop Selection',
-        'messageKey': 'What crops should I grow in my region?',
+        'title': 'Pagpili ng Pananim',
+        'message': 'Anong mga pananim ang dapat kong itanim sa aking rehiyon?',
       },
       {
         'icon': Icons.bug_report,
-        'titleKey': 'Pest Control',
-        'messageKey': 'How do I control pests organically?',
+        'title': 'Kontrol sa Peste',
+        'message': 'Paano ko makokontrol ang mga peste nang organiko?',
       },
       {
         'icon': Icons.water_drop,
-        'titleKey': 'Irrigation Tips',
-        'messageKey': 'What are the best irrigation practices?',
+        'title': 'Mga Tip sa Irigasyon',
+        'message': 'Ano ang mga pinakamahusay na kasanayan sa irigasyon?',
       },
       {
         'icon': Icons.scatter_plot,
-        'titleKey': 'Fertilizers',
-        'messageKey': 'Which fertilizers should I use for my crops?',
+        'title': 'Pataba',
+        'message': 'Aling pataba ang dapat kong gamitin para sa aking mga pananim?',
       },
       {
         'icon': Icons.calendar_today,
-        'titleKey': 'Planting Season',
-        'messageKey': 'When is the best time to plant crops?',
+        'title': 'Panahon ng Pagtatanim',
+        'message': 'Kailan ang pinakamagandang panahon upang magtanim ng mga pananim?',
       },
       {
         'icon': Icons.healing,
-        'titleKey': 'Plant Disease',
-        'messageKey': 'How do I identify and treat plant diseases?',
+        'title': 'Sakit ng Halaman',
+        'message': 'Paano ko matutukoy at magagamot ang mga sakit sa halaman?',
       },
       {
         'icon': Icons.wb_sunny,
-        'titleKey': 'Weather Impact',
-        'messageKey': 'How does weather affect crop growth?',
+        'title': 'Epekto ng Panahon',
+        'message': 'Paano nakakaapekto ang panahon sa paglago ng pananim?',
       },
     ];
   }
@@ -77,9 +71,17 @@ class ChatbotContentState extends State<ChatbotWidget> {
   @override
   void initState() {
     super.initState();
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    _chatbotModel = ChatbotModel(languageProvider: languageProvider);
+    // Initialize without language provider
+    _chatbotModel = ChatbotModel();
     _chatbotModel.addListener(_onChatbotModelChanged);
+
+    // Add animation controller
+    _dotAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1400),
+      vsync: this,
+    )..repeat();
+
+    _dotAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_dotAnimationController);
   }
 
   @override
@@ -87,6 +89,7 @@ class ChatbotContentState extends State<ChatbotWidget> {
     _textController.dispose();
     _focusNode.dispose();
     _chatbotModel.removeListener(_onChatbotModelChanged);
+    _dotAnimationController.dispose();
     super.dispose();
   }
 
@@ -103,7 +106,7 @@ class ChatbotContentState extends State<ChatbotWidget> {
     if (text.isEmpty) return;
 
     _chatbotModel.addUserMessage(text);
-    _chatbotModel.getBotResponse(text, useStreaming: _chatbotModel.useStreaming);
+    _chatbotModel.getBotResponse(text);
     _textController.clear();
   }
 
@@ -145,8 +148,7 @@ class ChatbotContentState extends State<ChatbotWidget> {
     );
   }
 
-  Widget _buildHorizontalScrollSuggestions(
-      List<String> suggestions, bool isDarkMode) {
+  Widget _buildHorizontalScrollSuggestions(List<String> suggestions, bool isDarkMode) {
     return Container(
       height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -183,8 +185,7 @@ class ChatbotContentState extends State<ChatbotWidget> {
           vertical: 10,
         ),
         decoration: BoxDecoration(
-          color:
-              isDarkMode ? Theme.of(context).cardTheme.color : Colors.grey[100],
+          color: isDarkMode ? Theme.of(context).cardTheme.color : Colors.grey[100],
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
@@ -215,11 +216,9 @@ class ChatbotContentState extends State<ChatbotWidget> {
 
   void _handleSuggestionTap(String suggestion) {
     _chatbotModel.addUserMessage(suggestion);
-    _chatbotModel.getBotResponse(suggestion,
-        useStreaming: _chatbotModel.useStreaming);
+    _chatbotModel.getBotResponse(suggestion);
   }
 
-  // Reddit-style quick option pill button (smaller and animated)
   Widget _buildRedditStylePill(Map<String, dynamic> option, bool isDarkMode) {
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 300),
@@ -234,14 +233,12 @@ class ChatbotContentState extends State<ChatbotWidget> {
         );
       },
       child: InkWell(
-        onTap: () => _handleQuickOption(context.translate(option['messageKey'])),
+        onTap: () => _handleQuickOption(option['message']),
         borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: isDarkMode 
-                ? Colors.grey[850]
-                : Colors.grey[100],
+            color: isDarkMode ? Colors.grey[850] : Colors.grey[100],
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
@@ -258,7 +255,7 @@ class ChatbotContentState extends State<ChatbotWidget> {
               ),
               const SizedBox(width: 6),
               Text(
-                context.translate(option['titleKey']),
+                option['title'],
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -274,7 +271,7 @@ class ChatbotContentState extends State<ChatbotWidget> {
 
   void _handleQuickOption(String message) {
     _chatbotModel.addUserMessage(message);
-    _chatbotModel.getBotResponse(message, useStreaming: _chatbotModel.useStreaming);
+    _chatbotModel.getBotResponse(message);
   }
 
   Widget _buildResponsiveHeader(bool isMobile, bool isTablet, bool isDarkMode) {
@@ -296,7 +293,7 @@ class ChatbotContentState extends State<ChatbotWidget> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          context.translate('Agriculture Assistant'),
+                          'Tulong sa Agrikultura',
                           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 32,
@@ -324,7 +321,7 @@ class ChatbotContentState extends State<ChatbotWidget> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                context.translate('Agriculture Assistant'),
+                'Tulong sa Agrikultura',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       fontSize: isMobile ? 24 : 28,
@@ -355,96 +352,91 @@ class ChatbotContentState extends State<ChatbotWidget> {
     );
   }
 
-
-
-
-Widget _buildCustomInput(bool isMobile, bool isDarkMode) {
-  return Consumer<ChatbotModel>(
-    builder: (context, model, child) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (_conversationStarted && !model.isTyping)
-            _buildDynamicSuggestions(isMobile, isDarkMode),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: RawKeyboardListener(
-              focusNode: FocusNode(),
-              onKey: (RawKeyEvent event) {
-                if (event is RawKeyDownEvent) {
-                  if (event.logicalKey == LogicalKeyboardKey.enter && 
-                      !event.isShiftPressed) {
-                    // Prevent default behavior
-                    if (_textController.text.trim().isNotEmpty) {
-                      _handleSendPressed();
+  Widget _buildCustomInput(bool isMobile, bool isDarkMode) {
+    return Consumer<ChatbotModel>(
+      builder: (context, model, child) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_conversationStarted && !model.isTyping)
+              _buildDynamicSuggestions(isMobile, isDarkMode),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isDarkMode
+                    ? Theme.of(context).cardTheme.color!
+                    : Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: RawKeyboardListener(
+                focusNode: FocusNode(),
+                onKey: (RawKeyEvent event) {
+                  if (event is RawKeyDownEvent) {
+                    if (event.logicalKey == LogicalKeyboardKey.enter &&
+                        !event.isShiftPressed) {
+                      if (_textController.text.trim().isNotEmpty) {
+                        _handleSendPressed();
+                      }
                     }
                   }
-                }
-              },
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _textController,
-                      focusNode: _focusNode,
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white : Colors.black87,
-                        fontSize: 16,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: context.translate('Type here...'),
-                        hintStyle: TextStyle(
-                          color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+                },
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _textController,
+                        focusNode: _focusNode,
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black87,
+                          fontSize: 16,
                         ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 10,
+                        decoration: InputDecoration(
+                          hintText: 'Magsulat dito...',
+                          hintStyle: TextStyle(
+                            color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 10,
+                          ),
                         ),
+                        maxLines: null,
+                        textCapitalization: TextCapitalization.sentences,
                       ),
-                      maxLines: null,
-                      textCapitalization: TextCapitalization.sentences,
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    onPressed: _handleSendPressed,
-                    icon: Icon(
-                      Icons.send,
-                      color: isDarkMode ? Colors.grey[400] : Colors.grey,
-                      size: 22,
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: _handleSendPressed,
+                      icon: Icon(
+                        Icons.send,
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey,
+                        size: 22,
+                      ),
+                      splashRadius: 20,
                     ),
-                    splashRadius: 20,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      );
-    },
-  );
-}
+          ],
+        );
+      },
+    );
+  }
 
-
-  // Reddit-style empty state with flowing pill buttons (animated)
   Widget _buildQuickTopicsEmptyState(bool isMobile, bool isDarkMode) {
-    final quickOptions = _getQuickOptions(context);
-    
+    final quickOptions = _getQuickOptions();
+
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Welcome message
             Text(
-              context.translate('How can I help you today?'),
+              'Paano kita matutulungan?',
               style: TextStyle(
                 fontSize: isMobile ? 18 : 22,
                 fontWeight: FontWeight.w600,
@@ -453,8 +445,6 @@ Widget _buildCustomInput(bool isMobile, bool isDarkMode) {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            
-            // Reddit-style flowing pill buttons with staggered animation
             Wrap(
               spacing: 6,
               runSpacing: 6,
@@ -505,14 +495,25 @@ Widget _buildCustomInput(bool isMobile, bool isDarkMode) {
                           usePreviewData: false,
                           customBottomWidget: _buildCustomInput(isMobile, isDarkMode),
                           theme: DefaultChatTheme(
-                            backgroundColor: isDarkMode ? FlarelineColors.darkerBackground : Colors.white,
-                            primaryColor: isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200,
-                            secondaryColor: isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200,
-                            inputBackgroundColor: isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200,
+                            backgroundColor: isDarkMode
+                                ? FlarelineColors.darkerBackground
+                                : Colors.white,
+                            primaryColor: isDarkMode
+                                ? Theme.of(context).cardTheme.color!
+                                : Colors.grey.shade200,
+                            secondaryColor: isDarkMode
+                                ? Theme.of(context).cardTheme.color!
+                                : Colors.grey.shade200,
+                            inputBackgroundColor: isDarkMode
+                                ? Theme.of(context).cardTheme.color!
+                                : Colors.grey.shade200,
                             inputTextColor: isDarkMode ? Colors.white : Colors.black87,
                             inputBorderRadius: BorderRadius.circular(24),
-                            inputMargin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            userAvatarNameColors: [isDarkMode ? Colors.grey[300]! : Colors.black],
+                            inputMargin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            userAvatarNameColors: [
+                              isDarkMode ? Colors.grey[300]! : Colors.black
+                            ],
                             receivedMessageBodyTextStyle: TextStyle(
                               color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
                               fontSize: isMobile ? 14 : 16,
@@ -536,6 +537,43 @@ Widget _buildCustomInput(bool isMobile, bool isDarkMode) {
                           ),
                           typingIndicatorOptions: TypingIndicatorOptions(
                             typingUsers: model.isTyping ? [model.bot] : [],
+                            customTypingIndicator: model.isTyping
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: AnimatedBuilder(
+                                            animation: _dotAnimation,
+                                            builder: (context, child) {
+                                              return Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  _buildAnimatedDot(
+                                                      0, isDarkMode, _dotAnimation.value),
+                                                  const SizedBox(width: 4),
+                                                  _buildAnimatedDot(
+                                                      1, isDarkMode, _dotAnimation.value),
+                                                  const SizedBox(width: 4),
+                                                  _buildAnimatedDot(
+                                                      2, isDarkMode, _dotAnimation.value),
+                                                ],
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : null,
                           ),
                           avatarBuilder: (userId) {
                             final bool isBot = userId == model.bot.id;
@@ -543,12 +581,18 @@ Widget _buildCustomInput(bool isMobile, bool isDarkMode) {
                               padding: const EdgeInsets.only(right: 8.0),
                               child: CircleAvatar(
                                 backgroundColor: isBot
-                                    ? (isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey.shade200)
-                                    : (isDarkMode ? Theme.of(context).cardTheme.color! : Colors.grey[200]!),
-                                child: isBot 
+                                    ? (isDarkMode
+                                        ? Theme.of(context).cardTheme.color!
+                                        : Colors.grey.shade200)
+                                    : (isDarkMode
+                                        ? Theme.of(context).cardTheme.color!
+                                        : Colors.grey[200]!),
+                                child: isBot
                                     ? Icon(
                                         Icons.person,
-                                        color: isDarkMode ? Colors.grey.shade200 : Colors.grey.shade800,
+                                        color: isDarkMode
+                                            ? Colors.grey.shade200
+                                            : Colors.grey.shade800,
                                         size: 20,
                                       )
                                     : ClipOval(
@@ -572,6 +616,23 @@ Widget _buildCustomInput(bool isMobile, bool isDarkMode) {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildAnimatedDot(int index, bool isDarkMode, double animationValue) {
+    final double phase = (animationValue + (index * 0.33)) % 1.0;
+    final double opacity = 0.3 + (0.7 * (0.5 + 0.5 * math.sin(phase * 2 * math.pi)));
+
+    return Opacity(
+      opacity: opacity,
+      child: Container(
+        width: 8,
+        height: 8,
+        decoration: BoxDecoration(
+          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+          shape: BoxShape.circle,
+        ),
+      ),
     );
   }
 }

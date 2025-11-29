@@ -951,6 +951,9 @@ class _AssociationYieldDataTableState extends State<AssociationYieldDataTable> {
                 ],
               ),
             ],
+
+
+             if (_yields.isNotEmpty) ...[
             const SizedBox(height: 20),
             Row(
               children: [
@@ -965,6 +968,8 @@ class _AssociationYieldDataTableState extends State<AssociationYieldDataTable> {
                 ),
               ],
             )
+      
+             ]
           ],
         ),
       ),

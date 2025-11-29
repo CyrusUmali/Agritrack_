@@ -14,10 +14,7 @@ class AssocKpiCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // print('sectorcurrent');
-    // print(sector);
-
-    print(association.totalFarms);
+   
     return isMobile ? _buildMobileGrid(context) : _buildDesktopRow(context);
   }
 

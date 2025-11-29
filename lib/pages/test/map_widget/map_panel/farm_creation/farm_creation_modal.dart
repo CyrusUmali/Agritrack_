@@ -70,65 +70,66 @@ class FarmCreationModal {
         false;
   }
 
-  static Future<bool> _showSmallScreenModal({
-    required BuildContext context,
-    required PolygonData polygon,
-    required Function(String) onNameChanged,
-    required Function(PinStyle) onPinStyleChanged,
-    required List<Farmer> farmers,
-    required Function(int?, String?) onFarmerChanged,
-    required ThemeData theme,
-  }) async {
-    final validationNotifier = ValueNotifier<bool>(false);
 
-    return await WoltModalSheet.show(
-      context: context,
-      pageListBuilder: (modalContext) {
-        return [
-          WoltModalSheetPage(
-            backgroundColor: Theme.of(context).cardTheme.color,
-            hasSabGradient: false,
-            topBar: Container(
-              color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    context.translate('Create New Farm'),
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
+
+
+static Future<bool> _showSmallScreenModal({
+  required BuildContext context,
+  required PolygonData polygon,
+  required Function(String) onNameChanged,
+  required Function(PinStyle) onPinStyleChanged,
+  required List<Farmer> farmers,
+  required Function(int?, String?) onFarmerChanged,
+  required ThemeData theme,
+}) async {
+  final validationNotifier = ValueNotifier<bool>(false);
+
+  return await WoltModalSheet.show(
+    context: context,
+    pageListBuilder: (modalContext) {
+      return [
+        WoltModalSheetPage(
+          backgroundColor: Theme.of(context).cardTheme.color,
+          hasSabGradient: false,
+          topBar: Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  context.translate('Create New Farm'),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close,
-                        size: 24, color: Colors.black54),
-                    onPressed: () => Navigator.of(modalContext).pop(false),
-                  ),
-                ],
-              ),
+                ),
+               
+              ],
             ),
-            isTopBarLayerAlwaysVisible: true,
-            child: _ModalContent(
-              polygon: polygon,
-              initialFarmers: farmers,
-              onNameChanged: onNameChanged,
-              onFarmerChanged: onFarmerChanged,
-              validationNotifier: validationNotifier,
-            ),
-            stickyActionBar: _StickyActionBar(
-              modalContext: modalContext,
-              onNameChanged: onNameChanged,
-              validationNotifier: validationNotifier,
-            ),
-          )
-        ];
-      },
-      modalTypeBuilder: (context) => WoltModalType.bottomSheet(),
-      onModalDismissedWithBarrierTap: () => Navigator.of(context).pop(false),
-    );
-  }
+          ),
+          isTopBarLayerAlwaysVisible: true,
+          child: _ModalContent(
+            polygon: polygon,
+            initialFarmers: farmers,
+            onNameChanged: onNameChanged,
+            onFarmerChanged: onFarmerChanged,
+            validationNotifier: validationNotifier,
+          ),
+          stickyActionBar: _StickyActionBar(
+            modalContext: modalContext,
+            onNameChanged: onNameChanged,
+            validationNotifier: validationNotifier,
+          ),
+        )
+      ];
+    },
+    modalTypeBuilder: (context) => WoltModalType.bottomSheet(),
+    onModalDismissedWithBarrierTap: () => Navigator.of(context).pop(false),
+  );
+}
+
+
 }
 
 // New stateful widget for large screen dialog
@@ -197,21 +198,16 @@ class _LargeScreenDialogState extends State<_LargeScreenDialog> {
         farmerTextController.text = selectedFarmerName ?? '';
       }
     }
-
- 
   }
 
   void _retryLoadFarmers() {
-  
     setState(() {
       isLoadingFarmers = true;
     });
 
     try {
       context.read<FarmerBloc>().add(LoadFarmers());
-      
     } catch (e) {
-   
       setState(() {
         isLoadingFarmers = false;
       });
@@ -229,9 +225,7 @@ class _LargeScreenDialogState extends State<_LargeScreenDialog> {
   Widget build(BuildContext context) {
     return BlocListener<FarmerBloc, FarmerState>(
       listener: (context, state) {
-      
         if (state is FarmersLoaded) {
-  
           setState(() {
             _currentFarmers = state.farmers;
             isLoadingFarmers = false;
@@ -249,7 +243,6 @@ class _LargeScreenDialogState extends State<_LargeScreenDialog> {
             }
           });
         } else if (state is FarmersError) {
-        
           setState(() {
             isLoadingFarmers = false;
           });
@@ -314,7 +307,25 @@ class _LargeScreenDialogState extends State<_LargeScreenDialog> {
                   errorText: isNameValid
                       ? null
                       : context.translate('Name is required'),
-                  errorStyle: const TextStyle(color: Colors.red),
+                  errorStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+  color: Colors.redAccent,
+    fontSize: 12,
+),
+
+                  errorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.red.shade400,
+                          width: 1.5,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.red.shade400,
+                          width: 1.5,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -522,7 +533,28 @@ class _LargeScreenDialogState extends State<_LargeScreenDialog> {
             fillColor: Theme.of(context).brightness == Brightness.dark
                 ? GlobalColors.darkerCardColor
                 : Colors.grey.shade50,
-            errorStyle: const TextStyle(color: Colors.red),
+            errorStyle: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w100,
+              color: Colors.redAccent,
+            ),
+
+
+
+            errorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.red.shade400,
+                          width: 1.5,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.red.shade400,
+                          width: 1.5,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
             suffixIcon: textEditingController.text.isNotEmpty
                 ? IconButton(
                     icon: const Icon(Icons.clear, size: 20),
@@ -658,7 +690,6 @@ class _ModalContentState extends State<_ModalContent> {
 
     // Update validation state initially
     _updateValidationState();
- 
   }
 
   void _updateValidationState() {
@@ -667,15 +698,13 @@ class _ModalContentState extends State<_ModalContent> {
   }
 
   void _retryLoadFarmers() {
- 
     setState(() {
       isLoadingFarmers = true;
     });
 
     try {
       context.read<FarmerBloc>().add(LoadFarmers());
- 
-    } catch (e) { 
+    } catch (e) {
       setState(() {
         isLoadingFarmers = false;
       });
@@ -685,7 +714,7 @@ class _ModalContentState extends State<_ModalContent> {
   void _updateFarmers(List<Farmer> newFarmers) {
     setState(() {
       _currentFarmers = newFarmers;
-      isLoadingFarmers = false; 
+      isLoadingFarmers = false;
 
       // Re-validate farmer selection if we have farmers now
       if (_currentFarmers.isNotEmpty && selectedFarmerId != null) {
@@ -714,11 +743,9 @@ class _ModalContentState extends State<_ModalContent> {
   Widget build(BuildContext context) {
     return BlocListener<FarmerBloc, FarmerState>(
       listener: (context, state) {
-    
         if (state is FarmersLoaded) {
-       
           _updateFarmers(state.farmers);
-        } else if (state is FarmersError) { 
+        } else if (state is FarmersError) {
           setState(() {
             isLoadingFarmers = false;
           });
@@ -772,9 +799,29 @@ class _ModalContentState extends State<_ModalContent> {
                 horizontal: 16,
                 vertical: 14,
               ),
+              errorBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Colors.red.shade400,
+                  width: 1.5,
+                  
+
+                ),
+                borderRadius: BorderRadius.circular(12),
+                
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Colors.red.shade400,
+                  width: 1.5,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
               errorText:
                   isNameValid ? null : context.translate('Name is required'),
-              errorStyle: const TextStyle(color: Colors.red),
+          errorStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+  color: Colors.redAccent,
+    fontSize: 12,
+),
             ),
             onChanged: (value) {
               setState(() {
@@ -904,7 +951,28 @@ class _ModalContentState extends State<_ModalContent> {
                           ),
                           filled: true,
                           fillColor: Colors.grey.shade50,
-                          errorStyle: const TextStyle(color: Colors.red),
+
+
+errorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.red.shade400,
+                          width: 1.5,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.red.shade400,
+                          width: 1.5,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+
+                          errorStyle: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.redAccent,
+                          ),
                           suffixIcon: textEditingController.text.isNotEmpty
                               ? IconButton(
                                   icon: const Icon(Icons.clear, size: 20),

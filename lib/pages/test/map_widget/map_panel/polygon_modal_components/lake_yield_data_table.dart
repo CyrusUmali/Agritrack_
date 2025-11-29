@@ -957,6 +957,8 @@ class _LakeYieldDataTableState extends State<LakeYieldDataTable> {
             const SizedBox(height: 20),
             // _buildExportButton(theme),
 
+
+ if (_yields.isNotEmpty) ...[
             Row(
               children: [
                 // Excel button (green)
@@ -970,6 +972,7 @@ class _LakeYieldDataTableState extends State<LakeYieldDataTable> {
                 ),
               ],
             )
+ ]
           ],
         ),
       ),

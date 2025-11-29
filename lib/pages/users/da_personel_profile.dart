@@ -33,8 +33,8 @@ class DAOfficerProfile extends LayoutWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ProfileHeader(user: daUser),
-            const SizedBox(height: 24),
+            // ProfileHeader(user: daUser),
+            // const SizedBox(height: 24),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -61,8 +61,8 @@ class DAOfficerProfile extends LayoutWidget {
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            ProfileHeader(user: daUser, isMobile: true),
-            const SizedBox(height: 16),
+            // ProfileHeader(user: daUser, isMobile: true),
+            // const SizedBox(height: 16),
             UserInfoCard(user: daUser, isMobile: true),
             const SizedBox(height: 16),
             StatsCard(user: daUser, isMobile: true),

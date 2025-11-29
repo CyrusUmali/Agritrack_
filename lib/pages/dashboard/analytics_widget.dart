@@ -13,7 +13,6 @@ import 'package:provider/provider.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:flareline/pages/dashboard/climate_widget.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shimmer/shimmer.dart';
 
 class AnalyticsWidget extends StatelessWidget {
   final int selectedYear;
@@ -40,7 +39,7 @@ class AnalyticsWidget extends StatelessWidget {
           return _buildErrorLayout(context, state.message,
               () => context.read<FarmerBloc>().add(LoadFarmers()));
         } else {
-          return _buildShimmerPlaceholder();
+          return _buildLoadingPlaceholder();
         }
       },
     );
@@ -54,7 +53,7 @@ class AnalyticsWidget extends StatelessWidget {
           farmerId: farmerId.toString(), year: selectedYear),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildShimmerPlaceholder();
+          return _buildLoadingPlaceholder();
         } else if (snapshot.hasError) {
           return _buildErrorLayout(context, snapshot.error.toString(),
               () => _buildFarmerProductDistribution(context, farmerId));
@@ -266,90 +265,112 @@ class AnalyticsWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildShimmerPlaceholder() {
+  Widget _buildLoadingPlaceholder() {
     return ScreenTypeLayout.builder(
-      desktop: (context) => _shimmerWeb(context),
-      mobile: (context) => _shimmerMobile(context),
-      tablet: (context) => _shimmerMobile(context),
+      desktop: (context) => _loadingWeb(context),
+      mobile: (context) => _loadingMobile(context),
+      tablet: (context) => _loadingMobile(context),
     );
   }
 
-  Widget _shimmerWeb(BuildContext context) {
+  Widget _loadingWeb(BuildContext context) {
     return SizedBox(
       height: 280,
       child: Row(
         children: [
           Expanded(
             flex: 40,
-            child: _buildShimmerCard(DeviceScreenType.desktop),
+            child: _buildGrayCard(DeviceScreenType.desktop),
           ),
           const SizedBox(width: 16),
           Expanded(
             flex: 35,
-            child: _buildShimmerCard(DeviceScreenType.desktop),
+            child: _buildGrayCard(DeviceScreenType.desktop),
           ),
           const SizedBox(width: 16),
           Expanded(
             flex: 35,
-            child: _buildShimmerCard(DeviceScreenType.desktop),
+            child: _buildGrayCard(DeviceScreenType.desktop),
           ),
         ],
       ),
     );
   }
 
-  Widget _shimmerMobile(BuildContext context) {
+  Widget _loadingMobile(BuildContext context) {
     return Column(
       children: [
-        _buildShimmerCard(DeviceScreenType.mobile),
+        _buildGrayCard(DeviceScreenType.mobile),
         const SizedBox(height: 16),
-        _buildShimmerCard(DeviceScreenType.mobile),
+        _buildGrayCard(DeviceScreenType.mobile),
         const SizedBox(height: 16),
-        _buildShimmerCard(DeviceScreenType.mobile),
+        _buildGrayCard(DeviceScreenType.mobile),
       ],
     );
   }
+Widget _buildGrayCard(DeviceScreenType screenType) {
+  final isDesktop = screenType == DeviceScreenType.desktop;
+  final height = isDesktop ? 280 : 200;
 
-  Widget _buildShimmerCard(DeviceScreenType screenType) {
-    final isDesktop = screenType == DeviceScreenType.desktop;
-    final height = isDesktop ? 280 : 200;
-
-    return CommonCard(
-      height: height.toDouble(),
-      child: Shimmer.fromColors(
-        baseColor: Colors.grey.shade300,
-        highlightColor: Colors.grey.shade100,
-        child: Padding(
-          padding: EdgeInsets.all(isDesktop ? 16 : 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Shimmer header
-              Container(
-                height: 20,
-                width: 150,
-                color: Colors.grey.shade200,
-              ),
-              const SizedBox(height: 20),
-              // Shimmer content
-              Expanded(
-                child: Center(
-                  child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
+  return CommonCard(
+    height: height.toDouble(),
+    child: Padding(
+      padding: EdgeInsets.all(isDesktop ? 16 : 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Gray header placeholder
+          Container(
+            height: 20,
+            width: 150,
+            color: Colors.grey.shade200,
+          ),
+          const SizedBox(height: 20),
+          // Gray content area with pie chart icon
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Gray circle placeholder for pie chart
+                  Container(
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
                       color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(8),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.pie_chart_outline,
+                      size: 48,
+                      color: Colors.grey.shade400,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  // // Legend placeholders
+                  // Container(
+                  //   height: 16,
+                  //   width: 100,
+                  //   color: Colors.grey.shade200,
+                  // ),
+                  // const SizedBox(height: 8),
+                  // Container(
+                  //   height: 16,
+                  //   width: 80,
+                  //   color: Colors.grey.shade200,
+                  // ),
+             
+             
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   List<Map<String, dynamic>> _processSectorData(List<Farmer> farmers) {
     // Handle empty farmers list
@@ -529,13 +550,13 @@ class AnalyticsWidget extends StatelessWidget {
                     () {}),
           ),
         ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 200,
-          child: CommonCard(
-            child: const MapMiniView(),
-          ),
-        ),
+        // const SizedBox(height: 16),
+        // SizedBox(
+        //   height: 200,
+        //   child: CommonCard(
+        //     child: const MapMiniView(),
+        //   ),
+        // ),
         const SizedBox(height: 16),
         SizedBox(
           height: 280,

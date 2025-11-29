@@ -126,9 +126,7 @@ class PolygonModal {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final _isFarmer = userProvider.isFarmer;
     final _farmerId = userProvider.farmer?.id?.toString();
-
-    // print('_isFarmer');
-    // print(_isFarmer);
+ 
 
     await WoltModalSheet.show(
       context: context,

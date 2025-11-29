@@ -70,8 +70,7 @@ class _BarangayFilterPanelState extends State<BarangayFilterPanel> {
     final barangayJson = {
       "barangays": barangayNames,
     };
-    // print('Barangay List:');
-    // print(jsonEncode(barangayJson));
+    
   }
 
   void _toggleAllBarangays(bool selectAll) {
@@ -143,22 +142,36 @@ class _BarangayFilterPanelState extends State<BarangayFilterPanel> {
               //   ),
               // ),
               // SizedBox(height: 2),
-              Text(
-                isFarmer
-                    ? (_tempUserFilterOptions['showOwnedOnly'] == true
-                        ? 'Only my farms'
-                        : 'All farms')
-                    : (_tempUserFilterOptions['showActiveOnly'] == true
-                        ? 'Active farms only'
-                        : 'All farms'),
-                // style: theme.textTheme.bodySmall?.copyWith(
-                //   color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
-                // ),
 
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+
+
+Text(
+  isFarmer
+      ? (_tempUserFilterOptions['showOwnedOnly'] == true
+          ? 'Only my farms'
+          : 'All farms')
+      : 'All farms', // or provide an alternative text for non-farmers
+  style: theme.textTheme.bodyMedium?.copyWith(
+    fontWeight: FontWeight.w600,
+  ),
+),
+
+              // Text(
+              //  if (isFarmer) 
+              //       (_tempUserFilterOptions['showOwnedOnly'] == true
+              //           ? 'Only my farms'
+              //           : 'All farms'),
+              //       // : ((_tempUserFilterOptions['showActiveOnly'] == true
+              //       //     ? 'Active farms only'
+              //       //     : 'All farms')),
+              //   // style: theme.textTheme.bodySmall?.copyWith(
+              //   //   color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+              //   // ),
+
+              //   style: theme.textTheme.bodyMedium?.copyWith(
+              //     fontWeight: FontWeight.w600,
+              //   ),
+              // ),
             ],
           ),
           Container(
@@ -407,9 +420,10 @@ class _BarangayFilterPanelState extends State<BarangayFilterPanel> {
 
           SizedBox(height: 12),
 
-          // User-based filter - NEW PLACEMENT
-          _buildUserFilterToggle(theme, isFarmer),
-
+        if (isFarmer) ...[
+  _buildUserFilterToggle(theme, isFarmer),
+  SizedBox(height: 16),
+],
           SizedBox(height: 16),
 
           Text(

@@ -49,10 +49,11 @@ class ForgotPasswordWidget extends BaseWidget<ForgotPasswordProvider> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const SizedBox(height: 16),
-                          SizedBox(
-                            width: 80,
-                            child: Image.asset('assets/DA_image.jpg'),
-                          ),
+                         SvgPicture.asset(
+  'assets/DA_image.svg', // Convert your JPG to SVG
+  width: 80,
+  height: 80,
+),
                           const SizedBox(height: 30),
                           Text(
                             viewModel.otpVerified
@@ -140,11 +141,16 @@ class ForgotPasswordWidget extends BaseWidget<ForgotPasswordProvider> {
               }
               return null;
             },
-            suffixWidget: SvgPicture.asset(
-              'assets/signin/email.svg',
-              width: 22,
-              height: 22,
+            suffixWidget: InkWell(
+              child: Icon(
+                Icons.email_outlined,
+                color: Colors.grey[600],
+                size: 20,
+              ),
             ),
+            errorLeft: 12,
+            errorRight: 12,
+            errorBottom: -20,
             controller: viewModel.emailController,
             showErrorText: true,
             errorBorderColor: Colors.red,
@@ -303,7 +309,6 @@ class ForgotPasswordWidget extends BaseWidget<ForgotPasswordProvider> {
               }
               return null;
             },
-            controller: viewModel.confirmPasswordController,
             showErrorText: true,
             errorBorderColor: Colors.red,
           ),

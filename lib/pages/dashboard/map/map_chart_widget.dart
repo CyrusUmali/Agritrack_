@@ -40,17 +40,15 @@ class _MapChartWidgetState extends State<MapChartWidget> {
     final needsYieldLoad = yieldState is! YieldsLoaded;
 
     if (needsProductLoad || needsYieldLoad) {
-      // print(
-      //     '📦 Loading data (Products: $needsProductLoad, Yields: $needsYieldLoad)');
+ 
       _loadData();
     } else {
-      // print('✅ Data already loaded, skipping load');
+  
     }
   }
 
   void _loadData({bool forceRefresh = false}) {
-    // print('🔄 Loading data (force: $forceRefresh)');
-    // Load both yields and products when initializing
+ 
     context.read<YieldBloc>().add(LoadYields());
     context.read<ProductBloc>().add(LoadProducts());
   }
@@ -84,11 +82,10 @@ class _MapChartWidgetState extends State<MapChartWidget> {
       ],
       child: BlocBuilder<ProductBloc, ProductState>(
         builder: (productContext, productState) {
-          // print('🔍 ProductBloc State: ${productState.runtimeType}');
-
+         
           // Handle product loading states first
           if (productState is ProductsLoading) {
-            // print('⏳ Products loading...');
+    
             return MapChartUIComponents.buildLoadingState();
           } else if (productState is ProductsError) {
             return MapChartUIComponents.buildErrorState(
@@ -104,16 +101,14 @@ class _MapChartWidgetState extends State<MapChartWidget> {
             products = [widget.selectedProduct!];
           } else if (productState is ProductsLoaded) {
             products = productState.products.map((p) => p.name).toList();
-            // print('✅ Products loaded: ${products.length}');
+ 
           }
 
           return BlocBuilder<YieldBloc, YieldState>(
             builder: (yieldContext, yieldState) {
-              // print('🔍 YieldBloc State: ${yieldState.runtimeType}');
-
-              // Handle yield loading states
+            
               if (yieldState is YieldsLoading) {
-                // print('⏳ Yields loading...');
+        
                 return MapChartUIComponents.buildLoadingState();
               } else if (yieldState is YieldsError) {
                 return MapChartUIComponents.buildErrorState(
@@ -127,11 +122,10 @@ class _MapChartWidgetState extends State<MapChartWidget> {
               List<Yield> yields = [];
               if (yieldState is YieldsLoaded) {
                 yields = yieldState.yields;
-                // print('✅ Yields loaded: ${yields.length}');
+     
               }
 
-              // print('🎯 Building map layout');
-              // Only build the map when we have both products and yields data
+           
               return _buildMapsLayout(context, products, yields);
             },
           );
@@ -218,7 +212,7 @@ class _MapChartWidgetState extends State<MapChartWidget> {
 
     return ChangeNotifierProvider(
       create: (context) {
-        // print('🏗️ Creating BarangayDataProvider');
+   
         return BarangayDataProvider(
           initialProducts: products,
           yields: yields,
@@ -229,11 +223,9 @@ class _MapChartWidgetState extends State<MapChartWidget> {
       builder: (ctx, child) {
         final provider = ctx.watch<BarangayDataProvider>();
 
-        // print(
-        //     '🗺️ Provider state - isLoading: ${provider.isLoading}, data: ${provider.data.length}');
-
+   
         if (provider.isLoading) {
-          // print('⏳ Provider still loading...');
+          
           return Center(
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(
@@ -242,8 +234,7 @@ class _MapChartWidgetState extends State<MapChartWidget> {
             ),
           );
         }
-
-        // print('✅ Showing map content');
+ 
 
         final MapZoomPanBehavior zoomPanBehavior = MapZoomPanBehavior(
           enableDoubleTapZooming: true,

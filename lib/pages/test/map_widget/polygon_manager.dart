@@ -1,5 +1,4 @@
-// ignore_for_file: avoid_print
-
+ 
 import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:flareline/providers/user_provider.dart';
@@ -25,6 +24,7 @@ import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:toastification/toastification.dart';
 
 class PolygonManager with RouteAware {
+  final Function(bool)? onDrawingStateChanged;
   final AnimatedMapController mapController;
   List<PolygonData> polygons = [];
   List<LatLng> currentPolygon = [];
@@ -67,6 +67,7 @@ class PolygonManager with RouteAware {
     required this.farmService,
     required this.products, // Add this
     required this.farmers, // Add this
+    this.onDrawingStateChanged, // Add this
   });
 
   bool polygonExceedsAreaLimit(PolygonData polygon) {
@@ -116,7 +117,7 @@ class PolygonManager with RouteAware {
   }
 
   void selectPolygon(int index, {BuildContext? context}) async {
-    print("select polygon" + index.toString());
+ 
 
     if (index >= 0 && index < polygons.length) {
       selectedPolygonIndex = index;
@@ -125,30 +126,21 @@ class PolygonManager with RouteAware {
 
       _zoomToPolygon(polygons[index]); // Make sure this is awaited
       onPolygonSelected?.call();
-      // debugPrint(
-      //     'Zoom animation started (but not awaited), onPolygonSelected called');
-
+    
       if (context != null) {
         if (context.mounted) {
-          // debugPrint('Context is mounted - scheduling post-frame callback');
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            // debugPrint(
-            //     'Post-frame callback executing - checking mounted status again');
-            if (context.mounted) {
+       WidgetsBinding.instance.addPostFrameCallback((_) {
+       if (context.mounted) {
               _showInfoCard(context, polygons[index]);
             } else {
-              // debugPrint('Context no longer mounted - cannot show info card');
-            }
+          }
           });
         } else {
-          // debugPrint('Context not mounted when checked initially');
-        }
-      } else {
-        // debugPrint('No context provided - cannot show info card');
       }
-    } else {
-      // debugPrint('Invalid index: $index (polygons length: ${polygons.length})');
+      } else {
     }
+    } else {
+   }
   }
 
   bool get hasFiltersApplied {
@@ -379,8 +371,7 @@ class PolygonManager with RouteAware {
 
         overlayState.insert(_infoCardOverlay!);
       } catch (e) {
-        debugPrint('[InfoCard] Error showing info card: $e');
-        _showInfoCardFallback(context, polygon,
+       _showInfoCardFallback(context, polygon,
             showExceedingAreaOnly: showExceedingAreaOnly);
       }
     });
@@ -465,12 +456,9 @@ class PolygonManager with RouteAware {
           ),
         );
         overlay.insert(_infoCardOverlay!);
-        debugPrint(
-            '[InfoCard] Used fallback overlay successfully with navigation: $showNavigation');
-      }
-    } catch (e) {
-      debugPrint('[InfoCard] Fallback also failed: $e');
     }
+    } catch (e) {
+   }
   }
 
 // Add method to get count of exceeding polygons
@@ -707,19 +695,14 @@ class PolygonManager with RouteAware {
         // Check if this polygon is currently visible based on filters
         if (!isPolygonVisible(polygon, context,
             showExceedingAreaOnly: showExceedingAreaOnly)) {
-          // Polygon is filtered out, don't show info card or select it
-          // debugPrint(
-          //     '[Selection] Polygon ${polygon.name} is filtered out, ignoring tap');
-          removeInfoCardOverlay();
+        removeInfoCardOverlay();
           continue; // Continue checking other polygons (in case of overlapping)
         }
 
         // Polygon is visible, select it and show info card
         // Pass the context to selectPolygon
         selectPolygon(i, context: context);
-
-        // print('here');
-        // print(i);
+ 
 
         // Reinitialize the PolyEditor with the new polygon's vertices
         initializePolyEditor(selectedPolygon!);
@@ -766,15 +749,13 @@ class PolygonManager with RouteAware {
         title: Text('Failed to delete farm: ${e.toString()}'),
         autoCloseDuration: const Duration(seconds: 4),
       );
-      debugPrint('Failed to delete farm: ${e.toString()}');
     }
   }
 
   Future<void> saveEditedPolygon() async {
     // Early exit if no polygon is selected
     if (selectedPolygonIndex == null || selectedPolygon == null) {
-      debugPrint('No polygon selected.');
-      return;
+     return;
     }
 
     // Store references locally to avoid race conditions
@@ -804,7 +785,6 @@ class PolygonManager with RouteAware {
         title: Text('Failed to update farm: ${e.toString()}'),
         autoCloseDuration: const Duration(seconds: 4),
       );
-      debugPrint('Error saving polygon: $e');
     }
 
     isDrawing = false;
@@ -837,8 +817,7 @@ class PolygonManager with RouteAware {
   }
 
   void undoLastPoint() {
-    // print('undoohereee');a
-    undo();
+     undo();
   }
 
   void _saveState() {
@@ -899,8 +878,7 @@ class PolygonManager with RouteAware {
       }
 
       selectedPolygonNotifier.value = selectedPolygon;
-      debugPrint('Undo completed. Selected index: $selectedPolygonIndex');
-    }
+     }
   }
 
   void didPush() {
@@ -1060,12 +1038,10 @@ class PolygonManager with RouteAware {
 
   Future<void> showPolygonModal(
       BuildContext context, PolygonData polygon) async {
-    // debugPrint('Initial products: ${polygon.products?.join(', ') ?? 'none'}');
-    _isModalShowing = true;
+   _isModalShowing = true;
     selectedPolygon = polygon;
     selectedPolygonNotifier.value = polygon;
-    print("farmers");
-    print(farmers);
+ 
     await PolygonModal.show(
       context: context,
       products: products,
@@ -1086,18 +1062,13 @@ class PolygonManager with RouteAware {
       onUpdateColor: (color) {
         selectedPolygon?.color = color;
         selectedPolygonNotifier.value = selectedPolygon;
-        debugPrint('Products update triggered');
+        
       },
       onUpdateProducts: (newProducts) {
-        // Debug print before update
-        debugPrint('Products update triggered');
-        debugPrint(
-            'Current products: ${selectedPolygon?.products?.join(', ') ?? 'none'}');
-        debugPrint('New products: ${newProducts.join(', ')}');
+ 
 
         if (selectedPolygon == null) {
-          debugPrint('Warning: selectedPolygon is null during product update');
-          return;
+        return;
         }
 
         // Create a new list to avoid reference issues
@@ -1106,16 +1077,9 @@ class PolygonManager with RouteAware {
         // Update the polygon
         selectedPolygon = selectedPolygon!.copyWith(products: updatedProducts);
 
-        // Debug print after update but before notifying
-        debugPrint(
-            'Updated polygon products: ${selectedPolygon!.products?.join(', ') ?? 'none'}');
-
+   
         // Notify listeners
         selectedPolygonNotifier.value = selectedPolygon;
-
-        // Final verification print
-        debugPrint(
-            'Notifier updated with products: ${selectedPolygonNotifier.value?.products?.join(', ') ?? 'none'}');
       },
       onSave: () {
         saveEditedPolygon();
@@ -1245,8 +1209,7 @@ class PolygonManager with RouteAware {
             title: Text('Failed to create farm: ${e.toString()}'),
             alignment: Alignment.topRight,
             autoCloseDuration: const Duration(seconds: 4),
-          );
-          debugPrint('Failed to create farm: ${e.toString()}');
+          ); 
           currentPolygon.clear();
           isDrawing = false;
         }
@@ -1299,35 +1262,12 @@ class PolygonManager with RouteAware {
     selectedPolygonNotifier.value = null;
   }
 
-  /// Logs all polygon data to the console
-  void logPolygons() {
-    if (polygons.isEmpty) {
-      // print("No polygons available.");
-      return;
-    }
-
-    // print("===== Logging Polygon Data =====");
-    for (int i = 0; i < polygons.length; i++) {
-      final polygon = polygons[i];
-      print("Polygon ${i + 1}: ${polygon.name}");
-
-      print("  - Color: ${polygon.color}");
-      print(
-          "  - Center: Lat: ${polygon.center.latitude}, Lng: ${polygon.center.longitude}");
-
-      print("  - Description: ${polygon.description}");
-
-      if (polygon.pinStyle != null) {
-        print("  - Icon: ${polygon.pinStyle}");
-      }
-      print("-----------------------------");
-    }
-    print("===== End of Polygon Data =====");
-  }
-
+   
   void toggleDrawing() {
     _saveState();
     isDrawing = !isDrawing;
+
+  onDrawingStateChanged?.call(isDrawing);
 
     if (!isDrawing) {
       currentPolygon.clear();
@@ -1420,8 +1360,7 @@ class PolygonManager with RouteAware {
         polyEditor = null;
       }
 
-      selectedPolygonNotifier.value = selectedPolygon;
-      debugPrint('Redo completed. Selected index: $selectedPolygonIndex');
+      selectedPolygonNotifier.value = selectedPolygon; 
     }
   }
 }

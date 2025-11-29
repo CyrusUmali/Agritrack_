@@ -214,7 +214,7 @@ if (screenHeight < 400) {
 
   Widget _buildSearchBarMobile() {
     return SizedBox(
-      height: 48,
+      height: 50,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Wrap(

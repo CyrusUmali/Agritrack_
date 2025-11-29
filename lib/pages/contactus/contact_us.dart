@@ -20,11 +20,18 @@ class ContactUsPage extends LayoutWidget {
   bool _isEmailPrefilled = false;
   final List<XFile> _attachedImages = [];
   final ImagePicker _imagePicker = ImagePicker();
+   bool _isSmallScreen(BuildContext context) {
+    return MediaQuery.of(context).size.width < 400;
+  }
 
   @override
   String breakTabTitle(BuildContext context) {
     return 'Contact Support';
   }
+
+  
+    @override
+  EdgeInsetsGeometry? get customPadding => const EdgeInsets.all(9);
 
   @override
   Widget contentDesktopWidget(BuildContext context) {
@@ -50,19 +57,25 @@ class ContactUsPage extends LayoutWidget {
     );
   }
 
-  Widget _mainFormWidget(BuildContext context) {
-    // Prefill email on widget build (only once)
-    if (!_isEmailPrefilled) {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      if (userProvider.farmer?.email != null && userProvider.farmer!.email!.isNotEmpty) {
-        _emailController.text = userProvider.farmer!.email!;
-      }
-      _isEmailPrefilled = true;
-    }
 
-    return CommonCard(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
+Widget _mainFormWidget(BuildContext context) {
+  // Prefill email on widget build (only once)
+  if (!_isEmailPrefilled) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (userProvider.farmer?.email != null && userProvider.farmer!.email!.isNotEmpty) {
+      _emailController.text = userProvider.farmer!.email!;
+    }
+    _isEmailPrefilled = true;
+  }
+
+  // Create a GlobalKey for the form
+  final _formKey = GlobalKey<FormState>();
+
+  return CommonCard(
+    child: Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Form(
+        key: _formKey, // Add this key
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -114,10 +127,17 @@ class ContactUsPage extends LayoutWidget {
               labelText: context.translate('Your Email *'),
               hintText: context.translate('email@example.com'),
               keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return context.translate('Please enter your email address');
+                }
+                if (!_isValidEmail(value)) {
+                  return context.translate('Please enter a valid email address');
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
-
-             
 
             // Problem Description
             OutBorderTextFormField(
@@ -125,104 +145,115 @@ class ContactUsPage extends LayoutWidget {
               labelText: context.translate('Describe the Issue *'),
               hintText: context.translate('contactus_hint_problem_description'),
               maxLines: 8,
+               errorLeft: 12,
+            errorRight: 12,
+            errorBottom: -15,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return context.translate('Please describe the issue you\'re experiencing');
+                }
+                if (value.length < 10) {
+                  return context.translate('Please provide more details (at least 10 characters)');
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 24),
 
             // Image Attachments Section
-         
-         
-         
-         // In _mainFormWidget method, replace the Image Attachments Section Container
-Container(
-  padding: const EdgeInsets.all(16),
-  decoration: BoxDecoration(
-    color: Theme.of(context).brightness == Brightness.dark
-        ? Theme.of(context).cardTheme.color
-        : Colors.grey.shade50,
-    borderRadius: BorderRadius.circular(8),
-    border: Border.all(
-      color: Theme.of(context).brightness == Brightness.dark
-          ? Colors.grey.shade700
-          : Colors.grey.shade300,
-    ),
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          Icon(
-            Icons.attach_file, 
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.blue.shade400
-                : Colors.blue.shade700, 
-            size: 20
-          ),
-          const SizedBox(width: 8),
-          Text(
-            context.translate('Attachments (Optional)'),
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black,
-            ),
-          ),
-          const Spacer(),
-          TextButton.icon(
-            onPressed: () => _pickImages(context),
-            icon: Icon(
-              Icons.add_photo_alternate, 
-              size: 18,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.blue.shade400
-                  : Colors.blue.shade700,
-            ),
-            label: Text(
-              context.translate('Add Images'),
-              style: TextStyle(
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
                 color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.blue.shade400
-                    : Colors.blue.shade700,
+                    ? Theme.of(context).cardTheme.color
+                    : Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade700
+                      : Colors.grey.shade300,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.attach_file, 
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.blue.shade400
+                            : Colors.blue.shade700, 
+                        size: 20
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        context.translate('Attachments (Optional)'),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                      const Spacer(),
+                      Visibility(
+                        visible: !_isSmallScreen(context),
+                        child: TextButton.icon(
+                          onPressed: () => _pickImages(context),
+                          icon: Icon(
+                            Icons.add_photo_alternate, 
+                            size: 18,
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.blue.shade400
+                                : Colors.blue.shade700,
+                          ),
+                          label: Text(
+                            context.translate('Add Images'),
+                            style: TextStyle(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.blue.shade400
+                                  : Colors.blue.shade700,
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            backgroundColor: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.blue.shade900.withOpacity(0.3)
+                                : Colors.blue.shade50,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_attachedImages.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _attachedImages.asMap().entries.map((entry) {
+                        return _buildImagePreview(entry.key, entry.value, context);
+                      }).toList(),
+                    ),
+                  ] else
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        context.translate('No images attached. Add screenshots to help us understand the issue better.'),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey.shade400
+                              : Colors.grey.shade600,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              backgroundColor: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.blue.shade900.withOpacity(0.3)
-                  : Colors.blue.shade50,
-            ),
-          ),
-        ],
-      ),
-      if (_attachedImages.isNotEmpty) ...[
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _attachedImages.asMap().entries.map((entry) {
-            return _buildImagePreview(entry.key, entry.value, context);
-          }).toList(),
-        ),
-      ] else
-        Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Text(
-            context.translate('No images attached. Add screenshots to help us understand the issue better.'),
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey.shade400
-                  : Colors.grey.shade600,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ),
-    ],
-  ),
-),
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
             // Submit Button
             SizedBox(
@@ -231,7 +262,7 @@ Container(
               child: ButtonWidget(
                 btnText: context.translate("Submit Issue Report"),
                 type: ButtonType.primary.type,
-                onTap: () => _handleSubmit(context),
+                onTap: () => _handleSubmit(context, _formKey), // Pass the form key
               ),
             ),
             
@@ -264,8 +295,10 @@ Container(
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _supportInfoWidget(BuildContext context) {
     return Column(
@@ -547,94 +580,65 @@ Container(
     );
   }
 
-  void _handleSubmit(BuildContext context) async {
-    // Validation
-    if (_emailController.text.isEmpty) {
-      ToastHelper.showErrorToast(
-        context.translate("Please enter your email address"),
-        context,
-      );
-      return;
-    }
-
-    if (!_isValidEmail(_emailController.text)) {
-      ToastHelper.showErrorToast(
-        context.translate("Please enter a valid email address"),
-        context,
-      );
-      return;
-    }
-
-  
-
-    if (_problemController.text.isEmpty) {
-      ToastHelper.showErrorToast(
-        context.translate("Please describe the issue you're experiencing"),
-        context,
-      );
-      return;
-    }
-
-    if (_problemController.text.length < 10) {
-      ToastHelper.showErrorToast(
-        context.translate("Please provide more details (at least 10 characters)"),
-        context,
-      );
-      return;
-    }
-
-    try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final farmerName = userProvider.farmer?.name ?? 'Unknown User';
-      
-      // Build attachment info
-      String attachmentInfo = '';
-      if (_attachedImages.isNotEmpty) {
-        attachmentInfo = '\n\nAttached Images (${_attachedImages.length}):\n';
-        for (int i = 0; i < _attachedImages.length; i++) {
-          attachmentInfo += '${i + 1}. ${_attachedImages[i].name}\n';
-        }
-        attachmentInfo += '\nNote: Images cannot be sent via mailto link. Please attach them manually when sending the email.';
-      }
-      
-      // Compose email
-      final String subject = Uri.encodeComponent('Technical Support Request - AgriTrack');
-      final String body = Uri.encodeComponent(
-        'Support Request Details:\n\n'
-        'From: $farmerName\n'
-        'Email: ${_emailController.text}\n' 
-        'Issue Description:\n'
-        '${_problemController.text}'
-        '$attachmentInfo\n\n'
-        '---\n'
-        'Submitted via AgriTrack Contact Form'
-      );
-      
-      final Uri emailUri = Uri.parse('mailto:umalic65@gmail.com?subject=$subject&body=$body');
-      
-      if (await canLaunchUrl(emailUri)) {
-        await launchUrl(emailUri);
-        
-        String successMessage = _attachedImages.isNotEmpty
-            ? context.translate('Email client opened. Please manually attach the ${_attachedImages.length} image(s) before sending.')
-            : context.translate('Email client opened. Please send the email to complete your request.');
-        
-        ToastHelper.showSuccessToast(
-          successMessage,
-          context,
-        );
-        
-        _clearForm();
-      } else {
-        throw Exception('Could not open email client');
-      }
-    } catch (e) {
-      ToastHelper.showErrorToast(
-        context.translate('Failed to open email client: ${e.toString()}'),
-        context,
-      );
-    }
+void _handleSubmit(BuildContext context, GlobalKey<FormState> formKey) async {
+  // Validate the form first
+  if (!formKey.currentState!.validate()) {
+    // Validation failed - error messages are already shown by the validators
+    return;
   }
+
+  try {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final farmerName = userProvider.farmer?.name ?? 'Unknown User';
+    
+    // Build attachment info
+    String attachmentInfo = '';
+    if (_attachedImages.isNotEmpty) {
+      attachmentInfo = '\n\nAttached Images (${_attachedImages.length}):\n';
+      for (int i = 0; i < _attachedImages.length; i++) {
+        attachmentInfo += '${i + 1}. ${_attachedImages[i].name}\n';
+      }
+      attachmentInfo += '\nNote: Images cannot be sent via mailto link. Please attach them manually when sending the email.';
+    }
+    
+    // Compose email
+    final String subject = Uri.encodeComponent('Technical Support Request - AgriTrack');
+    final String body = Uri.encodeComponent(
+      'Support Request Details:\n\n'
+      'From: $farmerName\n'
+      'Email: ${_emailController.text}\n' 
+      'Issue Description:\n'
+      '${_problemController.text}'
+      '$attachmentInfo\n\n'
+      '---\n'
+      'Submitted via AgriTrack Contact Form'
+    );
+    
+    final Uri emailUri = Uri.parse('mailto:umalic65@gmail.com?subject=$subject&body=$body');
+    
+    if (await canLaunchUrl(emailUri)) {
+      await launchUrl(emailUri);
+      
+      String successMessage = _attachedImages.isNotEmpty
+          ? context.translate('Email client opened. Please manually attach the ${_attachedImages.length} image(s) before sending.')
+          : context.translate('Email client opened. Please send the email to complete your request.');
+      
+      ToastHelper.showSuccessToast(
+        successMessage,
+        context,
+      );
+      
+      _clearForm();
+    } else {
+      throw Exception('Could not open email client');
+    }
+  } catch (e) {
+    ToastHelper.showErrorToast(
+      context.translate('Failed to open email client: ${e.toString()}'),
+      context,
+    );
+  }
+}
 
   bool _isValidEmail(String email) {
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');

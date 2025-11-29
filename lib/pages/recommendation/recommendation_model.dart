@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class RecommendationModel extends ChangeNotifier {
-  String selectedModel = 'Random Forest';
+  String selectedModel = 'XGBoost';
   double soil_ph = 6.2;
   double fertility_ec = 1443;
   double sunlight = 44844;

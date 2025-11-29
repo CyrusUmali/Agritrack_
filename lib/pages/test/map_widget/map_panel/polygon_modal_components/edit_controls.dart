@@ -332,6 +332,7 @@ class EditControls {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+          backgroundColor: Theme.of(context).cardTheme.color, // or any color you want
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -362,4 +363,6 @@ class EditControls {
       ),
     );
   }
+
+
 }

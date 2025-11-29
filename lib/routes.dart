@@ -1,5 +1,6 @@
 // ignore_for_file: library_prefixes, unused_import
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flareline/auth_guard.dart';
 import 'package:flareline/deferred_widget.dart';
 import 'package:flareline/pages/auth/forgot_password/forgot_password.dart'
@@ -12,6 +13,7 @@ import 'package:flareline/pages/table/contacts_page.dart' deferred as contacts;
 import 'package:flareline/pages/toast/toast_page.dart' deferred as toast;
 import 'package:flareline/pages/tools/tools_page.dart' deferred as tools;
 import 'package:flareline/services/roleguard.dart';
+import 'package:flareline/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flareline/pages/alerts/alert_page.dart' deferred as alert;
 import 'package:flareline/pages/button/button_page.dart' deferred as button;
@@ -74,6 +76,7 @@ final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 final List<Map<String, Object>> MAIN_PAGES = [
   {'routerPath': '/', 'widget': const Dashboard()},
+  
   {
     'routerPath': '/calendar',
     'widget':
@@ -238,6 +241,8 @@ class RouteConfiguration {
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     final path = settings.name!;
     final context = navigatorContext!;
+
+   
 
     // First handle public routes
     if (AuthGuard.isPublicRoute(path)) {

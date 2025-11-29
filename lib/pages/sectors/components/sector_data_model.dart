@@ -1,6 +1,5 @@
 import 'package:flareline/core/models/yield_model.dart';
 import 'package:flutter/material.dart';
-import 'dart:math';
 
 class SectorData {
   final String name;
@@ -18,7 +17,7 @@ class SectorData {
   Map<String, dynamic> toMap() {
     return {
       'name': name,
-      'color': color,
+      'color': color, 
       'data': data,
     };
   }
@@ -38,9 +37,9 @@ class SectorData {
   }
 }
 
-// Predefined color palette
-const List<Color> predefinedColors = [
-  Colors.blue,
+// 8 fixed colors
+const List<Color> fixedColors = [
+  Colors.blue, 
   Colors.red,
   Colors.green,
   Colors.yellow,
@@ -48,29 +47,11 @@ const List<Color> predefinedColors = [
   Colors.orange,
   Colors.teal,
   Colors.pink,
-  Colors.indigo,
-  Colors.cyan,
-  Colors.amber,
-  Colors.lime,
-  Colors.brown,
-  Colors.grey,
-  Colors.blueGrey,
 ];
 
 Map<String, List<SectorData>> sectorData = {
   // We'll build this dynamically from yieldData
 };
-
-// Helper function to generate distinct colors
-Color generateDistinctColor(Random random,
-    {int saturation = 85, int lightness = 60}) {
-  return HSLColor.fromAHSL(
-    1.0,
-    random.nextDouble() * 360, // Random hue
-    saturation / 100,
-    lightness / 100,
-  ).toColor();
-}
 
 Map<String, List<SectorData>> buildSectorDataFromYields(List<Yield> yields) {
   // First filter the yields to only include Accepted records
@@ -78,8 +59,7 @@ Map<String, List<SectorData>> buildSectorDataFromYields(List<Yield> yields) {
       yields.where((yield) => yield.status == 'Accepted').toList();
 
   final sectorMap = <String, List<SectorData>>{};
-  final random = Random(42); // Seed for consistent colors
-  int colorIndex = 0; // Index for predefined colors
+  int colorIndex = 0; // Index for fixed colors
 
   // First group by sector
   final yieldsBySector = <String, List<Yield>>{};
@@ -105,13 +85,9 @@ Map<String, List<SectorData>> buildSectorDataFromYields(List<Yield> yields) {
       if (!productsMap.containsKey(productName)) {
         productsMap[productName] = {};
 
-        // Assign color - first try predefined, then generate
-        if (colorIndex < predefinedColors.length) {
-          productColors[productName] = predefinedColors[colorIndex];
-          colorIndex++;
-        } else {
-          productColors[productName] = generateDistinctColor(random);
-        }
+        // Assign color from fixed colors, cycling through them
+        productColors[productName] = fixedColors[colorIndex % fixedColors.length];
+        colorIndex++;
       }
 
       // Aggregate volumes by year

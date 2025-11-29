@@ -43,9 +43,7 @@ void showBarangayFilterModal(BuildContext context) {
     showTitleDivider: true,
     modalType: ModalType.medium,
     onCancelTap: () => Navigator.of(context).pop(),
-    onSaveTap: () {
-      // Handle selected barangays
-      print('Selected barangays: $selectedBarangays');
+    onSaveTap: () { 
       Navigator.of(context).pop();
     },
     child: Column(

@@ -137,6 +137,7 @@ class LanguageService {
       'Total Products': 'Total Products',
       'Varieties:': 'Varieties:' ,
       'Agriculture Assistant': 'Agriculture Assistant' ,
+      'How can I help you today?': 'How can I help you today?',
 
 
 
@@ -229,11 +230,22 @@ class LanguageService {
   'Note the time when issue occurred': 'Note the time when issue occurred',
   'Please describe the issue you\'re experiencing': 'Please describe the issue you\'re experiencing',
   'Please provide more details (at least 10 characters)':' Please provide more details (at least 10 characters)',
+  'No notifications found':'No notifications found',
+  'No notifications':'No notifications',
+  'Try different search terms':'Try different search terms',
+  'You dont have any notifications yet':'You dont have any notifications yet',
+  'Clear Search':'Clear Search',
 
 
     },
     'fil': {
 
+'Clear Search': 'I-clear ang Paghahanap',
+'You dont have any notifications yet':'Wala ka pang mga notification',
+'Try different search terms':'Subukan ang ibat ibang mga termino sa paghahanap',
+'No notifications':'Walang mga notification',
+'No notifications found':'Walang nahanap na mga notification',
+'How can I help you today?':' Paano kita matutulungan ?',
 'Please provide more details (at least 10 characters)': ' Mangyaring magbigay ng higit pang mga detalye (hindi bababa sa 10 mga character)',
 'Please describe the issue you\'re experiencing': 'Mangyaring ilarawan ang isyu na iyong nararanasan',
 'Note the time when issue occurred': 'Tandaan ang oras kung kailan nangyari ang isyu',
@@ -291,7 +303,7 @@ class LanguageService {
   'Hide Quick Topics': 'Itago ang Mabilis na Paksa',
   'Show Quick Topics': 'Ipakita ang Mabilis na Paksa',
   
-  // Quick Option Cards
+  // Quick Option Cards 
   'Soil Health': 'Kalusugan ng Lupa',
   'Tell me about soil health and pH levels': 'Sabihin mo sa akin ang tungkol sa kalusugan ng lupa at pH levels',
   

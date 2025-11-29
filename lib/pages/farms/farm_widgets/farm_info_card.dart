@@ -4,6 +4,7 @@ import 'package:flareline/pages/test/map_widget/stored_polygons.dart';
 import 'package:flareline/pages/widget/combo_box.dart';
 import 'package:flareline/providers/user_provider.dart';
 import 'package:flareline_uikit/components/forms/outborder_text_form_field.dart';
+import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -97,11 +98,9 @@ class _FarmInfoCardState extends State<FarmInfoCard> {
       }
     }
 
-    // Add debug logging
-    print('Before getSectorId - sector: ${_editedFarm['sector']}');
+    // Add debug logging 
     final sectorId = getSectorId(_editedFarm['sector']?.toString());
-    print('After getSectorId - sectorId: $sectorId');
-
+    
     final saveData = {
       'farmName': _editedFarm['farmName'] ?? '',
       'farmerId': selectedFarmer['id'] ?? '',
@@ -110,8 +109,7 @@ class _FarmInfoCardState extends State<FarmInfoCard> {
       'barangayName': _editedFarm['barangay'] ?? '',
       'status': _editedFarm['status'] ?? 'Active',
     };
-
-    print('Saved farm data: $saveData');
+ 
     widget.onSave(saveData);
 
     setState(() {
@@ -148,7 +146,16 @@ class _FarmInfoCardState extends State<FarmInfoCard> {
           selectedValue: _editedFarm['status'] ?? 'Active',
           onSelected: (value) => _handleFieldChange('status', value),
           width: isMobile ? double.infinity : 180,
-          height: 38);
+          height: 38, 
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+      ? GlobalColors.darkerCardColor
+      : GlobalColors.surfaceColor,
+          
+          
+          )
+          
+          ;
+          
     } else if (_isEditing && isFarmerUser) {
       // Locked field for farmer users - show as read-only with lock icon
       return Container(
@@ -203,7 +210,11 @@ class _FarmInfoCardState extends State<FarmInfoCard> {
           selectedValue: _editedFarm['farmOwner'] ?? '',
           onSelected: (value) => _handleFieldChange('farmOwner', value),
           width: isMobile ? double.infinity : 180,
-          height: 38);
+          height: 38, 
+             backgroundColor: Theme.of(context).brightness == Brightness.dark
+      ? GlobalColors.darkerCardColor
+      : GlobalColors.surfaceColor,
+          );
     } else if (_isEditing && isFarmerUser) {
       // Locked field for farmer users - show as read-only with lock icon
       return Container(
@@ -254,7 +265,11 @@ class _FarmInfoCardState extends State<FarmInfoCard> {
           options: _sectors,
           selectedValue: _editedFarm['sector']?.toString() ?? _sectors.first,
           onSelected: (value) => _handleFieldChange('sector', value),
+    
           width: isMobile ? double.infinity : 180,
+             backgroundColor: Theme.of(context).brightness == Brightness.dark
+      ? GlobalColors.darkerCardColor
+      : GlobalColors.surfaceColor,
           height: 38);
     } else {
       return Text(
@@ -274,7 +289,11 @@ class _FarmInfoCardState extends State<FarmInfoCard> {
           options: barangayNames,
           selectedValue: _editedFarm['barangay'] ?? '',
           onSelected: (value) => _handleFieldChange('barangay', value),
+        
           width: isMobile ? double.infinity : 180,
+            backgroundColor: Theme.of(context).brightness == Brightness.dark
+      ? GlobalColors.darkerCardColor
+      : GlobalColors.surfaceColor,
           height: 38);
     } else {
       return Text(

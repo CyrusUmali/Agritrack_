@@ -1,6 +1,5 @@
 // lib/pages/recommendation/ai_models_info_widget.dart
 
-import 'package:flareline/services/lanugage_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flareline_uikit/components/buttons/button_widget.dart';
 import 'package:flareline_uikit/core/theme/flareline_colors.dart'; 
@@ -14,7 +13,7 @@ class AiModelsInfoWidget {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel: context.translate('Dismiss'),
+      barrierLabel: 'Isara',
       transitionDuration: const Duration(milliseconds: 250),
       pageBuilder: (context, animation, secondaryAnimation) {
         return FadeTransition(
@@ -75,43 +74,43 @@ class _AiModelsInfoContentState extends State<AiModelsInfoContent> {
   List<Map<String, dynamic>> _getModels(BuildContext context) {
     return [
       {
-        'title': context.translate('decisionTree'),
+        'title': 'Decision Tree',
         'icon': Icons.account_tree,
         'color': Color(0xFF10B981),
-        'description': context.translate('decisionTreeDescription'),
-        'explanation': context.translate('decisionTreeExplanation'),
-        'analogy': context.translate('decisionTreeAnalogy'),
-        'bestFor': context.translate('decisionTreeBestFor'),
+        'description': 'Parang puno ng desisyon',
+        'explanation': 'Isipin mo na parang nag-tatanong ka sa sarili mo: "Maulan ba? Oo o Hindi?" Kung OO, tanong ulit: "Sandy ba ang lupa? Oo o Hindi?" Ganyan yung Decision Tree - sunod-sunod na tanong hanggang makuha ang tamang sagot kung anong pananim ang angkop.',
+        'analogy': 'Parang ikaw na pumipili ng pananim: Una, tingnan mo kung maulan ba o mainit. Tapos, tignan mo kung sandy o clay ang lupa mo. Sunod-sunod na tanong hanggang makuha mo ang best na crop para sa iyong farm.',
+        'bestFor': 'Maganda kung gusto mo maintindihan kung bakit ganito ang recommendation. Simple at madaling i-explain sa kapwa magsasaka.',
         'gradient': [Color(0xFF10B981), Color(0xFF059669)],
       },
       {
-        'title': context.translate('randomForest'),
+        'title': 'Random Forest',
         'icon': Icons.forest,
         'color': Color(0xFF3B82F6),
-        'description': context.translate('randomForestDescription'),
-        'explanation': context.translate('randomForestExplanation'),
-        'analogy': context.translate('randomForestAnalogy'),
-        'bestFor': context.translate('randomForestBestFor'),
+        'description': 'Maraming puno ng desisyon',
+        'explanation': 'Hindi lang isang puno - maraming puno! Imagine, may 100 ka pong kapitbahay na magsasaka na may kanya-kanyang opinion. Tinatanong mo silang lahat: "Ano magandang itanim?" Tapos kukunin mo yung pinaka-common na sagot. Mas accurate kasi maraming opinion ang pinag-combined!',
+        'analogy': 'Parang community meeting ng mga magsasaka. Hindi ka magtitiwala sa isang tao lang - tatanungin mo ang 50-100 na magsasaka, tapos yung pinakamaraming pumili ng isang crop, yun ang i-recommend mo. Mas matatag ang desisyon!',
+        'bestFor': 'Pinaka-reliable para sa iba\'t ibang kondisyon ng lupa at weather. Kahit may pagka-komplikado ang situation, makakakuha pa rin ng magandang recommendation.',
         'gradient': [Color(0xFF3B82F6), Color(0xFF2563EB)],
       },
       {
-        'title': context.translate('logisticRegression'),
+        'title': 'Logistic Regression',
         'icon': Icons.trending_up,
         'color': Color(0xFFF59E0B),
-        'description': context.translate('logisticRegressionDescription'),
-        'explanation': context.translate('logisticRegressionExplanation'),
-        'analogy': context.translate('logisticRegressionAnalogy'),
-        'bestFor': context.translate('logisticRegressionBestFor'),
+        'description': 'Simple math para sa prediction',
+        'explanation': 'Ito ay parang timbangan o weighing scale. Bawat factor (ulan, lupa, temperatura) ay may "bigat" o importance. I-add up lahat ng factors at kung lampas sa threshold, sasabihin "Oo, magtanim ng Palay!" Kung hindi umabot, "Hindi, magtanim ng iba."',
+        'analogy': 'Parang points system sa palengke. Kung sobrang ulan (+30 points), clay soil (+20 points), at mainit (+15 points) = 65 points total. Kung 50 ang passing, edi magtanim ng Palay! Simple math lang.',
+        'bestFor': 'Fast at simple. Okay kung ang tanong mo ay "Oo o Hindi" lang - magtatanim ba ng specific crop o hindi. Hindi masyadong kumplekado pero mabilis.',
         'gradient': [Color(0xFFF59E0B), Color(0xFFD97706)],
       },
       {
-        'title': context.translate('xgBoost'),
+        'title': 'XGBoost',
         'icon': Icons.rocket_launch,
         'color': Color(0xFF8B5CF6),
-        'description': context.translate('xgBoostDescription'),
-        'explanation': context.translate('xgBoostExplanation'),
-        'analogy': context.translate('xgBoostAnalogy'),
-        'bestFor': context.translate('xgBoostBestFor'),
+        'description': 'Ang pinaka-matalino at mabilis',
+        'explanation': 'Ito yung "expert mode" na parang si Tatay na marunong na magsaka ng 30 years. Hindi lang titingin sa obvious na bagay - pati yung maliliit na detalye na hindi mo napapansin, alam niya. Natututo pa siya from mistakes para mas gumaling pa.',
+        'analogy': 'Imagine may team ka ng pinaka-expert na agricultural technicians. Yung una mag-check ng soil, yung pangalawa ng weather, yung pangatlo ng market price. Lahat ng opinion nila pinagsama-sama ng pinaka-wise na elder para makuha ang BEST recommendation. Yun ang XGBoost!',
+        'bestFor': 'Para sa pinaka-accurate na prediction. Gamitin kung sobrang importante ang desisyon mo - like malaking investment o critical season. Ito yung pinaka-advanced naming AI.',
         'gradient': [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
       },
     ];
@@ -191,14 +190,14 @@ class _AiModelsInfoContentState extends State<AiModelsInfoContent> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      context.translate('howOurAiModelsWork'),
+                      'Paano Gumagana ang Aming AI',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                             fontSize: 19,
                           ),
                     ),
                     Text(
-                      context.translate('understandingCropRecommendations'),
+                      'Alamin kung paano namin nirerekomenda ang tamang pananim',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: isDark ? Colors.grey[400] : Colors.grey[600],
                             fontSize: 12,
@@ -243,7 +242,7 @@ class _AiModelsInfoContentState extends State<AiModelsInfoContent> {
           ),
         ),
 
-        // Footer with navigation - FIXED OVERFLOW
+        // Footer with navigation
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
@@ -289,7 +288,7 @@ class _AiModelsInfoContentState extends State<AiModelsInfoContent> {
 
               const SizedBox(height: 16),
 
-              // Navigation buttons - FIXED: Wrap in Flexible to prevent overflow
+              // Navigation buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -298,7 +297,7 @@ class _AiModelsInfoContentState extends State<AiModelsInfoContent> {
                     width: 100,
                     child: _currentPage > 0
                         ? ButtonWidget(
-                            btnText: context.translate('previous'),
+                            btnText: 'Balik',
                             onTap: _previousPage,
                             textColor: FlarelineColors.darkBlackText,
                           )
@@ -319,8 +318,8 @@ class _AiModelsInfoContentState extends State<AiModelsInfoContent> {
                     width: 100,
                     child: ButtonWidget(
                       btnText: _currentPage == models.length - 1 
-                          ? context.translate('close') 
-                          : context.translate('next'),
+                          ? 'Isara' 
+                          : 'Susunod',
                       onTap: _currentPage == models.length - 1
                           ? () => Navigator.of(context).pop()
                           : _nextPage,
@@ -410,7 +409,7 @@ class _AiModelsInfoContentState extends State<AiModelsInfoContent> {
           // Explanation section
           _buildSection(
             context,
-            context.translate('howItWorks'),
+            'Paano Ito Gumagana?',
             Icons.lightbulb_outline,
             model['explanation'],
             model['color'],
@@ -422,7 +421,7 @@ class _AiModelsInfoContentState extends State<AiModelsInfoContent> {
           // Analogy section
           _buildSection(
             context,
-            context.translate('simpleAnalogy'),
+            'Simpleng Halimbawa',
             Icons.emoji_objects,
             model['analogy'],
             model['color'],
@@ -466,7 +465,7 @@ class _AiModelsInfoContentState extends State<AiModelsInfoContent> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        context.translate('bestFor'),
+                        'Kailan Gamitin?',
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,

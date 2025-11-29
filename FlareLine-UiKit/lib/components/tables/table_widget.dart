@@ -74,7 +74,7 @@ abstract class TableWidget<S extends BaseTableProvider> extends BaseWidget<S> {
 
   Widget _buildImageTextCell(TableDataRowsTableDataRows columnData) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+      padding: const EdgeInsets.only( right: 12.0),
       child: Row(
         children: [
           if (columnData.imageUrl != null)
@@ -327,34 +327,37 @@ abstract class TableWidget<S extends BaseTableProvider> extends BaseWidget<S> {
     return true;
   }
 
-  /// Update the method signature to include context and viewModel
   GridColumn gridColumnWidget(
-    dynamic e,
-    bool isMobile,
-    BuildContext context, // Add context parameter
-    S viewModel, // Add viewModel parameter
-  ) {
-    String columnName;
-    String? align;
-    if (e is String) {
-      columnName = e;
-    } else {
-      columnName = e['columnName'] ?? '';
-      align = e['align'];
-    }
-
-    return GridColumn(
-      width: gridColumnWidgetWidth(columnName),
-      columnName: columnName,
-      visible: isColumnVisible(columnName, isMobile),
-      label: Container(
-        alignment: 'center' == align
-            ? Alignment.center
-            : ('right' == align ? Alignment.centerRight : Alignment.centerLeft),
-        child: headerBuilder(context, columnName, viewModel),
-      ),
-    );
+  dynamic e,
+  bool isMobile,
+  BuildContext context,
+  S viewModel,
+) {
+  String columnName;
+  String? align;
+  if (e is String) {
+    columnName = e;
+  } else {
+    columnName = e['columnName'] ?? '';
+    align = e['align'];
   }
+
+  return GridColumn(
+    width: gridColumnWidgetWidth(columnName),
+    columnName: columnName,
+    visible: isColumnVisible(columnName, isMobile),
+    label: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0), // Same as cells
+      alignment: 'center' == align
+          ? Alignment.center
+          : ('right' == align ? Alignment.centerRight : Alignment.centerLeft),
+      child: headerBuilder(context, columnName, viewModel),
+    ),
+  );
+}
+
+
+
 
   @override
   Widget bodyWidget(BuildContext context, S viewModel, Widget? child) {
@@ -485,39 +488,58 @@ Widget cellWidget(TableDataRowsTableDataRows columnData) {
   // Wrap with GestureDetector to handle taps if onCellTap is provided
   Widget contentWidget;
 
-  if (columnData.dataType == CellDataType.IMAGE_TEXT.type) {
-    contentWidget = _imageTextCellWidget(columnData); // Don't return early
+
+   // Apply the same padding structure to ALL cell types
+  Widget buildPaddedContent(Widget child) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+      child: child,
+    );
+  }
+
+   if (columnData.dataType == CellDataType.IMAGE_TEXT.type) {
+    contentWidget = _imageTextCellWidget(columnData);
   } else if (CellDataType.TOGGLE.type == columnData.dataType) {
-    return SwitchWidget(
+    contentWidget = buildPaddedContent(
+      SwitchWidget(
         checked: '1' == columnData.text,
         onChanged: (checked) async {
           onToggleChanged(context, checked, columnData);
-        });
+        },
+      ),
+    );
   } else if (CellDataType.TAG.type == columnData.dataType) {
-    return TagWidget(
-      text: columnData.text ?? '',
-      tagType: TagType.getTagType(columnData.tagType),
+    contentWidget = buildPaddedContent(
+      TagWidget(
+        text: columnData.text ?? '',
+        tagType: TagType.getTagType(columnData.tagType),
+      ),
     );
   } else if (CellDataType.ACTION.type == columnData.dataType) {
-    return actionWidgetsBuilder(context, columnData)!;
+    contentWidget = buildPaddedContent(
+      actionWidgetsBuilder(context, columnData) ?? const SizedBox.shrink(),
+    );
   } else if (CellDataType.IMAGE.type == columnData.dataType) {
-    contentWidget = _imageCellWidget(columnData); // Don't return early
+    contentWidget = buildPaddedContent(_imageCellWidget(columnData));
   } else if (CellDataType.CUSTOM.type == columnData.dataType) {
-    return customWidgetsBuilder(context, columnData)!;
+    contentWidget = buildPaddedContent(
+      customWidgetsBuilder(context, columnData) ?? const SizedBox.shrink(),
+    );
   } else if (CellDataType.ICON.type == columnData.dataType) {
-    contentWidget = _iconCellWidget(columnData); // Don't return early
+    contentWidget = buildPaddedContent(_iconCellWidget(columnData));
   } else {
+    // TEXT type and any other types
     String text = columnData.text ?? '';
     if (text.length > 50) {
       text = '${text.substring(0, 50)}...';
     }
-    contentWidget = Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-      child: Text(text),
+    contentWidget = buildPaddedContent(
+      Container(
+        width: double.infinity,
+        child: Text(text),
+      ),
     );
   }
-
   // Apply GestureDetector to ALL content widgets (including IMAGE_TEXT, IMAGE, ICON, and TEXT)
   return onCellTap != null
       ? GestureDetector(
@@ -527,63 +549,61 @@ Widget cellWidget(TableDataRowsTableDataRows columnData) {
       : contentWidget;
 }
 
-  Widget _imageTextCellWidget(TableDataRowsTableDataRows columnData) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-      child: Row(
-        children: [
-          if (columnData.imageUrl != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 12.0),
-              child: CircleAvatar(
-                radius: 20,
-                backgroundImage: NetworkImage(columnData.imageUrl!),
-                onBackgroundImageError: (exception, stackTrace) {
-                  // Error handling
-                },
-                // child: const Icon(Icons.image, size: 20),
-              ),
-            ),
-          Expanded(
-            child: Text(
-              columnData.text ?? '',
-              overflow: TextOverflow.ellipsis,
-            ),
+
+
+// Update the specific widget methods to remove their internal padding
+Widget _imageTextCellWidget(TableDataRowsTableDataRows columnData) {
+  // Remove the Padding from here since it's now applied in the parent
+  return Row(
+    children: [
+      if (columnData.imageUrl != null)
+        Padding(
+          padding: const EdgeInsets.only(right: 12.0),
+          child: CircleAvatar(
+            radius: 20,
+            backgroundImage: NetworkImage(columnData.imageUrl!),
+            onBackgroundImageError: (exception, stackTrace) {
+              // Error handling
+            },
           ),
-        ],
+        ),
+      Expanded(
+        child: Text(
+          columnData.text ?? '',
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
-    );
-  }
+    ],
+  );
+}
+Widget _imageCellWidget(TableDataRowsTableDataRows columnData) {
+  // Remove any external padding from this method
+  return SizedBox(
+    width: 40,
+    height: 40,
+    child: (columnData.text != null && columnData.text != ''
+        ? CircleAvatar(
+            radius: 20,
+            backgroundImage: NetworkImage(columnData.text!),
+            onBackgroundImageError: (exception, stackTrace) {
+              // Error handling
+            },
+          )
+        : const SizedBox.shrink()),
+  );
+}
 
-  // Add a new method to handle icon cells
-  Widget _iconCellWidget(TableDataRowsTableDataRows columnData) {
-    // Extract the icon data from columnData
-    IconData? iconData = columnData.iconData;
-    Color? iconColor = columnData.iconColor;
+Widget _iconCellWidget(TableDataRowsTableDataRows columnData) {
+  // Remove any external padding from this method
+  return Icon(
+    columnData.iconData ?? Icons.help_outline,
+    color: columnData.iconColor,
+    size: 20,
+  );
+}
 
-    return Icon(
-      iconData ?? Icons.help_outline, // Default icon if none specified
-      color: iconColor,
-      size: 20,
-    );
-  }
+ 
 
-  Widget _imageCellWidget(TableDataRowsTableDataRows columnData) {
-    return SizedBox(
-      width: 40,
-      height: 40,
-      child: (columnData.text != null && columnData.text != ''
-          ? CircleAvatar(
-              radius: 20,
-              backgroundImage: NetworkImage(columnData.text!),
-              onBackgroundImageError: (exception, stackTrace) {
-                // Error handling
-              },
-              // child: const Icon(Icons.image, size: 20),
-            )
-          : const SizedBox.shrink()),
-    );
-  }
 }
 
 abstract class BaseTableProvider extends BaseViewModel {

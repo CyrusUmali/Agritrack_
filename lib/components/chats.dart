@@ -63,8 +63,9 @@ class _TopContributorsListState extends State<_TopContributorsList> {
       future: _contributorsFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: Text(AppLocalizations.of(context)!.loading));
+          return Center(   child: CircularProgressIndicator());
         }
+
 
         if (snapshot.hasError) {
           return NetworkErrorWidget(
@@ -120,14 +121,7 @@ class _ContributorItem extends StatelessWidget {
     final int? parsedFarmerID =
         farmerId != null ? int.tryParse(farmerId) : null;
 
-    // print('contributor');
-    // print(contributor);
-
-    // print('farmerId');
-    // print(farmerId);
-
-    // print('parsedFarmerID');
-    // print(parsedFarmerID);
+   
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),

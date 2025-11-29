@@ -9,7 +9,7 @@ import 'package:flareline/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // Add this import
 import 'suitability_inputs.dart';
-import 'suitability_results.dart';
+import 'suitability_results.dart'; 
 import 'package:flareline/services/lanugage_extension.dart';
 
 class SuitabilityContent extends StatefulWidget {
@@ -26,47 +26,60 @@ class SuitabilityContentState extends State<SuitabilityContent> {
   SuitabilityModel? model;
 
   final List<String> availableCrops = [
-    "ampalaya",
-    "apple",
-    "banana",
-    "cacao",
-    "calamansi",
-    "cassava",
-    "coconut",
-    "durian",
-    "eggplant",
-    "gabi",
-    "ginger",
-    "grapes",
-    "guyabano",
-    "jackfruit",
-    "lanzones",
-    "maize",
-    "mango",
-    "mungbean",
-    "mustard",
-    "okra",
-    "onion",
-    "orange",
-    "oyster mushroom",
-    "papaya",
-    "patola",
-    "pechay",
-    "pineapple",
-    "radish",
-    "rambutan",
-    "rice",
-    "sigarilyas",
-    "sili panigang",
-    "sili tingala",
-    "snap bean",
-    "squash",
-    "string bean",
-    "sweet potato",
-    "tomato",
-    "ube",
-    "upo",
-    "watermelon",
+    "Ampalaya",
+    "Apple",
+    "Avocado",
+    "Banana",
+    "Bamboo",
+    "Black Pepper",
+    "Cacao",
+    "Calamansi",
+    "Cassava",
+    "Coconut",
+    "Coffee",
+    "Durian",
+    "Eggplant",
+    "Forage Grass",
+    "Gabi",
+    "Ginger",
+    "Grapes",
+    "Guyabano",
+    "Ipil Ipil",
+    "Jackfruit",
+    "Kamoteng Baging",
+    "Katuray",
+    "Kulo",
+    "Lanzones",
+    "Lipote",
+    "Maize",
+    "Mango",
+    "Mungbean",
+    "Mustard",
+    "Okra",
+    "Onion",
+    "Orange",
+    "Orchid",
+    "Oyster Mushroom",
+    "Papaya",
+    "Patola",
+    "Pechay",
+    "Pineapple",
+    "Radish",
+    "Rambutan",
+    "Rice",
+    "Sigarilyas",
+    "Sili Panigang",
+    "Sili Tingala",
+    "Sili Labuyo",
+    "Snap Bean",
+    "Squash",
+    "String Bean",
+    "Sweet Potato",
+    "Sweet Sorghum",
+    "Tomato",
+    "Ube",
+    "Upo",
+    "Watermelon",
   ];
 
   void _navigateToRequirements() {
@@ -157,9 +170,7 @@ class SuitabilityContentState extends State<SuitabilityContent> {
 
                             await model!.getSuggestionsStream(
                               deficientParams,
-                              languageCode: languageProvider
-                                  .currentLanguageCode, // This will now get the updated value
-                            );
+                          );
                           } catch (e) {
                             ToastHelper.showErrorToast(
                               'Error: ${e.toString()}',

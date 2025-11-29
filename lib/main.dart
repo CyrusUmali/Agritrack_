@@ -23,6 +23,7 @@ import 'package:flareline_uikit/service/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flareline/flutter_gen/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:provider/provider.dart';
@@ -47,9 +48,9 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Initialize API service and wake up the server (added here)
+  // Initialize API service and wake up the server  
   final apiService = ApiService();
-  await apiService.wakeUpServer(); // Add this method to ApiService (see below)
+    apiService.wakeUpServer();  
 
   if (GetPlatform.isDesktop && !GetPlatform.isWeb) {
     await windowManager.ensureInitialized();
@@ -68,6 +69,7 @@ void main() async {
 
   // Determine initial route based on auth state
   final initialRoute = await _getInitialRoute();
+ 
 
   runApp(MyApp(initialRoute: initialRoute));
 }
@@ -107,7 +109,7 @@ class MyApp extends StatelessWidget {
           create: (context) => ProductBloc(
             productRepository: context.read<ProductRepository>(),
           )..add(LoadProducts()),
-          lazy: false, // Load immediately
+          lazy: true, // Load immediately
         ),
         Provider<AssociationRepository>(create: (_) => assocsRepository),
         BlocProvider(
@@ -121,7 +123,7 @@ class MyApp extends StatelessWidget {
           create: (context) => FarmerBloc(
             farmerRepository: context.read<FarmerRepository>(),
           )..add(LoadFarmers()),
-          lazy: false, // Load immediately
+          lazy: true, // Load immediately
         ),
         RepositoryProvider(
           create: (context) => SectorService(ApiService()),
@@ -140,21 +142,21 @@ class MyApp extends StatelessWidget {
           create: (context) => YieldBloc(
             yieldRepository: context.read<YieldRepository>(),
           )..add(LoadYields()),
-          lazy: false, // Load immediately
+          lazy: true, // Load immediately
         ),
         Provider<FarmRepository>(create: (_) => farmRepository),
         BlocProvider(
           create: (context) => FarmBloc(
             farmRepository: context.read<FarmRepository>(),
           )..add(LoadFarms()),
-          lazy: false, // Load immediately
+          lazy: true, // Load immediately
         ),
         Provider<UserRepository>(create: (_) => userRepository),
         BlocProvider(
           create: (context) => UserBloc(
             userRepository: context.read<UserRepository>(),
           )..add(LoadUsers()),
-          lazy: false, // Load immediately
+          lazy: true, // Load immediately
         ),
       ],
       child: Builder(builder: (context) {
@@ -201,3 +203,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+ 

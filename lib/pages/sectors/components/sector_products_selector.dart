@@ -22,9 +22,7 @@ class SectorProductSelectionModal {
     bool isLoading = true;
     List<String> allProducts = [];
 
-    print('initialSelections');
-    print(initialSelections);
-
+    
     // Reset if sector has changed
     if (_currentSector != null && _currentSector != sector) {
       _sectorSelections.remove(_currentSector);

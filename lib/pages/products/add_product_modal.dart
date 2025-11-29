@@ -271,175 +271,194 @@ class _AddProductModalContentState extends State<_AddProductModalContent> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
 
-    return Padding(
-      padding: EdgeInsets.all(screenWidth < 600 ? 8.0 : 16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextFormField(
-            controller: nameController,
-            decoration: InputDecoration(
-              labelText: 'Product Name',
-              border: const OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(
-                vertical: screenWidth < 600 ? 10.0 : 16.0,
-                horizontal: 10.0,
-              ),
+
+
+@override
+Widget build(BuildContext context) {
+  final screenWidth = MediaQuery.of(context).size.width;
+
+  return Padding(
+    padding: EdgeInsets.all(screenWidth < 600 ? 8.0 : 16.0),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextFormField(
+          controller: nameController,
+          decoration: InputDecoration(
+            labelText: 'Product Name',
+            border: const OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(
+              vertical: screenWidth < 600 ? 10.0 : 16.0,
+              horizontal: 10.0,
             ),
           ),
-          SizedBox(height: screenWidth < 600 ? 8.0 : 16.0),
-          TextFormField(
-            controller: descriptionController,
-            decoration: InputDecoration(
-              labelText: 'Description',
-              border: const OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(
-                vertical: screenWidth < 600 ? 10.0 : 16.0,
-                horizontal: 10.0,
-              ),
+        ),
+        SizedBox(height: screenWidth < 600 ? 8.0 : 16.0),
+        TextFormField(
+          controller: descriptionController,
+          decoration: InputDecoration(
+            labelText: 'Description',
+            border: const OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(
+              vertical: screenWidth < 600 ? 10.0 : 16.0,
+              horizontal: 10.0,
             ),
-            maxLines: 3,
           ),
-          SizedBox(height: screenWidth < 600 ? 8.0 : 16.0),
-          DropdownButtonFormField<String>(
-            value: selectedCategory,
-            decoration: InputDecoration(
-              labelText: 'Category',
-              border: const OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(
-                vertical: screenWidth < 600 ? 10.0 : 16.0,
-                horizontal: 10.0,
-              ),
+          maxLines: 3,
+        ),
+        SizedBox(height: screenWidth < 600 ? 8.0 : 16.0),
+        DropdownButtonFormField<String>(
+          value: selectedCategory,
+          decoration: InputDecoration(
+            labelText: 'Category',
+            border: const OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(
+              vertical: screenWidth < 600 ? 10.0 : 16.0,
+              horizontal: 10.0,
             ),
-            items: const [
-              DropdownMenuItem(value: 'Rice', child: Text('Rice')),
-              DropdownMenuItem(value: 'Corn', child: Text('Corn')),
-              DropdownMenuItem(value: 'HVC', child: Text('HVC')),
-              DropdownMenuItem(value: 'Livestock', child: Text('Livestock')),
-              DropdownMenuItem(value: 'Fishery', child: Text('Fishery')),
-              DropdownMenuItem(value: 'Organic', child: Text('Organic')),
-            ],
-            onChanged: (value) => setState(() {
-              if (value != null) selectedCategory = value;
-            }),
           ),
-          SizedBox(height: screenWidth < 600 ? 16.0 : 24.0),
-          if (_isUploading)
-            SizedBox(
-              height: 100,
-              width: 100,
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            )
-          else if (_imageUrl != null)
-            Column(
+          items: const [
+            DropdownMenuItem(value: 'Rice', child: Text('Rice')),
+            DropdownMenuItem(value: 'Corn', child: Text('Corn')),
+            DropdownMenuItem(value: 'HVC', child: Text('HVC')),
+            DropdownMenuItem(value: 'Livestock', child: Text('Livestock')),
+            DropdownMenuItem(value: 'Fishery', child: Text('Fishery')),
+            DropdownMenuItem(value: 'Organic', child: Text('Organic')),
+          ],
+          onChanged: (value) => setState(() {
+            if (value != null) selectedCategory = value;
+          }),
+        ),
+        SizedBox(height: screenWidth < 600 ? 16.0 : 24.0),
+        
+        // Image upload section - maintains same styling whether empty or with image
+        if (_isUploading)
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Stack(
-                    children: [
-                      Image.network(
-                        _imageUrl!,
-                        height: 150,
-                        width: 150,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return SizedBox(
-                            height: 150,
-                            width: 150,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes !=
-                                        null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
-                              ),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          height: 150,
-                          width: 150,
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.error,
-                              size: 50, color: Colors.red),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 8,
-                        right: 8,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: IconButton(
-                            icon: const Icon(Icons.edit, size: 18),
-                            onPressed: _pickAndUploadImage,
-                            color: Colors.blue,
-                          ),
-                        ),
-                      ),
-                    ],
+                SizedBox(
+                  height: 100,
+                  width: 100,
+                  child: Center(
+                    child: CircularProgressIndicator(),
                   ),
                 ),
                 const SizedBox(height: 8),
-                TextButton(
-                  onPressed: _pickAndUploadImage,
-                  child: const Text('Change Image'),
+                const Text(
+                  'Uploading Image...',
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
-            )
-          else
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Icon(Icons.cloud_upload,
-                      size: 48, color: Colors.grey.shade400),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Upload Product Image',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'JPEG, PNG or WEBP (Max 5MB)',
-                    style: TextStyle(color: Colors.grey.shade500),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: _pickAndUploadImage,
-                      child: const Text('Select Image'),
-                    ),
-                  ),
-                ],
-              ),
             ),
-        ],
-      ),
-    );
-  }
+          )
+        else
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                if (_imageUrl != null)
+                  // Image preview with upload widget styling
+                  Column(
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Background icon (faded)
+                          Icon(Icons.cloud_upload, 
+                              size: 48, color: Colors.grey.shade300),
+                          
+                          // Image overlay
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              _imageUrl!,
+                              height: 100,
+                              width: 100,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return SizedBox(
+                                  height: 100,
+                                  width: 100,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded /
+                                              loadingProgress.expectedTotalBytes!
+                                          : null,
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                height: 100,
+                                width: 100,
+                                color: Colors.grey.shade200,
+                                child: const Icon(Icons.error,
+                                    size: 40, color: Colors.red),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Product Image Uploaded',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'JPEG, PNG or WEBP (Max 5MB)',
+                        style: TextStyle(color: Colors.grey.shade500),
+                      ),
+                    ],
+                  )
+                else
+                  // Original upload widget when no image
+                  Column(
+                    children: [
+                      Icon(Icons.cloud_upload,
+                          size: 48, color: Colors.grey.shade400),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Upload Product Image',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'JPEG, PNG or WEBP (Max 5MB)',
+                        style: TextStyle(color: Colors.grey.shade500),
+                      ),
+                    ],
+                  ),
+                
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: _pickAndUploadImage,
+                    child: Text(_imageUrl != null ? 'Change Image' : 'Select Image'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
+
 }
 
 class _AddProductModalFooter extends StatelessWidget {
@@ -453,6 +472,8 @@ class _AddProductModalFooter extends StatelessWidget {
     required this.onCancel,
     this.isLoading = false,
   }) : super(key: key);
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -489,4 +510,8 @@ class _AddProductModalFooter extends StatelessWidget {
       ),
     );
   }
+
+
+
+
 }

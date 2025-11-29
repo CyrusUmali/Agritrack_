@@ -732,7 +732,7 @@ class SuitabilityResults extends StatelessWidget {
                     color: isDark ? Colors.blue[300] : Colors.blue[600],
                     size: isSmallScreen ? 18 : 20,
                   ),
-                ),
+                ), 
                 const SizedBox(width: 12),
                 Text(
                   context.translate('Improvement Suggestions'),
@@ -742,7 +742,7 @@ class SuitabilityResults extends StatelessWidget {
                         fontSize: isSmallScreen ? 18 : 20,
                       ),
                 ),
-                const Spacer(),
+                const Spacer(), 
                 if (deficientParamsCount > 0)
                   Container(
                     padding:
@@ -886,51 +886,61 @@ class SuitabilityResults extends StatelessWidget {
   }
 
   
-  
-
 Widget _buildSuggestionsContent(
     List<String> suggestions, BuildContext context, bool isSmallScreen) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
 
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: suggestions.asMap().entries.map((entry) {
-      final index = entry.key;
-      final section = entry.value;
+  if (suggestions.isEmpty) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Text(
+        'No suggestions available',
+        style: TextStyle(
+          fontSize: isSmallScreen ? 14 : 15,
+          color: isDark ? Colors.grey[400] : Colors.grey[600],
+        ),
+      ),
+    );
+  }
 
-      // Remove asterisks from the suggestion text
-      final cleanedSection = section.replaceAll('*', '');
-
-      return Container(
-        margin:
-            EdgeInsets.only(bottom: index < suggestions.length - 1 ? 12 : 0),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isDark ? Colors.grey[800] : Colors.white,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: isDark ? Colors.grey[600]! : Colors.grey[200]!,
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: isDark ? Colors.grey[800] : Colors.white,
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(
+        color: isDark ? Colors.grey[600]! : Colors.grey[200]!,
+      ),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Title
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12.0),
+          child: Text(
+            'Recommendations',
+            style: TextStyle(
+              fontSize: isSmallScreen ? 16 : 18,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.grey[800],
+            ),
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Content with cleaned text (no asterisks)
-            Text(
-              cleanedSection,
-              style: TextStyle(
-                fontSize: isSmallScreen ? 14 : 15,
-                color: isDark ? Colors.grey[300] : Colors.grey[700],
-                height: 1.4,
-              ),
-            ),
-          ],
+        
+        // Suggestions as a single flowing text
+        Text(
+          suggestions.join('\n\n'),
+          style: TextStyle(
+            fontSize: isSmallScreen ? 14 : 15,
+            color: isDark ? Colors.grey[300] : Colors.grey[700],
+            height: 1.5,
+          ),
         ),
-      );
-    }).toList(),
+      ],
+    ),
   );
 }
-
   // Build the "Get Suggestions" button
   Widget _buildGetSuggestionsButton(BuildContext context, bool isSmallScreen) {
     return Container(

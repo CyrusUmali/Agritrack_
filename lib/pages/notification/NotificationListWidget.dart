@@ -1,7 +1,10 @@
 import 'package:flareline/pages/announcement/announcements_page.dart';
+import 'package:flareline/pages/sectors/sector_service.dart';
+import 'package:flareline/services/lanugage_extension.dart';
 import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flareline_uikit/components/card/common_card.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class NotificationListWidget extends StatefulWidget {
   final ValueNotifier<List<Announcement>> notificationsNotifier;
@@ -36,6 +39,80 @@ class _NotificationListWidgetState extends State<NotificationListWidget> {
     _searchController.addListener(_onSearchChanged);
   }
 
+
+
+
+
+
+void _markAsRead(BuildContext context, String notificationId) {
+  // Find the notification in the list
+  final notificationIndex = widget.notificationsNotifier.value
+      .indexWhere((n) => n.id == notificationId);
+  
+  if (notificationIndex != -1) {
+    final notification = widget.notificationsNotifier.value[notificationIndex];
+    
+    // Update local state immediately for better UX
+    final updatedNotification = Announcement(
+      id: notification.id,
+      title: notification.title,
+      message: notification.message,
+      recipient: notification.recipient,
+      recipientName: notification.recipientName,
+      date: notification.date,
+      status: 'read', // Update status to 'read'
+      farmerId: notification.farmerId,
+      readCount: notification.readCount,
+      totalRecipients: notification.totalRecipients,
+    );
+    
+    final updatedList = List<Announcement>.from(widget.notificationsNotifier.value);
+    updatedList[notificationIndex] = updatedNotification;
+    widget.notificationsNotifier.value = updatedList;
+    
+    // Call API to mark as read
+    _callMarkAsReadApi(context, notificationId);
+  }
+}
+
+Future<void> _callMarkAsReadApi(BuildContext context, String notificationId) async {
+  try {
+    final sectorService = RepositoryProvider.of<SectorService>(context);
+    final int notificationIdInt = int.parse(notificationId);
+    
+    await sectorService.markNotificationAsRead(notificationIdInt);
+     
+  } catch (e) {
+    print('Failed to mark notification as read: $e');
+    // Revert local state if API call fails
+    final notificationIndex = widget.notificationsNotifier.value
+        .indexWhere((n) => n.id == notificationId);
+    
+    if (notificationIndex != -1) {
+      final notification = widget.notificationsNotifier.value[notificationIndex];
+      final revertedNotification = Announcement(
+        id: notification.id,
+        title: notification.title,
+        message: notification.message,
+        recipient: notification.recipient,
+        recipientName: notification.recipientName,
+        date: notification.date,
+        status: 'unread', // Revert to unread
+        farmerId: notification.farmerId,
+        readCount: notification.readCount,
+        totalRecipients: notification.totalRecipients,
+      );
+      
+      final updatedList = List<Announcement>.from(widget.notificationsNotifier.value);
+      updatedList[notificationIndex] = revertedNotification;
+      widget.notificationsNotifier.value = updatedList;
+    }
+  }
+}
+
+
+ 
+ 
   @override
   void dispose() {
     widget.notificationsNotifier.removeListener(_initializeFilteredNotifications);
@@ -166,15 +243,15 @@ class _NotificationListWidgetState extends State<NotificationListWidget> {
                           Colors.blue,
                         ),
                         const SizedBox(width: 12),
-                        _statCard(
-                          'Unread',
-                          widget.notificationsNotifier.value
-                              .where((n) => n.readCount == 0)
-                              .length
-                              .toString(),
-                          Icons.mark_email_unread_outlined,
-                          Colors.orange,
-                        ),
+                       _statCard(
+  'Unread',
+  widget.notificationsNotifier.value
+      .where((n) => n.status.toLowerCase() == 'unread') // Use status field
+      .length
+      .toString(),
+  Icons.mark_email_unread_outlined,
+  Colors.orange,
+),
                         const SizedBox(width: 12),
                         if (_isSearching)
                           _statCard(
@@ -253,9 +330,9 @@ class _NotificationListWidgetState extends State<NotificationListWidget> {
             size: 64,
             color: Colors.grey.shade300,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 16), 
           Text(
-            _isSearching ? "No notifications found" : "No notifications",
+            _isSearching ?   context.translate('No notifications found')   :  context.translate('No notifications') ,
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey.shade600,
@@ -264,8 +341,8 @@ class _NotificationListWidgetState extends State<NotificationListWidget> {
           const SizedBox(height: 8),
           Text(
             _isSearching 
-                ? "Try different search terms"
-                : "You don't have any notifications yet",
+                ?   context.translate('Try different search terms')
+                :    context.translate('You dont have any notifications yet')   ,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade500,
@@ -279,7 +356,7 @@ class _NotificationListWidgetState extends State<NotificationListWidget> {
                 backgroundColor: Colors.grey.shade600,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Clear Search'),
+              child:  Text(context.translate('Clear Search'))   ,
             ),
         ],
       ),
@@ -317,14 +394,15 @@ class _NotificationListWidgetState extends State<NotificationListWidget> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: color,
+                      color: color, 
+                      
                     ),
                   ),
                   Text(
                     label,
                     style: TextStyle(
                       fontSize: 11,
-                      color: theme.hintColor,
+                      color:  Colors.grey.shade500,
                     ),
                   ),
                 ],
@@ -336,156 +414,168 @@ class _NotificationListWidgetState extends State<NotificationListWidget> {
     );
   }
 
-  Widget _notificationListItem(Announcement notification, BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
-    return ValueListenableBuilder<String?>(
-      valueListenable: widget.selectedNotificationNotifier,
-      builder: (context, selectedNotification, child) {
-        final isSelected = selectedNotification == notification.id;
-        
-        // Adaptive colors for selection and badges
-        final selectedColor = isDark 
-            ? theme.colorScheme.primary.withOpacity(0.2)
-            : theme.colorScheme.primary.withOpacity(0.1);
-            
-        final borderColor = isSelected ? theme.colorScheme.primary : Colors.transparent;
-        
-        final recipientBackgroundColor = notification.recipient == 'everyone'
-            ? (isDark ? Colors.green.withOpacity(0.2) : Colors.green.withOpacity(0.1))
-            : (isDark ? Colors.blue.withOpacity(0.2) : Colors.blue.withOpacity(0.1));
-            
-        final recipientIconColor = notification.recipient == 'everyone'
-            ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
-            : (isDark ? Colors.blue.shade300 : Colors.blue.shade700);
-            
-        final recipientTextColor = notification.recipient == 'everyone'
-            ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
-            : (isDark ? Colors.blue.shade300 : Colors.blue.shade700);
-        
-        return InkWell(
-          onTap: () {
-            widget.selectedNotificationNotifier.value = notification.id;
-          },
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isSelected ? selectedColor : null,
-              border: Border(
-                bottom: BorderSide(color: theme.dividerColor),
-                left: BorderSide(color: borderColor, width: 3),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header row with title, recipient badge, and delete button
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        notification.title,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    // Recipient badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: recipientBackgroundColor,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            notification.recipient == 'everyone'
-                                ? Icons.group
-                                : Icons.person,
-                            size: 12,
-                            color: recipientIconColor,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            notification.recipient == 'everyone'
-                                ? 'All'
-                                : 'Individual',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: recipientTextColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Delete button
-                    if (widget.onDeleteNotification != null) ...[
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: Icon(
-                          Icons.delete_outline,
-                          size: 18,
-                          color: isDark ? theme.hintColor : Colors.grey.shade700,
-                        ),
-                        onPressed: () {
-                          widget.onDeleteNotification!(notification.id);
-                        },
-                        padding: const EdgeInsets.all(4),
-                        constraints: const BoxConstraints(),
-                        tooltip: 'Delete notification',
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'From: Admin',
-                  style: TextStyle(
-                    fontSize: 13,
-                     color: isDark ? theme.hintColor : Colors.grey.shade700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  notification.message,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? theme.hintColor : Colors.grey.shade700,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                // Footer row with date
-                Row(
-                  children: [
-                    Text(
-                      _formatDate(notification.date),
-                      style: TextStyle(
-                        fontSize: 12,
-                         color: isDark ? theme.hintColor : Colors.grey.shade700,
-                      ),
-                    ),
-                    const Spacer(),
-                  ],
-                ),
-              ],
+
+
+
+
+
+Widget _notificationListItem(Announcement notification, BuildContext context) {
+  final theme = Theme.of(context);
+  final isDark = theme.brightness == Brightness.dark;
+  
+  return ValueListenableBuilder<String?>(
+    valueListenable: widget.selectedNotificationNotifier,
+    builder: (context, selectedNotification, child) {
+      final isSelected = selectedNotification == notification.id;
+      
+      // Adaptive colors for selection and badges
+      final selectedColor = isDark 
+          ? theme.colorScheme.primary.withOpacity(0.2)
+          : theme.colorScheme.primary.withOpacity(0.1);
+          
+      final borderColor = isSelected ? theme.colorScheme.primary : Colors.transparent;
+      
+      final recipientBackgroundColor = notification.recipient == 'everyone'
+          ? (isDark ? Colors.green.withOpacity(0.2) : Colors.green.withOpacity(0.1))
+          : (isDark ? Colors.blue.withOpacity(0.2) : Colors.blue.withOpacity(0.1));
+          
+      final recipientIconColor = notification.recipient == 'everyone'
+          ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
+          : (isDark ? Colors.blue.shade300 : Colors.blue.shade700);
+          
+      final recipientTextColor = notification.recipient == 'everyone'
+          ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
+          : (isDark ? Colors.blue.shade300 : Colors.blue.shade700);
+      
+      return InkWell(
+        onTap: () {
+          widget.selectedNotificationNotifier.value = notification.id;
+          // Mark as read when tapped if it's unread
+          if (!notification.isRead) {
+            _markAsRead(context, notification.id);
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isSelected ? selectedColor : null,
+            border: Border(
+              bottom: BorderSide(color: theme.dividerColor),
+              left: BorderSide(color: borderColor, width: 3),
             ),
           ),
-        );
-      },
-    );
-  }
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header row with title, recipient badge, and delete button
+              Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        // Unread indicator
+                        if (!notification.isRead)
+                          Container(
+                            width: 8,
+                            height: 8,
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              color: FlarelineColors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        Expanded(
+                          child: Text(
+                            notification.title,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: notification.isRead 
+                                  ? (isDark ? theme.hintColor : Colors.grey.shade700)
+                                  : theme.colorScheme.onSurface,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Status badge
+                const SizedBox(width: 8),
+               
+                  // Delete button
+                  if (widget.onDeleteNotification != null) ...[
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: Icon(
+                        Icons.delete_outline,
+                        size: 18,
+                        color: isDark ? theme.hintColor : Colors.grey.shade700,
+                      ),
+                      onPressed: () {
+                        widget.onDeleteNotification!(notification.id);
+                      },
+                      padding: const EdgeInsets.all(4),
+                      constraints: const BoxConstraints(),
+                      tooltip: 'Delete notification',
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'From: Admin',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? theme.hintColor : Colors.grey.shade700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                notification.message,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? theme.hintColor : Colors.grey.shade700,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+              // Footer row with date
+              Row(
+                children: [
+                  Text(
+                    _formatDate(notification.date),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? theme.hintColor : Colors.grey.shade700,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (notification.isRead)
+                    Text(
+                      'Read',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+
+
+
+
 
   String _formatDate(DateTime date) {
     final diff = DateTime.now().difference(date);

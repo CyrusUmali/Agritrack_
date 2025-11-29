@@ -44,8 +44,7 @@ class _RecentRecordWidgetState extends State<RecentRecord> {
   @override
   void initState() {
     super.initState();
-    // print(widget.yields[0].farmName);
-
+ 
     barangayNames = barangays.map((b) => b['name'] as String).toList();
   }
 
@@ -182,7 +181,7 @@ class _RecentRecordWidgetState extends State<RecentRecord> {
               : ['All']; // Fallback if not loaded yet
 
           return SizedBox(
-            height: 48,
+            height: 50,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Wrap(

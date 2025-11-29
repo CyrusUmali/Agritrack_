@@ -12,9 +12,7 @@ class SectorKpiCards extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // print('sectorcurrent');
-    // print(sector);
+  Widget build(BuildContext context) { 
     return isMobile ? _buildMobileGrid(context) : _buildDesktopRow(context);
   }
 

@@ -954,6 +954,9 @@ class _BarangayYieldDataTableState extends State<BarangayYieldDataTable> {
                 ],
               ),
             ],
+
+
+             if (_yields.isNotEmpty) ...[
             const SizedBox(height: 20),
             Row(
               children: [
@@ -968,6 +971,8 @@ class _BarangayYieldDataTableState extends State<BarangayYieldDataTable> {
                 ),
               ],
             )
+      
+             ]
           ],
         ),
       ),

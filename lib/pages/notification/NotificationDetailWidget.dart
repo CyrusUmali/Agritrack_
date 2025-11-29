@@ -29,9 +29,7 @@ class NotificationDetailWidget extends StatelessWidget {
           final notification = notificationsNotifier.value.firstWhere(
             (a) => a.id == selectedNotificationId,
           );
-
-print('notification');
-          print(notification.message);
+ 
 
           return Column(
             children: [

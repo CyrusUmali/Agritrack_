@@ -18,7 +18,15 @@ class SignInProvider extends BaseViewModel {
   final GoogleSignIn _googleSignIn;
   bool _showDownloadSection = false;
   bool get showDownloadSection => _showDownloadSection;
+   bool _showPassword = false;
+  
+  bool get showPassword => _showPassword;
 
+
+  void togglePasswordVisibility() {
+    _showPassword = !_showPassword;
+    notifyListeners();
+  }
   void toggleDownloadSection() {
     _showDownloadSection = !_showDownloadSection;
     notifyListeners();
@@ -171,27 +179,25 @@ class SignInProvider extends BaseViewModel {
   Future<void> signIn(BuildContext context) async {
     try {
       setLoading(true);
-      debugPrint(
-          'Attempting sign in with email: ${emailController.text.trim()}');
+    
 
       final userCredential = await _auth.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
 
-      debugPrint(
-          'Firebase auth successful, proceeding to backend verification');
+ 
       await _handleSignInResponse(userCredential, context);
     } on FirebaseAuthException catch (e) {
       setLoading(false);
       String errorMessage = _mapAuthError(e.code);
       _showErrorToast(context, errorMessage);
-      debugPrint('Firebase Auth Error: ${e.code} - $errorMessage');
+   
     } catch (e) {
       setLoading(false);
       _showErrorToast(
           context, 'Unexpected error during sign in: ${e.toString()}');
-      debugPrint('Unexpected error during sign in: ${e.toString()}');
+    
     }
   }
 

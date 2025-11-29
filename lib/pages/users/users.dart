@@ -222,7 +222,7 @@ if (screenHeight < 400) {
 
   Widget _buildSearchBarMobile() {
     return SizedBox(
-      height: 48,
+      height: 50,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Wrap(
@@ -349,8 +349,7 @@ if (screenHeight < 400) {
                           AddUserModal.show(
                             context: context,
                             role: role,
-                            onUserAdded: (userData) {
-                              print('User created: $userData');
+                            onUserAdded: (userData) { 
                               context.read<UserBloc>().add(AddUser(
                                   name: userData.name,
                                   email: userData.email,
@@ -361,9 +360,7 @@ if (screenHeight < 400) {
                         } else {
                           final googleUser =
                               await AuthService.getGoogleUserIsolated();
-                          if (googleUser != null) {
-                            print('role' + role);
-                            print(googleUser);
+                          if (googleUser != null) { 
                             context.read<UserBloc>().add(AddUser(
                                   name: googleUser['name']!,
                                   email: googleUser['email']!,
@@ -375,9 +372,9 @@ if (screenHeight < 400) {
                       } else if (role == 'farmer') {
                         showFarmerOptionsModal(context, 'farmer', method,
                             (String role, String method) {
-                          print('Selected role: $role, method: $method');
+                          
                         }, () {
-                          print('Linking existing farmer');
+                    
                         },
                             farmers: (context.read<FarmerBloc>().state
                                     is FarmersLoaded
@@ -556,9 +553,7 @@ if (screenHeight < 400) {
                         AddUserModal.show(
                           context: context,
                           role: role,
-                          onUserAdded: (userData) {
-                            // Handle admin/officer user creation
-                            print('User created: $userData');
+                          onUserAdded: (userData) { 
                             context.read<UserBloc>().add(AddUser(
                                 name: userData.name,
                                 email: userData.email,
@@ -569,9 +564,7 @@ if (screenHeight < 400) {
                       } else {
                         final googleUser =
                             await AuthService.getGoogleUserIsolated();
-                        if (googleUser != null) {
-                          print('role' + role);
-                          print(googleUser);
+                        if (googleUser != null) { 
                           context.read<UserBloc>().add(AddUser(
                                 name: googleUser['name']!,
                                 email: googleUser['email']!,
@@ -584,13 +577,12 @@ if (screenHeight < 400) {
                       // if (method == 'email') {
                       showFarmerOptionsModal(context, 'farmer', method,
                           // Callback when a method is selected
-                          (String role, String method) {
-                        print('Selected role: $role, method: $method');
+                          (String role, String method) { 
                         // Handle the method selection here
                       },
                           // Callback for linking existing farmer
                           () {
-                        print('Linking existing farmer');
+                     
                         // Handle linking existing farmer here
                       },
 
@@ -740,6 +732,7 @@ class DataTableWidget extends TableWidget<UsersViewModel> {
                 ),
               );
             } else if (role.contains('farmer')) {
+ 
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -850,6 +843,8 @@ class DataTableWidget extends TableWidget<UsersViewModel> {
                 ),
               );
             } else if (role.contains('farmer')) {
+
+ 
               Navigator.push(
                 context,
                 MaterialPageRoute(

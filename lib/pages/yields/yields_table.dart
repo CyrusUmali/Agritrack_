@@ -294,7 +294,7 @@ if (screenHeight < 400) {
               : ['All']; // Fallback if not loaded yet
 
           return SizedBox(
-            height: 48,
+            height: 50,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Wrap(
@@ -494,8 +494,7 @@ if (screenHeight < 400) {
                                   String notes,
                                   List<String> images,
                                 ) {
-                                  print('areaHa');
-                                  print(areaHa);
+                                 
                                   context.read<YieldBloc>().add(
                                         AddYield(
                                           farmerId: farmerId,
@@ -761,9 +760,7 @@ if (screenHeight < 400) {
                                 String notes,
                                 List<String> images,
                               ) {
-                                print('areaHa');
-                                print(areaHa);
-
+                                
                                 context.read<YieldBloc>().add(
                                       AddYield(
                                         farmerId: farmerId,

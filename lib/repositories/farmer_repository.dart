@@ -136,8 +136,7 @@ class FarmerRepository extends BaseRepository {
       throw Exception('Invalid farmer data format received from server');
     }
 
-    print(response.data['farmer']);
-
+ 
     return Farmer.fromJson(response.data['farmer']);
   }
 

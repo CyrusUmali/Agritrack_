@@ -194,11 +194,11 @@ class BarangayInfoCard {
     bool isDesktop,
   ) {
     if (isMobile) {
-      return theme.textTheme.bodySmall?.copyWith(
+      return theme.textTheme.bodyMedium?.copyWith(
         color: theme.colorScheme.onSurface.withOpacity(0.6),
       );
     } else {
-      return theme.textTheme.labelSmall?.copyWith(
+      return theme.textTheme.labelMedium?.copyWith(
         color: theme.colorScheme.onSurface.withOpacity(0.6),
         fontSize: isTablet ? 12 : 11,
       );

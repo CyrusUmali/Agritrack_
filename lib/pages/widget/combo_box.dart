@@ -8,9 +8,10 @@ Widget buildComboBox({
   required String selectedValue,
   required ValueChanged<String> onSelected,
   double? width,
-  double? height , 
+  double? height,
+  Color? backgroundColor, // New optional parameter
+  Color? borderColor, // New optional border color parameter
 }) {
- 
   // Helper function to format display text - removes "1: ", "2: ", etc.
   String getDisplayText(String value) {
     // if (value.isEmpty || value == 'All') return value;
@@ -19,22 +20,24 @@ Widget buildComboBox({
     return value.replaceFirst(regex, '');
   }
 
-  final allOptions = [ ...options];
+  final allOptions = [...options];
   // Only use 'All' if selectedValue is explicitly empty AND we have options
   final displayValue =
       selectedValue.isEmpty && options.isNotEmpty ? '' : selectedValue;
 
   return Container(
     decoration: BoxDecoration(
-      color: Theme.of(context).cardTheme.color,
+      color: backgroundColor ??
+          Theme.of(context).cardTheme.color, // Use provided color or default
       borderRadius: BorderRadius.circular(8),
       border: Border.all(
-        color:
-            Theme.of(context).cardTheme.surfaceTintColor ?? Colors.grey[300]!,
+        color: borderColor ?? // Use provided border color or default
+            Theme.of(context).cardTheme.surfaceTintColor ??
+            Colors.grey[300]!,
       ),
     ),
     child: SizedBox(
-      height:  height ?? 48,
+      height: height ?? 48,
       width: width,
       child: Autocomplete<String>(
         fieldViewBuilder:
@@ -66,10 +69,27 @@ Widget buildComboBox({
                       hintText: hint,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
+                        borderSide: BorderSide(
+                          color: borderColor ??
+                              Theme.of(context).cardTheme.surfaceTintColor ??
+                              Colors.grey[300]!,
+                        ),
                       ),
+                      filled: backgroundColor != null,
+                      fillColor: backgroundColor,
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 14),
+
+                   enabledBorder: OutlineInputBorder(
+  borderRadius: BorderRadius.circular(8),
+  borderSide: BorderSide(
+    color: Colors.transparent, // ← hides the enabled border
+    width: 0,
+  ),
+),
+
+
+
                       suffixIcon: isOptionsOpen
                           ? IconButton(
                               icon: const Icon(Icons.close, size: 18),
@@ -119,7 +139,10 @@ Widget buildComboBox({
             alignment: Alignment.topLeft,
             child: Material(
               elevation: 4,
-              color: Theme.of(context).cardTheme.color,
+              color: backgroundColor ??
+                  Theme.of(context)
+                      .cardTheme
+                      .color, // Use provided color or default for dropdown
               child: ConstrainedBox(
                 constraints: const BoxConstraints(
                   maxHeight: 200,
@@ -161,3 +184,6 @@ Widget buildComboBox({
     ),
   );
 }
+
+
+

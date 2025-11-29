@@ -132,9 +132,7 @@ class UserRepository extends BaseRepository {
 
   Future<void> changePassword(
       String currentPassword, String newPassword) async {
-    print('change passwrod');
-
-    print('currentPassword');
+     
     try {
       // Note: This method uses Firebase Auth directly, so we need to handle it specially
       final user = FirebaseAuth.instance.currentUser;

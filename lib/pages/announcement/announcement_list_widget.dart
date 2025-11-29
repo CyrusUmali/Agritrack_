@@ -48,18 +48,18 @@ class _AnnouncementListWidgetState extends State<AnnouncementListWidget> {
   }
 
   void _initializeFilteredAnnouncements() {
-    print('Initializing filtered announcements with ${widget.announcementsNotifier.value.length} items');
+   
     _filteredAnnouncementsNotifier.value = List.from(widget.announcementsNotifier.value);
   }
 
   void _onSearchChanged() {
     final query = _searchController.text.trim().toLowerCase();
-    print('Search query changed: "$query"');
+  
     
     if (query.isEmpty) {
       _isSearching = false;
       _filteredAnnouncementsNotifier.value = List.from(widget.announcementsNotifier.value);
-      print('Search cleared, showing all ${_filteredAnnouncementsNotifier.value.length} announcements');
+ 
     } else {
       _isSearching = true;
       final filtered = widget.announcementsNotifier.value.where((announcement) {
@@ -72,12 +72,12 @@ class _AnnouncementListWidgetState extends State<AnnouncementListWidget> {
       }).toList();
       
       _filteredAnnouncementsNotifier.value = filtered;
-      print('Search found ${filtered.length} announcements matching "$query"');
+ 
     }
   }
 
   void _clearSearch() {
-    print('Clearing search');
+ 
     _searchController.clear();
     _isSearching = false;
     setState(() {});
@@ -156,7 +156,7 @@ class _AnnouncementListWidgetState extends State<AnnouncementListWidget> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      print('New announcement button pressed');
+                   
                       widget.showComposeNotifier.value = true;
                       widget.selectedAnnouncementNotifier.value = null;
                     },
@@ -204,6 +204,8 @@ class _AnnouncementListWidgetState extends State<AnnouncementListWidget> {
                       ),
                   ],
                 ),
+            
+            
               ],
             ),
           ),
@@ -213,7 +215,7 @@ class _AnnouncementListWidgetState extends State<AnnouncementListWidget> {
             child: ValueListenableBuilder<List<Announcement>>(
               valueListenable: _filteredAnnouncementsNotifier,
               builder: (context, filteredAnnouncements, child) {
-                print('Building list with ${filteredAnnouncements.length} filtered announcements');
+           
                 
                 if (filteredAnnouncements.isEmpty) {
                   return Padding(
@@ -248,7 +250,7 @@ class _AnnouncementListWidgetState extends State<AnnouncementListWidget> {
                         if (!_isSearching)
                           ElevatedButton(
                             onPressed: () {
-                              print('Create announcement button pressed from empty state');
+                    
                               widget.showComposeNotifier.value = true;
                               widget.selectedAnnouncementNotifier.value = null;
                             },
@@ -275,7 +277,7 @@ class _AnnouncementListWidgetState extends State<AnnouncementListWidget> {
                 return ListView.builder(
                   itemCount: filteredAnnouncements.length,
                   itemBuilder: (context, index) {
-                    print('Building list item $index: ${filteredAnnouncements[index].title}');
+             
                     return _announcementListItem(filteredAnnouncements[index]);
                   },
                 );
@@ -357,7 +359,7 @@ Widget _announcementListItem(Announcement announcement) {
 
       return InkWell(
         onTap: () {
-          print('Tapped on announcement: ${announcement.title}');
+     
           widget.selectedAnnouncementNotifier.value = announcement.id;
           widget.showComposeNotifier.value = false;
         },
@@ -408,17 +410,7 @@ Widget _announcementListItem(Announcement announcement) {
                           size: 12,
                           color: recipientIconColor,
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          announcement.recipient == 'everyone'
-                              ? 'All'
-                              : 'Individual',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: recipientTextColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                      
                       ],
                     ),
                   ),
@@ -432,7 +424,7 @@ Widget _announcementListItem(Announcement announcement) {
                           color: isDark ? theme.hintColor : Colors.grey.shade700,
                       ),
                       onPressed: () {
-                        print('Delete button pressed for announcement: ${announcement.id}');
+                   
                         widget.onDeleteAnnouncement!(announcement.id);
                       },
                       padding: const EdgeInsets.all(4),

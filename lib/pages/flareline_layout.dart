@@ -1,5 +1,6 @@
 library flareline_uikit;
 
+import 'package:flareline/pages/sectors/sector_service.dart';
 import 'package:flareline/pages/toolbar.dart';
 import 'package:flareline/providers/user_provider.dart';
 import 'package:flareline_uikit/components/sidebar/side_bar.dart';
@@ -10,6 +11,7 @@ import 'package:flareline_uikit/components/breaktab.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_builder/responsive_builder.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 abstract class FlarelineLayoutWidget extends StatelessWidget {
   ValueNotifier<bool> get _sidebarPinnedNotifier => ValueNotifier(false);
@@ -43,36 +45,36 @@ abstract class FlarelineLayoutWidget extends StatelessWidget {
 
   String? get logoImageAsset => null;
 
+  Widget? logoWidget(BuildContext context) {
+    final sidebarProvider =
+        Provider.of<SidebarProvider>(context, listen: false);
+    bool isDark = isDarkTheme(context);
 
-Widget? logoWidget(BuildContext context) {
-  final sidebarProvider = Provider.of<SidebarProvider>(context, listen: false);
-  bool isDark = isDarkTheme(context);
-  
-  Widget buildLogo() {
-    if (logoImageAsset != null) {
-      if (logoImageAsset!.endsWith('svg')) {
-        return SvgPicture.asset(
+    Widget buildLogo() {
+      if (logoImageAsset != null) {
+        if (logoImageAsset!.endsWith('svg')) {
+          return SvgPicture.asset(
+            logoImageAsset!,
+            height: 32,
+          );
+        }
+        return Image.asset(
           logoImageAsset!,
+          width: 32,
           height: 32,
         );
       }
-      return Image.asset(
-        logoImageAsset!,
-        width: 32,
+      return SvgPicture.asset(
+        'assets/logo/logo_${isDark ? 'white' : 'dark'}.svg',
         height: 32,
       );
     }
-    return SvgPicture.asset(
-      'assets/logo/logo_${isDark ? 'white' : 'dark'}.svg',
-      height: 32,
+
+    return _HoverableLogo(
+      onTap: () => sidebarProvider.togglePin(),
+      child: buildLogo(),
     );
   }
-
-  return _HoverableLogo(
-    onTap: () => sidebarProvider.togglePin(),
-    child: buildLogo(),
-  );
-}
 
   Widget? footerWidget(BuildContext context) {
     return null;
@@ -189,11 +191,9 @@ Widget? logoWidget(BuildContext context) {
           ToolBarWidget(
                 showMore: showDrawer,
                 showChangeTheme: true,
-                userInfoWidget: CircleAvatar(
-                  backgroundImage: farmer?.imageUrl != null
-                      ? NetworkImage(farmer!.imageUrl!)
-                      : AssetImage('assets/user/user-01.png') as ImageProvider,
-                  radius: 22,
+                userInfoWidget: _NotificationBadgeAvatar(
+                  farmerId: farmer?.id,
+                  imageUrl: farmer?.imageUrl,
                 ),
               ) ??
               const SizedBox.shrink(),
@@ -214,9 +214,122 @@ Widget? logoWidget(BuildContext context) {
   }
 }
 
+class _NotificationBadgeAvatar extends StatefulWidget {
+  final int? farmerId;
+  final String? imageUrl;
 
+  const _NotificationBadgeAvatar({
+    required this.farmerId,
+    required this.imageUrl,
+  });
 
+  @override
+  State<_NotificationBadgeAvatar> createState() =>
+      _NotificationBadgeAvatarState();
+}
 
+class _NotificationBadgeAvatarState extends State<_NotificationBadgeAvatar> {
+  int _unreadCount = 0;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Only fetch if user is a farmer (has farmerId)
+    if (widget.farmerId != null) {
+      _fetchUnreadCount();
+    }
+  }
+
+  Future<void> _fetchUnreadCount() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final sectorService =
+          RepositoryProvider.of<SectorService>(context, listen: false);
+      final result =
+          await sectorService.getUnreadNotificationsCount(widget.farmerId!);
+
+      if (result['success'] == true && mounted) {
+        final data = result['data'];
+        int count = 0;
+
+        // Handle different response formats
+        if (data is int) {
+          count = data;
+        } else if (data is Map) {
+          count = data['count'] ?? data['unreadCount'] ?? 0;
+        }
+
+        setState(() {
+          _unreadCount = count;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+      debugPrint('Error fetching unread notifications: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        CircleAvatar(
+          backgroundImage: widget.imageUrl != null
+              ? NetworkImage(widget.imageUrl!)
+              : null, // Set to null for SVG case
+          radius: 22,
+          child: widget.imageUrl == null
+              ? ClipRRect(
+  borderRadius: BorderRadius.circular(22), // Adjust radius as needed
+  child: SvgPicture.asset(
+    'assets/DA_image.svg',
+    width: 44,
+    height: 44,
+    fit: BoxFit.cover,
+  ),
+)
+              : null,
+        ),
+        if (_unreadCount > 0)
+          Positioned(
+            right: -2,
+            top: -2,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  width: 2,
+                ),
+              ),
+              constraints: const BoxConstraints(
+                minWidth: 20,
+                minHeight: 20,
+              ),
+              child: Center(
+                child: Text(
+                  _unreadCount > 99 ? '99+' : _unreadCount.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
 
 class _HoverableLogo extends StatefulWidget {
   final VoidCallback onTap;
@@ -264,4 +377,3 @@ class _HoverableLogoState extends State<_HoverableLogo> {
     );
   }
 }
- 

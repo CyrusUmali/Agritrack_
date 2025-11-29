@@ -228,48 +228,64 @@ class _PasswordChangeCardState extends State<PasswordChangeCard> {
     }
   }
 
-  void _handlePasswordChangeError(String errorMessage) {
-    final lowerError = errorMessage.toLowerCase();
-
-    // Map errors to specific fields or show general error
-    if (lowerError.contains('current password') ||
-        lowerError.contains('wrong-password') ||
-        lowerError.contains('incorrect')) {
-      setState(() {
-        _currentPasswordError = errorMessage;
-      });
-      ToastHelper.showErrorToast(errorMessage, context);
-    } else if (lowerError.contains('weak') ||
-        lowerError.contains('too short') ||
-        lowerError.contains('6 characters')) {
-      setState(() {
-        _newPasswordError = errorMessage;
-      });
-      ToastHelper.showErrorToast(errorMessage, context);
-    } else if (lowerError.contains('recent login') ||
-        lowerError.contains('sign in again')) {
-      _showErrorDialog(
-        context.translate('Session Expired'),
-        context.translate(
-            'For security reasons, please sign out and sign in again before changing your password.'),
-      );
-    } else if (lowerError.contains('already in use') ||
-        lowerError.contains('already linked')) {
-      _showErrorDialog(
-        context.translate('Error'),
-        errorMessage,
-      );
-    } else {
-      // General error
-      setState(() {
-        _generalError = errorMessage;
-      });
-      _showErrorDialog(
-        context.translate('Password Change Failed'),
-        errorMessage,
-      );
-    }
+void _handlePasswordChangeError(String errorMessage) {
+  final lowerError = errorMessage.toLowerCase();
+ 
+  if (lowerError.contains('current password') ||
+      lowerError.contains('wrong-password') ||
+      lowerError.contains('incorrect') ||
+      lowerError.contains('invalid credential') ||
+      lowerError.contains('malformed') ||
+      lowerError.contains('expired')) {
+     
+    final errMessage = context.translate('The current password you entered is incorrect. Please try again.');
+    
+    setState(() {
+      _currentPasswordError = errMessage;
+    });
+    ToastHelper.showErrorToast(errMessage, context);
+    
+  } else if (lowerError.contains('weak') ||
+      lowerError.contains('too short') ||
+      lowerError.contains('6 characters')) {
+    
+    setState(() {
+      _newPasswordError = errorMessage;
+    });
+    ToastHelper.showErrorToast(errorMessage, context);
+    
+  } else if (lowerError.contains('recent login') ||
+      lowerError.contains('sign in again') ||
+      lowerError.contains('requires-recent-login')) {
+    
+    _showErrorDialog(
+      context.translate('Session Expired'),
+      context.translate('For security reasons, please sign out and sign in again before changing your password.'),
+    );
+    
+  } else if (lowerError.contains('already in use') ||
+      lowerError.contains('already linked')) {
+    
+    _showErrorDialog(
+      context.translate('Error'),
+      errorMessage,
+    );
+    
+  } else {
+    // General error - provide a generic but helpful message
+    final friendlyMessage = context.translate('Failed to change password. Please check your current password and try again.');
+    
+    setState(() {
+      _generalError = friendlyMessage;
+    });
+    _showErrorDialog(
+      context.translate('Password Change Failed'),
+      friendlyMessage,
+    );
   }
+}
+
+
 
   Widget _buildInfoRow(
     BuildContext context, {
@@ -336,10 +352,9 @@ class _PasswordChangeCardState extends State<PasswordChangeCard> {
                 Expanded(
                   child: Text(
                     errorText,
-                    style: theme.textTheme.bodySmall?.copyWith(
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       color: errorColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 12, 
                     ),
                   ),
                 ),

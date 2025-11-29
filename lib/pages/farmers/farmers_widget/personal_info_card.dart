@@ -39,23 +39,23 @@ class _PersonalInfoCardState extends State<PersonalInfoCard> {
 
   @override
   void initState() {
-    super.initState();
-    print('qwewe');
-    print(widget.farmer);
+    super.initState(); 
     _effectiveFormKey = widget.formKey ?? GlobalKey<FormState>();
 
     // Format options with "id: name"
     _assocOptions =
         widget.assocs.map((assoc) => '${assoc.id}: ${assoc.name}').toList();
 
-    // Set initial display value (name only if available)
-    if (widget.farmer['association'] != null) {
-      _initialAssocValue = widget.farmer['association'];
-      _selectedAssocValue = '${widget.farmer['association']}';
-    } else {
-      _initialAssocValue = '';
-      _selectedAssocValue = '';
-    }
+     final associationValue = widget.farmer['association'];
+  if (associationValue != null && associationValue.toString().isNotEmpty) {
+    final parts = associationValue.toString().split(': ');
+    // Use the name part if available, otherwise use the whole value
+    _initialAssocValue = parts.length > 1 ? parts[1] : parts[0];
+    _selectedAssocValue = associationValue.toString();
+  } else {
+    _initialAssocValue = '';
+    _selectedAssocValue = '';
+  }
   }
 
   @override

@@ -10,11 +10,85 @@ class SectorService {
 
 
 
+Future<Map<String, dynamic>> getUnreadNotificationsCount(int farmerId) async {
+  try {
+    final response = await _apiService.get(
+      '/auth/notifications/farmer/$farmerId/unread-count',
+    );
+
+    if (response.statusCode == 200) {
+      return {
+        'success': true,
+        'data': response.data['data'],
+        'message': response.data['message'] ?? 'Unread count fetched successfully',
+      };
+    }
+
+    throw Exception('Failed to fetch unread count: ${response.statusCode}');
+  } on DioException catch (e) {
+    if (e.response != null) {
+      throw Exception('Server error: ${e.response!.data['message'] ?? e.response!.statusMessage}');
+    } else {
+      throw Exception('Network error: ${e.message}');
+    }
+  } catch (e) {
+    throw Exception('Failed to fetch unread count: ${e.toString()}');
+  }
+}
+
+Future<Map<String, dynamic>> getNotificationStats(int farmerId) async {
+  try {
+    final response = await _apiService.get(
+      '/auth/notifications/farmer/$farmerId/stats',
+    );
+
+    if (response.statusCode == 200) {
+      return {
+        'success': true,
+        'data': response.data['data'],
+        'message': response.data['message'] ?? 'Notification stats fetched successfully',
+      };
+    }
+
+    throw Exception('Failed to fetch notification stats: ${response.statusCode}');
+  } on DioException catch (e) {
+    if (e.response != null) {
+      throw Exception('Server error: ${e.response!.data['message'] ?? e.response!.statusMessage}');
+    } else {
+      throw Exception('Network error: ${e.message}');
+    }
+  } catch (e) {
+    throw Exception('Failed to fetch notification stats: ${e.toString()}');
+  }
+}
 
 
 
+Future<Map<String, dynamic>> markNotificationAsRead(int notificationId) async {
+  try {
+    final response = await _apiService.put(
+      '/auth/notifications/$notificationId',
+    );
 
+    if (response.statusCode == 200) {
+      return {
+        'success': true,
+        'data': response.data['data'],
+        'message': response.data['message'] ?? 'Notification marked as read successfully',
+      };
+    }
 
+    throw Exception('Failed to mark notification as read: ${response.statusCode}');
+  } on DioException catch (e) {
+    if (e.response != null) {
+      throw Exception('Server error: ${e.response!.data['message'] ?? e.response!.statusMessage}');
+    } else {
+      throw Exception('Network error: ${e.message}');
+    }
+  } catch (e) {
+    throw Exception('Failed to mark notification as read: ${e.toString()}');
+  }
+}
 
 
 

@@ -223,7 +223,7 @@ class ProductHeaderUI {
                             const SizedBox(height: 8),
                             Text(
                               'Tap to change image',
-                              style: theme.textTheme.bodySmall
+                              style: theme.textTheme.bodyMedium
                                   ?.copyWith(color: Colors.white, fontSize: 12),
                             ),
                           ],

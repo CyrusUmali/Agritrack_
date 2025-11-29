@@ -205,14 +205,14 @@ class SignUpForms {
             onChanged: (value) => viewModel.sex = value,
             isRequired: true,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           _buildDropdownField(
             label: "Civil Status",
             value: viewModel.civilStatus,
             items: ['Single', 'Married', 'Widowed', 'Separated', 'Divorced'],
             onChanged: (value) => viewModel.civilStatus = value,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 28),
           OutBorderTextFormField(
             labelText: "Spouse Name (if married)",
             hintText: "Enter spouse name if applicable",
@@ -358,8 +358,8 @@ class SignUpForms {
   static Widget _buildContactForm(
       BuildContext context, SignUpProvider viewModel, bool isMobile) {
     // FIXED: Use static form key
-    final List<String> barangayNames =
-        barangays.map((b) => b['name'] as String).toList();
+    // final List<String> barangayNames =
+    //     barangays.map((b) => b['name'] as String).toList();
 
     final associationOptions = viewModel.associationOptions;
 
@@ -409,7 +409,7 @@ class SignUpForms {
               return null;
             },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
 
           _buildDropdownAutocompleteWithMapping(
             label: "Association",
@@ -433,34 +433,26 @@ class SignUpForms {
             _buildAssociationErrorRetryWidget(context, viewModel),
             const SizedBox(height: 16),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
 
-          _buildDropdownFieldWithMapping(
-            label: "Sector",
-            value: viewModel.sectorController.text.isNotEmpty
-                ? viewModel.sectorController.text
-                : null,
-            fullOptions: sectorOptions,
-            displayOptions: sectorDisplayOptions,
-            onChanged: (value) {
-              viewModel.sectorController.text = value ?? '';
-            },
-            isRequired: true,
-          ),
-          const SizedBox(height: 16),
-          OutBorderTextFormField(
-            labelText: "Address",
-            hintText: "Enter your complete address",
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Address is required';
-              }
-              return null;
-            },
-            maxLength: 200,
-            controller: viewModel.addressController,
-          ),
-          const SizedBox(height: 16),
+         _buildDropdownAutocompleteWithMapping(
+  label: "Sector",
+  hintText: "Select Sector",
+  displayOptions: sectorDisplayOptions,
+  fullOptions: sectorOptions,
+  controller: viewModel.sectorController,
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'Sector is required';
+    }
+    if (!sectorOptions.contains(value)) {
+      return 'Please select a valid sector';
+    }
+    return null;
+  },
+),
+        
+          const SizedBox(height: 24),
           OutBorderTextFormField(
             labelText: "Phone Number",
             hintText: "Enter your phone number",
@@ -531,474 +523,634 @@ class SignUpForms {
     );
   }
 
-  // Add this method to handle association loading errors
-  static Widget _buildAssociationErrorRetryWidget(
-      BuildContext context, SignUpProvider viewModel) {
-    return LayoutBuilder(builder: (context, constraints) {
-      final isDesktop = constraints.maxWidth > 1000;
 
-      return Container(
-        width: isDesktop ? 130 : double.infinity,
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.red.shade300),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 20,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Failed to load associations',
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 12,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 2),
-            ElevatedButton(
-              onPressed: () {
-                final sectorService =
-                    RepositoryProvider.of<SectorService>(context);
-                viewModel.loadAssociations(sectorService);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                minimumSize: Size.zero,
-              ),
-              child: Text(
-                'Retry',
-                style: TextStyle(fontSize: 12),
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-  }
 
-  static Widget _buildDropdownAutocomplete({
-    required String label,
-    required String hintText,
-    required List<String> options,
-    required TextEditingController controller,
-    required String? Function(String?) validator,
-    double maxHeight = 200.0,
-    double maxWidth = 400.0,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w100,
-            color: Colors.black87,
+
+
+// Add this method to handle association loading errors
+static Widget _buildAssociationErrorRetryWidget(
+    BuildContext context, SignUpProvider viewModel) {
+  return LayoutBuilder(builder: (context, constraints) {
+    final isDesktop = constraints.maxWidth > 1000;
+    
+    return MouseRegion(
+      child: StatefulBuilder(
+        builder: (context, setState) {
+          bool isHovered = false;
+          final cardColor = Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor;
+          
+          return Container(
+            width: isDesktop ? 130 : double.infinity,
+            height: 40,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  final sectorService = RepositoryProvider.of<SectorService>(context);
+                  viewModel.loadAssociations(sectorService);
+                },
+                borderRadius: BorderRadius.circular(8),
+                onHover: (hovering) {
+                  setState(() {
+                    isHovered = hovering;
+                  });
+                },
+                child: Ink(
+                  decoration: BoxDecoration(
+                    color: isHovered ? 
+                      cardColor.withOpacity(0.8) : // Slightly transparent on hover
+                      cardColor,
+                    border: Border.all(
+                      color: Colors.red.shade300,
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.refresh_rounded,
+                          color: Colors.red.shade700,
+                          size: 17,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Failed to load',
+                          style: TextStyle(
+                            color: Colors.red.shade700,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  });
+}
+
+
+
+
+
+
+
+
+
+
+static Widget _buildDropdownAutocomplete({
+  required String label,
+  required String hintText,
+  required List<String> options,
+  required TextEditingController controller,
+  required String? Function(String?) validator,
+  double maxHeight = 200.0,
+  bool showErrorText = true,
+  Color errorBorderColor = Colors.redAccent,
+  TextStyle? errorTextStyle,
+}) {
+  // ✅ Custom validator wrapper to capture error message
+  String? errorMessage;
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w100,
+          color: Colors.black87,
+        ),
+      ),
+      SizedBox(height: 8),
+      LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              RawAutocomplete<String>(
+                textEditingController: controller,
+                focusNode: FocusNode(),
+                optionsBuilder: (TextEditingValue textEditingValue) {
+                  if (textEditingValue.text.isEmpty) {
+                    return options;
+                  }
+                  return options.where((String option) {
+                    return option
+                        .toLowerCase()
+                        .contains(textEditingValue.text.toLowerCase());
+                  });
+                },
+                onSelected: (String selection) {
+                  controller.text = selection;
+                },
+                fieldViewBuilder: (
+                  BuildContext context,
+                  TextEditingController fieldTextEditingController,
+                  FocusNode fieldFocusNode,
+                  VoidCallback onFieldSubmitted,
+                ) {
+                  if (controller.text != fieldTextEditingController.text &&
+                      fieldTextEditingController.text.isEmpty) {
+                    fieldTextEditingController.text = controller.text;
+                  }
+
+                  return TextFormField(
+                    controller: fieldTextEditingController,
+                    focusNode: fieldFocusNode,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w100,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: hintText,
+                      hintStyle: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w100,
+                      ),
+                      border: const OutlineInputBorder(
+                        borderSide: BorderSide(color: FlarelineColors.border, width: 1),
+                      ),
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: FlarelineColors.border, width: 1),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: FlarelineColors.primary, width: 1),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: errorBorderColor, width: 1),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: errorBorderColor, width: 1),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                      suffixIcon: Icon(Icons.arrow_drop_down),
+                      // ✅ Hide the default error text from TextFormField
+                      errorStyle: TextStyle(
+                        fontSize: 0,
+                        height: 0,
+                      ),
+                      isDense: true,
+                    ),
+                    validator: (value) {
+                      if (validator != null) {
+                        errorMessage = validator(value);
+                        return errorMessage;
+                      }
+                      return null;
+                    },
+                    onChanged: (value) {
+                      if (controller.text != value) {
+                        controller.text = value;
+                      }
+                    },
+                  );
+                },
+                optionsViewBuilder: (
+                  BuildContext context,
+                  AutocompleteOnSelected<String> onSelected,
+                  Iterable<String> options,
+                ) {
+                  return Align(
+                    alignment: Alignment.topLeft,
+                    child: SizedBox(
+                      width: constraints.maxWidth,
+                      child: Material(
+                        elevation: 4.0,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: maxHeight,
+                            maxWidth: constraints.maxWidth,
+                          ),
+                          child: ListView.builder(
+                            padding: EdgeInsets.zero,
+                            shrinkWrap: true,
+                            itemCount: options.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final String option = options.elementAt(index);
+                              return InkWell(
+                                onTap: () {
+                                  onSelected(option);
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    option,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              
+              // ✅ Error text positioned below the input field
+              if (showErrorText)
+                Positioned(
+                  left: 12,
+                  bottom: -20,
+                  right: 12,
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: ValueNotifier(0),
+                    builder: (context, _, __) {
+                      final form = Form.of(context);
+                      if (form != null) {
+                        return errorMessage != null && errorMessage!.isNotEmpty
+                            ? Text(
+                                errorMessage!,
+                                style: errorTextStyle ??
+                                    TextStyle(
+                                      color: errorBorderColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w100,
+                                      height: 1.2,
+                                    ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              )
+                            : SizedBox.shrink();
+                      }
+                      return SizedBox.shrink();
+                    },
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    ],
+  );
+}
+
+static Widget _buildDropdownAutocompleteWithMapping({
+  required String label,
+  required String hintText,
+  required List<String> displayOptions,
+  required List<String> fullOptions,
+  required TextEditingController controller,
+  required String? Function(String?) validator,
+  double maxHeight = 200.0,
+  bool showErrorText = true,
+  Color errorBorderColor = Colors.redAccent,
+  TextStyle? errorTextStyle,
+}) {
+  final displayController = TextEditingController(
+    text: controller.text.isNotEmpty ? _getDisplayValue(controller.text) : '',
+  );
+
+  // ✅ Custom validator wrapper to capture error message
+  String? errorMessage;
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w100,
+          color: Colors.black87,
+        ),
+      ),
+      SizedBox(height: 8),
+      LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              RawAutocomplete<String>(
+                textEditingController: displayController,
+                focusNode: FocusNode(),
+                optionsBuilder: (TextEditingValue textEditingValue) {
+                  if (textEditingValue.text.isEmpty) {
+                    return displayOptions;
+                  }
+                  return displayOptions.where((String option) {
+                    return option
+                        .toLowerCase()
+                        .contains(textEditingValue.text.toLowerCase());
+                  });
+                },
+                onSelected: (String displaySelection) {
+                  final fullValue = _getFullValue(displaySelection, fullOptions);
+                  controller.text = fullValue ?? displaySelection;
+                  displayController.text = displaySelection;
+                },
+                fieldViewBuilder: (
+                  BuildContext context,
+                  TextEditingController fieldTextEditingController,
+                  FocusNode fieldFocusNode,
+                  VoidCallback onFieldSubmitted,
+                ) {
+                  return TextFormField(
+                    controller: fieldTextEditingController,
+                    focusNode: fieldFocusNode,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w100,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: hintText,
+                      hintStyle: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w100,
+                      ),
+                      border: const OutlineInputBorder(
+                        borderSide: BorderSide(color: FlarelineColors.border, width: 1),
+                      ),
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: FlarelineColors.border, width: 1),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: FlarelineColors.primary, width: 1),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: errorBorderColor, width: 1),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: errorBorderColor, width: 1),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                      suffixIcon: Icon(Icons.arrow_drop_down),
+                      // ✅ Hide the default error text from TextFormField
+                      errorStyle: TextStyle(
+                        fontSize: 0,
+                        height: 0,
+                      ),
+                      isDense: true,
+                    ),
+                    validator: (value) {
+                      final validationResult = validator(controller.text);
+                      errorMessage = validationResult;
+                      return validationResult;
+                    },
+                    onChanged: (value) {
+                      displayController.text = value;
+                    },
+                  );
+                },
+                optionsViewBuilder: (
+                  BuildContext context,
+                  AutocompleteOnSelected<String> onSelected,
+                  Iterable<String> options,
+                ) {
+                  return Align(
+                    alignment: Alignment.topLeft,
+                    child: SizedBox(
+                      width: constraints.maxWidth,
+                      child: Material(
+                        elevation: 4.0,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: maxHeight,
+                            maxWidth: constraints.maxWidth,
+                          ),
+                          child: ListView.builder(
+                            padding: EdgeInsets.zero,
+                            shrinkWrap: true,
+                            itemCount: options.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final String option = options.elementAt(index);
+                              return InkWell(
+                                onTap: () {
+                                  onSelected(option);
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    option,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              
+              // ✅ Error text positioned below the input field
+              if (showErrorText)
+                Positioned(
+                  left: 12,
+                  bottom: -20,
+                  right: 12,
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: ValueNotifier(0),
+                    builder: (context, _, __) {
+                      final form = Form.of(context);
+                      if (form != null) {
+                        return errorMessage != null && errorMessage!.isNotEmpty
+                            ? Text(
+                                errorMessage!,
+                                style: errorTextStyle ??
+                                    TextStyle(
+                                      color: errorBorderColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w100,
+                                      height: 1.2,
+                                    ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              )
+                            : SizedBox.shrink();
+                      }
+                      return SizedBox.shrink();
+                    },
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    ],
+  );
+}
+
+static Widget _buildDropdownField({
+  required String label,
+  required String? value,
+  required List<String> items,
+  required Function(String?) onChanged,
+  bool isRequired = false,
+  bool showErrorText = true,
+  Color errorBorderColor = Colors.redAccent,
+  TextStyle? errorTextStyle,
+}) {
+  // ✅ Custom validator wrapper to capture error message
+  String? errorMessage;
+
+  return Stack(
+    clipBehavior: Clip.none,
+    children: [
+      DropdownButtonFormField<String>(
+        value: value,
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(
+            borderSide: BorderSide(color: FlarelineColors.border, width: 1),
           ),
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: FlarelineColors.border, width: 1),
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: FlarelineColors.primary, width: 1),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: errorBorderColor, width: 1),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: errorBorderColor, width: 1),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          // ✅ Hide the default error text from DropdownButtonFormField
+          errorStyle: TextStyle(
+            fontSize: 0,
+            height: 0,
+          ),
+          isDense: true,
         ),
-        SizedBox(height: 8),
-        // Use RawAutocomplete for better control
-        RawAutocomplete<String>(
-          textEditingController: controller,
-          focusNode: FocusNode(), // Provide explicit focus node
-          optionsBuilder: (TextEditingValue textEditingValue) {
-            if (textEditingValue.text.isEmpty) {
-              return options;
-            }
-            return options.where((String option) {
-              return option
-                  .toLowerCase()
-                  .contains(textEditingValue.text.toLowerCase());
-            });
-          },
-          onSelected: (String selection) {
-            controller.text = selection;
-          },
-          fieldViewBuilder: (
-            BuildContext context,
-            TextEditingController fieldTextEditingController,
-            FocusNode fieldFocusNode,
-            VoidCallback onFieldSubmitted,
-          ) {
-            // Sync controllers only when needed
-            if (controller.text != fieldTextEditingController.text &&
-                fieldTextEditingController.text.isEmpty) {
-              fieldTextEditingController.text = controller.text;
-            }
-
-            return TextFormField(
-              controller: fieldTextEditingController,
-              focusNode: fieldFocusNode,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w100,
-              ),
-              decoration: InputDecoration(
-                hintText: hintText,
-                hintStyle: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w100,
-                ),
-                // Apply OutBorderTextFormField border styling
-                border: const OutlineInputBorder(
-                  borderSide:
-                      BorderSide(color: FlarelineColors.border, width: 1),
-                ),
-                enabledBorder: const OutlineInputBorder(
-                  borderSide:
-                      BorderSide(color: FlarelineColors.border, width: 1),
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderSide:
-                      BorderSide(color: FlarelineColors.primary, width: 1),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.redAccent, width: 1),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.redAccent, width: 1),
-                ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                suffixIcon: Icon(Icons.arrow_drop_down),
-                errorStyle: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w100,
-                  color: Colors.redAccent,
-                ),
-                isDense: true,
-              ),
-              validator: validator,
-              onChanged: (value) {
-                // Update the main controller when typing
-                if (controller.text != value) {
-                  controller.text = value;
+        items: items.map((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value),
+          );
+        }).toList(),
+        onChanged: onChanged,
+        validator: isRequired
+            ? (value) {
+                if (value == null || value.isEmpty) {
+                  errorMessage = 'Please select $label';
+                  return errorMessage;
                 }
-              },
-            );
-          },
-          optionsViewBuilder: (
-            BuildContext context,
-            AutocompleteOnSelected<String> onSelected,
-            Iterable<String> options,
-          ) {
-            return Align(
-              alignment: Alignment.topLeft,
-              child: SizedBox(
-                width: maxWidth,
-                child: Material(
-                  elevation: 4.0,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: maxHeight,
-                      maxWidth: maxWidth,
-                    ),
-                    child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      shrinkWrap: true,
-                      itemCount: options.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final String option = options.elementAt(index);
-                        return InkWell(
-                          onTap: () {
-                            onSelected(option);
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Text(
-                              option,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w100,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                errorMessage = null;
+                return null;
+              }
+            : null,
+        isExpanded: true,
+      ),
+      
+      // ✅ Error text positioned below the dropdown field
+      if (showErrorText)
+        Positioned(
+          left: 12,
+          bottom: -20,
+          right: 12,
+          child: ValueListenableBuilder<int>(
+            valueListenable: ValueNotifier(0),
+            builder: (context, _, __) {
+              final form = Form.of(context);
+              if (form != null) {
+                return errorMessage != null && errorMessage!.isNotEmpty
+                    ? Text(
+                        errorMessage!,
+                        style: errorTextStyle ??
+                            TextStyle(
+                              color: errorBorderColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w100,
+                              height: 1.2,
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  // New autocomplete with display/full value mapping
-  static Widget _buildDropdownAutocompleteWithMapping({
-    required String label,
-    required String hintText,
-    required List<String> displayOptions,
-    required List<String> fullOptions,
-    required TextEditingController controller,
-    required String? Function(String?) validator,
-    double maxHeight = 200.0,
-    double maxWidth = 400.0,
-  }) {
-    // Create a display controller for showing text without numbers
-    final displayController = TextEditingController(
-      text: controller.text.isNotEmpty ? _getDisplayValue(controller.text) : '',
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w100,
-            color: Colors.black87,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    : SizedBox.shrink();
+              }
+              return SizedBox.shrink();
+            },
           ),
         ),
-        SizedBox(height: 8),
-        RawAutocomplete<String>(
-          textEditingController: displayController,
-          focusNode: FocusNode(),
-          optionsBuilder: (TextEditingValue textEditingValue) {
-            if (textEditingValue.text.isEmpty) {
-              return displayOptions;
-            }
-            return displayOptions.where((String option) {
-              return option
-                  .toLowerCase()
-                  .contains(textEditingValue.text.toLowerCase());
-            });
-          },
-          onSelected: (String displaySelection) {
-            // Find the full value and store it
-            final fullValue = _getFullValue(displaySelection, fullOptions);
-            controller.text = fullValue ?? displaySelection;
-            displayController.text = displaySelection;
-          },
-          fieldViewBuilder: (
-            BuildContext context,
-            TextEditingController fieldTextEditingController,
-            FocusNode fieldFocusNode,
-            VoidCallback onFieldSubmitted,
-          ) {
-            return TextFormField(
-              controller: fieldTextEditingController,
-              focusNode: fieldFocusNode,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w100,
-              ),
-              decoration: InputDecoration(
-                hintText: hintText,
-                hintStyle: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w100,
-                ),
-                border: const OutlineInputBorder(
-                  borderSide:
-                      BorderSide(color: FlarelineColors.border, width: 1),
-                ),
-                enabledBorder: const OutlineInputBorder(
-                  borderSide:
-                      BorderSide(color: FlarelineColors.border, width: 1),
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderSide:
-                      BorderSide(color: FlarelineColors.primary, width: 1),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.redAccent, width: 1),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.redAccent, width: 1),
-                ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                suffixIcon: Icon(Icons.arrow_drop_down),
-                errorStyle: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w100,
-                  color: Colors.redAccent,
-                ),
-                isDense: true,
-              ),
-              validator: (value) {
-                // Validate using the full value
-                return validator(controller.text);
-              },
-              onChanged: (value) {
-                displayController.text = value;
-              },
-            );
-          },
-          optionsViewBuilder: (
-            BuildContext context,
-            AutocompleteOnSelected<String> onSelected,
-            Iterable<String> options,
-          ) {
-            return Align(
-              alignment: Alignment.topLeft,
-              child: SizedBox(
-                width: maxWidth,
-                child: Material(
-                  elevation: 4.0,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: maxHeight,
-                      maxWidth: maxWidth,
-                    ),
-                    child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      shrinkWrap: true,
-                      itemCount: options.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final String option = options.elementAt(index);
-                        return InkWell(
-                          onTap: () {
-                            onSelected(option);
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Text(
-                              option,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w100,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
+    ],
+  );
+}
+  
 
-  // New dropdown with display/full value mapping
-  static Widget _buildDropdownFieldWithMapping({
-    required String label,
-    required String? value,
-    required List<String> fullOptions,
-    required List<String> displayOptions,
-    required Function(String?) onChanged,
-    bool isRequired = false,
-  }) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(
-          borderSide: BorderSide(color: FlarelineColors.border, width: 1),
-        ),
-        enabledBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: FlarelineColors.border, width: 1),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: FlarelineColors.primary, width: 1),
-        ),
-        errorBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.redAccent, width: 1),
-        ),
-        focusedErrorBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.redAccent, width: 1),
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-        errorStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w100,
-          color: Colors.redAccent,
-        ),
-        isDense: true,
-      ),
-      items: fullOptions.asMap().entries.map((entry) {
-        final fullValue = entry.value;
-        final displayValue = displayOptions[entry.key];
-        return DropdownMenuItem<String>(
-          value: fullValue,
-          child: Text(displayValue),
-        );
-      }).toList(),
-      onChanged: onChanged,
-      validator: isRequired
-          ? (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please select $label';
-              }
-              return null;
-            }
-          : null,
-      isExpanded: true,
-    );
-  }
 
-  static Widget _buildDropdownField({
-    required String label,
-    required String? value,
-    required List<String> items,
-    required Function(String?) onChanged,
-    bool isRequired = false,
-  }) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      decoration: InputDecoration(
-        labelText: label,
-        // Apply OutBorderTextFormField border styling
-        border: const OutlineInputBorder(
-          borderSide: BorderSide(color: FlarelineColors.border, width: 1),
-        ),
-        enabledBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: FlarelineColors.border, width: 1),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: FlarelineColors.primary, width: 1),
-        ),
-        errorBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.redAccent, width: 1),
-        ),
-        focusedErrorBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.redAccent, width: 1),
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-        errorStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w100,
-          color: Colors.redAccent,
-        ),
-        isDense: true,
+
+
+static Widget _buildDropdownFieldWithMapping({
+  required String label,
+  required String? value,
+  required List<String> fullOptions,
+  required List<String> displayOptions,
+  required Function(String?) onChanged,
+  bool isRequired = false,
+}) {
+  return DropdownButtonFormField<String>(
+    value: value,
+    decoration: InputDecoration(
+      labelText: label,
+      border: const OutlineInputBorder(
+        borderSide: BorderSide(color: FlarelineColors.border, width: 1),
       ),
-      items: items.map((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
-        );
-      }).toList(),
-      onChanged: onChanged,
-      validator: isRequired
-          ? (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please select $label';
-              }
-              return null;
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: FlarelineColors.border, width: 1),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: FlarelineColors.primary, width: 1),
+      ),
+      errorBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.redAccent, width: 1),
+      ),
+      focusedErrorBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.redAccent, width: 1),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      errorStyle: const TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w100,
+        color: Colors.redAccent,
+      ),
+      isDense: true,
+    ),
+    items: fullOptions.asMap().entries.map((entry) {
+      final fullValue = entry.value;
+      final displayValue = displayOptions[entry.key];
+      return DropdownMenuItem<String>(
+        value: fullValue,
+        child: Text(displayValue),
+      );
+    }).toList(),
+    onChanged: onChanged,
+    validator: isRequired
+        ? (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please select $label';
             }
-          : null,
-      isExpanded: true,
-    );
-  }
+            return null;
+          }
+        : null,
+    isExpanded: true, // This makes the dropdown width match the input field
+  );
+}
+
+
+
 }

@@ -15,21 +15,20 @@ class SignUpWidget extends BaseWidget<SignUpProvider> {
   @override
   Widget bodyWidget(
       BuildContext context, SignUpProvider viewModel, Widget? child) {
-    // debugPrint('[SIGNUP] Widget - bodyWidget rebuild. isPendingVerification: ${viewModel.isPendingVerification}');
-
+ 
     if (viewModel.isPendingVerification) {
       return _buildVerificationPendingScreen(context, viewModel);
     }
 
     return Builder(
       builder: (context) {
-        // debugPrint('[SIGNUP] Main scaffold builder rebuild');
+      
         return Scaffold(
           resizeToAvoidBottomInset: true,
           body: LayoutBuilder(
             builder: (context, constraints) {
               final isMobile = constraints.maxWidth < 600;
-              // debugPrint('[SIGNUP] LayoutBuilder rebuild. isMobile: $isMobile');
+           
 
               return Stack(
                 children: [
@@ -56,7 +55,7 @@ class SignUpWidget extends BaseWidget<SignUpProvider> {
                       physics: ClampingScrollPhysics(),
                       child: Builder(
                         builder: (context) {
-                          // debugPrint('[SIGNUP] Content container builder rebuild');
+                     
                           return Container(
                             constraints: BoxConstraints(
                               maxWidth: isMobile ? double.infinity : 800.0,
@@ -75,7 +74,7 @@ class SignUpWidget extends BaseWidget<SignUpProvider> {
                                 borderRadius: isMobile ? 0 : 12.0,
                                 child: Builder(
                                   builder: (context) {
-                                    // debugPrint('[SIGNUP] Card content builder rebuild');
+                                   
                                     return Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
@@ -150,7 +149,7 @@ class SignUpWidget extends BaseWidget<SignUpProvider> {
                   if (viewModel.isLoading)
                     Builder(
                       builder: (context) {
-                        // debugPrint('[SIGNUP] Loading overlay builder rebuild');
+                   
                         return Container(
                           color: Colors.black.withOpacity(0.3),
                           child: Center(
@@ -172,7 +171,7 @@ class SignUpWidget extends BaseWidget<SignUpProvider> {
   }
 
   Widget _buildStepper(SignUpProvider viewModel, bool isMobile) {
-    // debugPrint('[SIGNUP] Stepper rebuild - currentStep: ${viewModel.currentStep}, isMobile: $isMobile');
+ 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20.0),
       child: Container(
@@ -222,7 +221,7 @@ class SignUpWidget extends BaseWidget<SignUpProvider> {
   }
 
   StepState _getStepState(SignUpProvider viewModel, int stepIndex) {
-    // debugPrint('[SIGNUP] Step state check - step: $stepIndex, currentStep: ${viewModel.currentStep}');
+ 
     if (viewModel.currentStep > stepIndex) {
       return StepState.complete;
     } else if (viewModel.currentStep == stepIndex) {
@@ -234,7 +233,7 @@ class SignUpWidget extends BaseWidget<SignUpProvider> {
 
   Widget _buildVerificationPendingScreen(
       BuildContext context, SignUpProvider viewModel) {
-    // debugPrint('[SIGNUP] Verification screen rebuild');
+ 
     return Scaffold(
       body: Stack(
         children: [
@@ -254,7 +253,6 @@ class SignUpWidget extends BaseWidget<SignUpProvider> {
               child: ResponsiveBuilder(
                 builder: (context, sizingInfo) {
                   final isMobile = sizingInfo.isMobile;
-                  // debugPrint('[SIGNUP] Verification screen ResponsiveBuilder rebuild - isMobile: $isMobile');
                   final maxWidth = isMobile ? double.infinity : 500.0;
 
                   return Container(
@@ -375,12 +373,7 @@ class SignUpWidget extends BaseWidget<SignUpProvider> {
     );
   }
 
-  // @override
-  // SignUpProvider viewModelBuilder(BuildContext context) {
-  //   // debugPrint('[SIGNUP] Creating new viewModel instance');
-  //   return SignUpProvider(context);
-  // }
-
+ 
   @override
   SignUpProvider viewModelBuilder(BuildContext context) {
     final viewModel = SignUpProvider(context);

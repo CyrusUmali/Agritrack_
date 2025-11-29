@@ -64,13 +64,18 @@ class SignInWidget extends BaseWidget<SignInProvider> {
                               alignment: Alignment.topRight,
                               child: _toggleButton(context, viewModel),
                             ),
-                          sizingInfo.isMobile ? SizedBox(height: 18) : SizedBox(),
-                    
-                          SizedBox(
-                            width: 80,
-                            child: Image.asset('assets/DA_image.jpg'),
-                          ),
-                      sizingInfo.isMobile ? SizedBox(height: 30) : SizedBox(),
+                          sizingInfo.isMobile
+                              ? SizedBox(height: 18)
+                              : SizedBox(),
+
+                       SvgPicture.asset(
+  'assets/DA_image.svg', // Convert your JPG to SVG
+  width: 80,
+  height: 80,
+),
+                          sizingInfo.isMobile
+                              ? SizedBox(height: 30)
+                              : SizedBox(),
                           Text(
                             "AgriTrack",
                             style: TextStyle(
@@ -78,7 +83,9 @@ class SignInWidget extends BaseWidget<SignInProvider> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                       sizingInfo.isMobile ? SizedBox(height: 20) : SizedBox(),
+                          sizingInfo.isMobile
+                              ? SizedBox(height: 20)
+                              : SizedBox(),
                           // Show either sign-in form or download section
                           viewModel.showDownloadSection
                               ? _androidDownloadSection(context)
@@ -268,28 +275,35 @@ class SignInWidget extends BaseWidget<SignInProvider> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           OutBorderTextFormField(
-            labelText: "Username",
-            hintText: "Enter your Username",
+            labelText: "Email",
+            hintText: "Enter your Email",
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Username is required';
+                return 'Email is required';
               }
               return null;
             },
-            suffixWidget: SvgPicture.asset(
-              'assets/signin/email.svg',
-              width: 22,
-              height: 22,
+            suffixWidget: InkWell(
+              child: Icon(
+                Icons.email_outlined,
+                color: Colors.grey[600],
+                size: 20,
+              ),
             ),
+            errorLeft: 12,
+            errorRight: 12,
+           errorBottom: -15,
             controller: viewModel.emailController,
             showErrorText: true,
             errorBorderColor: Colors.red,
           ),
 
           const SizedBox(height: 16),
+
+// Password field with show/hide toggle
           OutBorderTextFormField(
-            obscureText: true,
+            obscureText: !viewModel.showPassword,
             labelText: AppLocalizations.of(context)!.password,
             hintText: "Enter your Password",
             keyboardType: TextInputType.visiblePassword,
@@ -303,11 +317,22 @@ class SignInWidget extends BaseWidget<SignInProvider> {
               }
               return null;
             },
-            suffixWidget: SvgPicture.asset(
-              'assets/signin/lock.svg',
-              width: 22,
-              height: 22,
+            suffixWidget: InkWell(
+              onTap: () {
+             
+                viewModel.togglePasswordVisibility();
+              },
+              child: Icon(
+                viewModel.showPassword
+                    ? Icons.visibility
+                    : Icons.visibility_off,
+                color: Colors.grey[600],
+                size: 20,
+              ),
             ),
+            errorLeft: 12,
+            errorRight: 12,
+            errorBottom: -15,
             controller: viewModel.passwordController,
             onFieldSubmitted: (value) {
               if (_formKey.currentState!.validate()) {
@@ -318,7 +343,7 @@ class SignInWidget extends BaseWidget<SignInProvider> {
             errorBorderColor: Colors.red,
           ),
 
-      const SizedBox(height: 8),
+          const SizedBox(height: 8),
           // Forgot password link
           Align(
             alignment: Alignment.centerRight,
@@ -415,5 +440,3 @@ class SignInWidget extends BaseWidget<SignInProvider> {
     );
   }
 }
-
- 

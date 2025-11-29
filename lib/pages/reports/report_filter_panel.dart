@@ -282,14 +282,22 @@ class _FiltersSection extends StatelessWidget {
             )
           : Column(
               children: [
-                Center(
-                  // Added Center widget here
-                  child: DateRangePickerWidget(
-                    width: 380,
-                    dateRange: dateRange,
-                    onDateRangeChanged: onDateRangeChanged,
-                  ),
-                ),
+                
+              Center(
+  child: LayoutBuilder(
+    builder: (context, constraints) {
+      final parentWidth = constraints.maxWidth;
+      // final desiredWidth = parentWidth > 300 ? 280.0 : parentWidth * 1; // Use 180.0 instead of 180
+      
+      return DateRangePickerWidget(
+        width: parentWidth,
+        dateRange: dateRange,
+        onDateRangeChanged: onDateRangeChanged,
+      );
+    },
+  ),
+),
+              
                 const SizedBox(height: 16),
                 isTablet
                     ? _buildTabletFilters(context)
@@ -633,4 +641,6 @@ Widget _buildErrorRetryWidget(BuildContext context, String errorMessage) {
     );
   });
 }
+
+
 }

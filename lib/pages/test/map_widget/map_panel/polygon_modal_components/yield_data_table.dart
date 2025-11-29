@@ -528,71 +528,143 @@ class _YieldDataTableState extends State<YieldDataTable> {
         ? _buildWideScreenLayout(theme, yieldData, products)
         : _buildMobileLayout(theme, yieldData, products);
   }
+Widget _buildNonOwnerView(ThemeData theme) {
+  final products = _getUniqueProducts();
+  final displayProducts = products.isNotEmpty ? products : ['Mixed Crops'];
 
-  Widget _buildNonOwnerView(ThemeData theme) {
-    final products = _getUniqueProducts();
-    final displayProducts = products.isNotEmpty ? products : ['Mixed Crops'];
-
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+  return Card(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    elevation: 3,
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+ 
+            Text(
+                'Farm Products',
+                style:  TextStyle(fontSize: 18, fontWeight: FontWeight.bold
+              ),
+            )
+            ],
+          ),
+          const SizedBox(height: 20),
+          
+          // Products Grid/List
+          if (displayProducts.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Text(
+                  'No products information available',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.hintColor,
+                  ),
+                ),
+              ),
+            )
+          else
+            // Product Cards Grid
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.5,
+              ),
+              itemCount: displayProducts.length,
+              itemBuilder: (context, index) {
+                final product = displayProducts[index];
+                final productImage = _getProductImage(product);
+                
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? GlobalColors.darkerCardColor
+                        : theme.primaryColor.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.dividerColor,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: theme.primaryColor.withOpacity(0.1),
+                        backgroundImage: productImage != null
+                            ? NetworkImage(productImage)
+                            : null,
+                        child: productImage == null
+                            ? Icon(Icons.eco, size: 24, color: theme.primaryColor)
+                            : null,
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          product,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            // color: theme.primaryColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          
+          const SizedBox(height: 20),
+          
+          // Information Banner
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.primaryColor.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: theme.dividerColor,
+                width: 1,
+              ),
+            ),
+            child: Row(
               children: [
-                Icon(Icons.agriculture,
-                    color: Color(0xFF241E30).withOpacity(0.6), size: 24),
-                const SizedBox(width: 8),
-                Text(
-                  'Farm Products',
-                  style: theme.textTheme.titleLarge?.copyWith(),
+                Icon(
+                  Icons.info_outline,
+                  size: 20, 
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Yield data is only available to the farm owner or administrators.',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                   
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            if (displayProducts.isEmpty)
-              const Text('No products information available')
-            else
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: displayProducts.map((product) {
-                  final productImage = _getProductImage(product);
-                  return Chip(
-                    label: Text(product),
-                    backgroundColor:
-                        Theme.of(context).brightness == Brightness.dark
-                            ? GlobalColors.darkerCardColor
-                            : theme.primaryColor.withOpacity(0.1),
-                    labelStyle: TextStyle(color: theme.primaryColor),
-                    avatar: CircleAvatar(
-                      backgroundImage: productImage != null
-                          ? NetworkImage(productImage)
-                          : null,
-                      child: productImage == null
-                          ? const Icon(Icons.eco, size: 18)
-                          : null,
-                    ),
-                  );
-                }).toList(),
-              ),
-            const SizedBox(height: 16),
-            Text(
-              'Yield data is only available to the farm owner or administrators.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.hintColor,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
-
+    ),
+  );
+}
+  
+  
   // Updated _buildDataDisplayCard with chart options
   Widget _buildDataDisplayCard(ThemeData theme,
       Map<String, Map<String, Map<String, double>>> yieldData) {
@@ -1016,8 +1088,10 @@ class _YieldDataTableState extends State<YieldDataTable> {
                 ],
               ),
             ],
+
+ if (_yields.isNotEmpty) ...[
             const SizedBox(height: 20),
-            Row(
+             Row(
               children: [
                 // Excel button (green)
                 Expanded(
@@ -1030,6 +1104,9 @@ class _YieldDataTableState extends State<YieldDataTable> {
                 ),
               ],
             )
+         
+ ]
+         
           ],
         ),
       ),

@@ -130,9 +130,7 @@ class _FarmProfileDesktopState extends State<FarmProfileDesktop> {
     if (yieldState is YieldsError) {
       return Center(child: Text('Error loading yields: ${yieldState.message}'));
     }
-
-    // print('farmState');
-    // print(farmState);
+ 
 
     if (farmState is! FarmLoaded || yieldState is! YieldsLoaded) {
       return const Center(child: Text('Unexpected state'));
@@ -143,10 +141,7 @@ class _FarmProfileDesktopState extends State<FarmProfileDesktop> {
         (transformedFarm['products'] as List).isNotEmpty;
     final hasYields = yieldState.yields.isNotEmpty;
 
-// print("wqeqwe");
-//     print(yieldState.yields.first.farmerId);
-//     print(_farmerId);
-
+ 
     // Check if we should show the toggle and content
     final shouldShowToggleAndContent = !_isFarmer ||
         (_isFarmer &&

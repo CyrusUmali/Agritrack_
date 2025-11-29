@@ -43,8 +43,7 @@ class SignUpProvider extends BaseViewModel {
   // Contact Info
   late TextEditingController barangayController;
   late TextEditingController associationController;
-  late TextEditingController sectorController;
-  late TextEditingController addressController;
+  late TextEditingController sectorController; 
   late TextEditingController phoneController;
   late TextEditingController personToNotifyController;
   late TextEditingController ptnContactController;
@@ -70,10 +69,9 @@ class SignUpProvider extends BaseViewModel {
     motherMaidenNameController = TextEditingController();
     religionController = TextEditingController();
 
-    barangayController = TextEditingController();
+    barangayController = TextEditingController(); 
     associationController = TextEditingController();
-    sectorController = TextEditingController();
-    addressController = TextEditingController();
+    sectorController = TextEditingController(); 
     phoneController = TextEditingController();
     personToNotifyController = TextEditingController();
     ptnContactController = TextEditingController();
@@ -95,17 +93,13 @@ class SignUpProvider extends BaseViewModel {
 
     try {
       final associations = await sectorService.fetchAssociations2();
-      // print('assoc success');
+ 
       associationOptions =
           associations.map((a) => '${a.id}: ${a.name}').toList();
       _associationsLoadError = null;
-
-      // print(associationOptions);
+ 
     } catch (e) {
-      print('Error loading associations: $e');
-
-      print('assoc errorr');
-      // associationOptions = [];
+   
 
       _associationsLoadError = 'Failed to load associations: ';
       // Optionally keep previous association options if available
@@ -167,8 +161,7 @@ class SignUpProvider extends BaseViewModel {
         maleMembers: int.tryParse(maleMembersController.text) ?? 0,
         femaleMembers: int.tryParse(femaleMembersController.text) ?? 0,
         motherMaidenName: motherMaidenNameController.text,
-        religion: religionController.text,
-        address: addressController.text,
+        religion: religionController.text, 
         personToNotify: personToNotifyController.text,
         ptnContact: ptnContactController.text,
         ptnRelationship: ptnRelationshipController.text,
@@ -196,8 +189,7 @@ class SignUpProvider extends BaseViewModel {
         'maleMembers': farmer.maleMembers,
         'femaleMembers': farmer.femaleMembers,
         'motherMaidenName': farmer.motherMaidenName,
-        'religion': farmer.religion,
-        'address': farmer.address,
+        'religion': farmer.religion, 
         'personToNotify': farmer.personToNotify,
         'ptnContact': farmer.ptnContact,
         'ptnRelationship': farmer.ptnRelationship,
@@ -245,8 +237,7 @@ class SignUpProvider extends BaseViewModel {
     motherMaidenNameController.dispose();
     religionController.dispose();
     associationController.dispose();
-    sectorController.dispose();
-    addressController.dispose();
+    sectorController.dispose(); 
     phoneController.dispose();
     personToNotifyController.dispose();
     ptnContactController.dispose();
@@ -282,9 +273,7 @@ class FarmerData {
   final int femaleMembers;
   final String motherMaidenName;
   final String religion;
-
-  // Contact Info
-  final String address;
+ 
   final String personToNotify;
   final String ptnContact;
   final String ptnRelationship;
@@ -311,8 +300,7 @@ class FarmerData {
     required this.maleMembers,
     required this.femaleMembers,
     required this.motherMaidenName,
-    required this.religion,
-    required this.address,
+    required this.religion, 
     required this.personToNotify,
     required this.ptnContact,
     required this.ptnRelationship,

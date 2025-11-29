@@ -11,15 +11,14 @@ import 'package:latlong2/latlong.dart';
 import 'package:flareline/pages/test/map_widget/legend_panel.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart'; 
 
 import 'farm_list_panel/farm_list.dart';
 import 'stored_polygons.dart';
 import 'map_controls.dart';
 import 'map_layers.dart';
 import 'polygon_manager.dart';
-import 'map_content.dart';
-import 'legend_panel.dart'; // NEW IMPORT
+import 'map_content.dart'; 
 
 class MapWidget extends StatefulWidget {
   const MapWidget({
@@ -45,16 +44,20 @@ class _MapWidgetState extends State<MapWidget>
   String selectedMap = "Google Satellite (No Labels)";
   bool _showFarmListPanel = false;
   bool _showLegendPanel = false;
-  bool _showAreaMarkers = true; // NEW: Toggle for barangay and lake icons
+  bool _showAreaMarkers = false; // NEW: Toggle for barangay and lake icons
   double zoomLevel = 15.0;
   LatLng? previewPoint;
   bool _isLoading = true;
   String? _loadingError;
-
+DateTime? _lastPointerUpdate;
   bool _showExceedingAreaOnly = false;
   bool get hasExceedingAreaFilter => _showExceedingAreaOnly;
 
   bool get isMobile => MediaQuery.of(context).size.width < 600;
+bool _areaFilterActive = false;
+  bool _showOwnedFarmsOnly = true; // For farmers
+bool _showActiveFarmsOnly = true; // For non-farmers
+
 
   late final AnimatedMapController _animatedMapController;
   late PolygonManager polygonManager;
@@ -65,6 +68,35 @@ class _MapWidgetState extends State<MapWidget>
   final ValueNotifier<LatLng?> previewPointNotifier = ValueNotifier(null);
   late final RenderBox _renderBox;
   LatLng? _lastPoint;
+
+
+
+  // Add this method to get the current filter state
+bool get _userFilterEnabled {
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
+  final isFarmer = userProvider.isFarmer;
+  return isFarmer ? _showOwnedFarmsOnly : _showActiveFarmsOnly;
+}
+
+// Add this method to toggle the user filter
+void _toggleUserFilter() {
+  setState(() {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final isFarmer = userProvider.isFarmer;
+    
+    if (isFarmer) {
+      _showOwnedFarmsOnly = !_showOwnedFarmsOnly;
+      // Also update the filter panel's state for consistency
+      BarangayFilterPanel.userFilterOptions['showOwnedOnly'] = _showOwnedFarmsOnly;
+    } else {
+      _showActiveFarmsOnly = !_showActiveFarmsOnly;
+      BarangayFilterPanel.userFilterOptions['showActiveOnly'] = _showActiveFarmsOnly;
+    }
+    
+    // Trigger a refresh of the filtered polygons
+    polygonManager.onFiltersChanged!();
+  });
+}
 
   @override
   void initState() {
@@ -90,8 +122,14 @@ class _MapWidgetState extends State<MapWidget>
       farmService: widget.farmService,
       onFiltersChanged: () => setState(() {}),
       isFarmer: isFarmer,
+      onDrawingStateChanged: (isDrawing) { // Add this callback
+      setState(() {
+        // Hide area markers when drawing, show when not drawing
+        _showAreaMarkers = !isDrawing;
+      });
+    },
     );
-
+  
     barangayManager = BarangayManager();
     barangayManager.loadBarangays(barangays);
 
@@ -267,6 +305,15 @@ class _MapWidgetState extends State<MapWidget>
           child: MouseRegion(
             onHover: (event) {
               if (!polygonManager.isDrawing) return;
+
+               final now = DateTime.now();
+  if (_lastPointerUpdate != null && 
+      now.difference(_lastPointerUpdate!).inMilliseconds < 50) {
+    return; // Skip if less than 50ms since last update
+  }
+  _lastPointerUpdate = now;
+
+
               try {
                 final renderBox = context.findRenderObject() as RenderBox?;
                 if (renderBox == null) return;
@@ -294,6 +341,15 @@ class _MapWidgetState extends State<MapWidget>
               animatedMapController: _animatedMapController,
               showExceedingAreaOnly: _showExceedingAreaOnly,
               showAreaMarkers: _showAreaMarkers, // NEW: Pass the toggle state
+              showOwnedFarmsOnly: _showOwnedFarmsOnly,
+  showActiveFarmsOnly: _showActiveFarmsOnly,
+
+  areaFilterActive: _areaFilterActive, // ADD THIS
+  onAreaFilterChanged: (bool isActive) { // ADD THIS CALLBACK
+    setState(() {
+      _areaFilterActive = isActive;
+    });
+  },
               onBarangayFilterChanged: (newFilters) {
                 setState(() {
                   polygonManager.selectedBarangays = newFilters;
@@ -380,13 +436,19 @@ class _MapWidgetState extends State<MapWidget>
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              SizedBox(height: 10),
+
+                 const   SizedBox(height: 5),
+         _buildUserFilterButton(),
+    const  SizedBox(height: 5),
               // Legend Toggle Button
               buildStyledIconButton(
                 icon: _showLegendPanel
-                    ? Icons.legend_toggle
-                    : Icons.legend_toggle_outlined,
+                    ? Icons.info_outline
+                    : Icons.info_outline,
                      tooltip: _showLegendPanel ? 'Hide Legend' : 'Show Legend', // ADD THIS
+                iconColor: _showLegendPanel
+                    ? Colors.blue
+                    : null,
                 onPressed: () {
                   setState(() {
                     _showLegendPanel = !_showLegendPanel;
@@ -400,10 +462,11 @@ class _MapWidgetState extends State<MapWidget>
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              SizedBox(height: 10),
+          const    SizedBox(height: 5),
               // Area Markers Toggle Button (Barangay & Lake Icons) - NEW
               buildStyledIconButton(
                 icon: _showAreaMarkers ? Icons.location_on : Icons.location_off,
+                
                   tooltip: _showAreaMarkers ? 'Hide Area Markers' : 'Show Area Markers', // ADD THIS
                 onPressed: () {
                   setState(() {
@@ -413,14 +476,14 @@ class _MapWidgetState extends State<MapWidget>
                 backgroundColor: _showAreaMarkers
                     ? Colors.green.withOpacity(0.9)
                     : Colors.grey.withOpacity(0.9),
-                iconColor: _showAreaMarkers ? Colors.green : null,
+                iconColor:   _showAreaMarkers ? Colors.blue : null   ,
                 iconSize: 15,
                 buttonSize: isMobile ? 40.0 : 30,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              SizedBox(height: 10),
+            const  SizedBox(height: 5),
               // Exceeding Area Filter Button
               buildStyledIconButton(
                 icon: _showExceedingAreaOnly
@@ -539,40 +602,74 @@ class _MapWidgetState extends State<MapWidget>
             ),
           ),
 
-        if (polygonManager.selectedLakes.isNotEmpty && !_showFarmListPanel ||
-            polygonManager.selectedBarangays.isNotEmpty &&
-                !_showFarmListPanel ||
-            polygonManager.selectedProducts.isNotEmpty && !_showFarmListPanel ||
-            BarangayFilterPanel.filterOptions.values
-                    .any((isChecked) => !isChecked) &&
-                !_showFarmListPanel)
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: EdgeInsets.only(top: 20),
-              child: ElevatedButton(
-                onPressed: () {
-                  polygonManager.clearFilters();
-                  setState(() {});
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey,
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                ),
-                child: Text(
-                  'Reset Filters',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ),
-            ),
-          ),
+      if (polygonManager.selectedLakes.isNotEmpty && !_showFarmListPanel ||
+    polygonManager.selectedBarangays.isNotEmpty && !_showFarmListPanel ||
+    polygonManager.selectedProducts.isNotEmpty && !_showFarmListPanel ||
+    BarangayFilterPanel.filterOptions.values.any((isChecked) => !isChecked) && !_showFarmListPanel)
+  Align(
+    alignment: Alignment.bottomCenter,
+    child: Padding(
+      padding: EdgeInsets.only(top: 20),
+      child: ElevatedButton(
+        onPressed: () {
+          polygonManager.clearFilters();
+          setState(() {
+            _areaFilterActive = false; // ADD THIS LINE
+          });
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.grey,
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        ),
+        child: Text(
+          'Reset Filters',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+      ),
+    ),
+  ),
+      
+      
+      
       ],
     );
   }
 
 
 
-
+// Add this method to build the user filter button
+Widget _buildUserFilterButton() {
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
+  final isFarmer = userProvider.isFarmer;
+  final isFilterEnabled = isFarmer ? _showOwnedFarmsOnly : _showActiveFarmsOnly;
+  
+  final tooltip = isFarmer
+      ? (isFilterEnabled ? 'Show All Farms' : 'Show My Farms Only')
+      : (isFilterEnabled ? 'Show Inactive Farms Only' : 'Show Active Farms Only');
+  
+  final icon = isFarmer
+      ? (isFilterEnabled ? Icons.person : Icons.people)
+      :  Icons.fiber_manual_record  ;
+  
+  final iconColor = isFilterEnabled 
+      ? Colors.green 
+      : Colors.red;
+  
+  return buildStyledIconButton(
+    icon: icon,
+    tooltip: tooltip,
+    onPressed: _toggleUserFilter,
+    backgroundColor: isFilterEnabled 
+        ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+        : Colors.white,
+    iconColor: iconColor,
+    iconSize: 15,
+    buttonSize: isMobile ? 40.0 : 30,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8.0),
+    ),
+  );
+}
 
 Widget buildStyledIconButton({
   required IconData icon,

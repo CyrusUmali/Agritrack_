@@ -21,7 +21,7 @@ class OutBorderTextFormField extends StatelessWidget {
   final FormFieldValidator<String>? validator;
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onFieldSubmitted;
-  final ValueChanged<String>? onChanged; // ✅ Added
+  final ValueChanged<String>? onChanged;
   final TextStyle? textStyle;
   final int? maxLength;
   final TextStyle? hintStyle;
@@ -29,6 +29,13 @@ class OutBorderTextFormField extends StatelessWidget {
   final TextStyle? errorTextStyle;
   final double? height;
   final double? width;
+
+  // Error positioning
+  final double? errorLeft;
+  final double? errorTop;
+  final double? errorRight;
+  final double? errorBottom;
+  final AlignmentGeometry errorAlignment;
 
   const OutBorderTextFormField({
     super.key,
@@ -48,17 +55,30 @@ class OutBorderTextFormField extends StatelessWidget {
     this.validator,
     this.textInputAction,
     this.onFieldSubmitted,
-    this.onChanged, // ✅ Added
+    this.onChanged,
     this.textStyle,
     this.focusColor,
     this.errorTextStyle,
     this.maxLength,
     this.height,
     this.width,
+    this.errorLeft,
+    this.errorTop,
+    this.errorRight,
+    this.errorBottom,
+    this.errorAlignment = Alignment.topLeft,
   });
 
   @override
   Widget build(BuildContext context) {
+    // ValueNotifier to track error messages
+    final errorNotifier = ValueNotifier<String?>(null);
+
+    // Default positioning values
+    final double effectiveErrorLeft = errorLeft ?? 12;
+    final double effectiveErrorRight = errorRight ?? 12;
+    final double effectiveErrorBottom = errorBottom ?? -5;
+
     Widget textField = TextFormField(
       keyboardType: keyboardType,
       obscureText: obscureText ?? false,
@@ -66,32 +86,24 @@ class OutBorderTextFormField extends StatelessWidget {
       initialValue: initialValue,
       controller: controller,
       maxLines: maxLines,
-      validator: validator,
+      validator: (value) {
+        final msg = validator != null ? validator!(value) : null;
+        errorNotifier.value = msg;
+        return msg;
+      },
       textInputAction: textInputAction,
       onFieldSubmitted: onFieldSubmitted,
-      onChanged: onChanged, // ✅ Pass down
+      onChanged: onChanged,
       style: textStyle,
       maxLength: maxLength,
       decoration: InputDecoration(
-        counterStyle: TextStyle(
-          fontSize: 12,
-          color: Colors.grey,
-        ),
+        counterStyle: TextStyle(fontSize: 12, color: Colors.grey),
         prefixIcon: icon,
-        prefixIconConstraints: const BoxConstraints(
-          maxWidth: 35,
-          maxHeight: 35,
-        ),
+        prefixIconConstraints: const BoxConstraints(maxWidth: 35, maxHeight: 35),
         suffixIcon: suffixWidget != null
-            ? Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: suffixWidget,
-              )
+            ? Container(padding: const EdgeInsets.only(right: 12.0), child: suffixWidget)
             : null,
-        suffixIconConstraints: const BoxConstraints(
-          maxHeight: 24,
-          maxWidth: 24,
-        ),
+        suffixIconConstraints: const BoxConstraints(minWidth: 48, minHeight: 48),
         border: const OutlineInputBorder(
           borderSide: BorderSide(color: FlarelineColors.border, width: 1),
         ),
@@ -99,10 +111,7 @@ class OutBorderTextFormField extends StatelessWidget {
           borderSide: BorderSide(color: FlarelineColors.border, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: (focusColor ?? FlarelineColors.primary),
-            width: 1,
-          ),
+          borderSide: BorderSide(color: (focusColor ?? FlarelineColors.primary), width: 1),
         ),
         errorBorder: OutlineInputBorder(
           borderSide: BorderSide(color: errorBorderColor, width: 1),
@@ -110,49 +119,63 @@ class OutBorderTextFormField extends StatelessWidget {
         focusedErrorBorder: OutlineInputBorder(
           borderSide: BorderSide(color: errorBorderColor, width: 1),
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 16,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         hintText: hintText,
         hintStyle: hintStyle,
-        errorStyle: errorTextStyle ??
-            TextStyle(
-              color: errorBorderColor,
-              fontSize: showErrorText ? 12 : 0,
-              fontWeight: FontWeight.w100,
-              height: showErrorText ? 1.2 : 0,
-            ),
-        errorMaxLines: 2,
+        errorStyle: TextStyle(fontSize: 0, height: 0), // Hide default error
         isDense: true,
       ),
     );
 
     if (height != null) {
-      textField = SizedBox(
-        height: height,
-        child: textField,
-      );
+      textField = SizedBox(height: height, child: textField);
     }
-
     if (width != null) {
-      textField = SizedBox(
-        width: width,
-        child: textField,
-      );
+      textField = SizedBox(width: width, child: textField);
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (labelText != null) ...[
-          Text(
-            labelText ?? '',
-            style: TextStyle(fontSize: 14),
-          ),
+          Text(labelText ?? '', style: TextStyle(fontSize: 14)),
           const SizedBox(height: 8),
         ],
-        textField,
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            textField,
+            if (showErrorText)
+              Positioned(
+                left: effectiveErrorLeft,
+                top: errorTop,
+                right: effectiveErrorRight,
+                bottom: effectiveErrorBottom,
+                child: Align(
+                  alignment: errorAlignment,
+                  child: ValueListenableBuilder<String?>(
+                    valueListenable: errorNotifier,
+                    builder: (context, error, _) {
+                      return error != null && error.isNotEmpty
+                          ? Text(
+                              error,
+                              style: errorTextStyle ??
+                                  TextStyle(
+                                    color: errorBorderColor,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w100,
+                                    height: 1.2,
+                                  ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          : SizedBox.shrink();
+                    },
+                  ),
+                ),
+              ),
+          ],
+        ),
       ],
     );
   }

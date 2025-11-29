@@ -13,7 +13,7 @@ import './components/sector_data_model.dart';
 
 class SectorLineChart extends StatefulWidget {
   const SectorLineChart({super.key});
-
+ 
   @override
   State<SectorLineChart> createState() => _SectorLineChartState();
 }
@@ -362,89 +362,100 @@ class _SectorLineChartState extends State<SectorLineChart> {
     );
   }
 
-  List<SectorData> _getFilteredData() {
-    if (selectedSector == 'All') {
-      final Map<String, List<Map<String, dynamic>>> sectorGroupedData = {};
-      final Map<String, Color> sectorColors = {};
 
-      sectorData.forEach((sectorKey, sectorItems) {
-        for (final item in sectorItems) {
-          for (final point in item.data) {
-            final year = point['x'];
-            final value = point['y'].toDouble();
 
-            final yearInt = int.parse(year);
-            if (yearInt >= selectedFromYear && yearInt <= selectedToYear) {
-              if (!sectorGroupedData.containsKey(sectorKey)) {
-                sectorGroupedData[sectorKey] = [];
-                sectorColors[sectorKey] = item.color;
-              }
+List<SectorData> _getFilteredData() {
+  if (selectedSector == 'All') {
+    // Define fixed colors for each sector
+    final Map<String, Color> sectorColors = {
+      'Rice': Colors.green,
+      'Corn': Colors.yellow,
+      'Fishery': Colors.blue,
+      'Livestock': Colors.deepOrange, 
+      'Organic': Colors.grey,
+      'HVC': Colors.purple,
+      'Unknown': Colors.black,
+    };
 
-              final existingIndex = sectorGroupedData[sectorKey]!
-                  .indexWhere((e) => e['x'] == year);
+    final Map<String, List<Map<String, dynamic>>> sectorGroupedData = {};
 
-              if (existingIndex >= 0) {
-                sectorGroupedData[sectorKey]![existingIndex]['y'] += value;
-              } else {
-                sectorGroupedData[sectorKey]!.add({
-                  'x': year,
-                  'y': value,
-                });
-              }
+    sectorData.forEach((sectorKey, sectorItems) {
+      for (final item in sectorItems) {
+        for (final point in item.data) {
+          final year = point['x'];
+          final value = point['y'].toDouble();
+
+          final yearInt = int.parse(year);
+          if (yearInt >= selectedFromYear && yearInt <= selectedToYear) {
+            if (!sectorGroupedData.containsKey(sectorKey)) {
+              sectorGroupedData[sectorKey] = [];
+            }
+
+            final existingIndex = sectorGroupedData[sectorKey]!
+                .indexWhere((e) => e['x'] == year);
+
+            if (existingIndex >= 0) {
+              sectorGroupedData[sectorKey]![existingIndex]['y'] += value;
+            } else {
+              sectorGroupedData[sectorKey]!.add({
+                'x': year,
+                'y': value,
+              });
             }
           }
         }
-
-        // Sort the years for each sector
-        if (sectorGroupedData.containsKey(sectorKey)) {
-          sectorGroupedData[sectorKey]!
-              .sort((a, b) => int.parse(a['x']).compareTo(int.parse(b['x'])));
-        }
-      });
-
-      return sectorGroupedData.entries
-          .map((entry) {
-            return SectorData(
-              name: entry.key,
-              color: sectorColors[entry.key] ?? Colors.grey,
-              data: entry.value,
-              annotations: null,
-            );
-          })
-          .where((sector) => sector.data.isNotEmpty)
-          .toList();
-    } else {
-      if (!_sectorProductSelections.containsKey(selectedSector)) {
-        final sectorProducts = sectorData[selectedSector] ?? [];
-        _sectorProductSelections[selectedSector] =
-            sectorProducts.take(8).map((product) => product.name).toList();
       }
 
-      final currentSelections = _sectorProductSelections[selectedSector] ?? [];
+      // Sort the years for each sector
+      if (sectorGroupedData.containsKey(sectorKey)) {
+        sectorGroupedData[sectorKey]!
+            .sort((a, b) => int.parse(a['x']).compareTo(int.parse(b['x'])));
+      }
+    });
 
-      return (sectorData[selectedSector] ?? [])
-          .where((sector) =>
-              currentSelections.isEmpty ||
-              currentSelections.contains(sector.name))
-          .map((sector) {
-            final filteredSeriesData = sector.data.where((point) {
-              final year = int.parse(point['x']);
-              return year >= selectedFromYear && year <= selectedToYear;
-            }).toList()
-              ..sort((a, b) =>
-                  int.parse(a['x']).compareTo(int.parse(b['x']))); // Sort here
-
-            return SectorData(
-              name: sector.name,
-              color: sector.color,
-              data: filteredSeriesData,
-              annotations: sector.annotations,
-            );
-          })
-          .where((sector) => sector.data.isNotEmpty)
-          .toList();
+    return sectorGroupedData.entries
+        .map((entry) {
+          return SectorData(
+            name: entry.key,
+            color: sectorColors[entry.key] ?? Colors.grey, // Use fixed sector color
+            data: entry.value,
+            annotations: null,
+          );
+        })
+        .where((sector) => sector.data.isNotEmpty)
+        .toList();
+  } else {
+    if (!_sectorProductSelections.containsKey(selectedSector)) {
+      final sectorProducts = sectorData[selectedSector] ?? [];
+      _sectorProductSelections[selectedSector] =
+          sectorProducts.take(8).map((product) => product.name).toList();
     }
+
+    final currentSelections = _sectorProductSelections[selectedSector] ?? [];
+
+    return (sectorData[selectedSector] ?? [])
+        .where((sector) =>
+            currentSelections.isEmpty ||
+            currentSelections.contains(sector.name))
+        .map((sector) {
+          final filteredSeriesData = sector.data.where((point) {
+            final year = int.parse(point['x']);
+            return year >= selectedFromYear && year <= selectedToYear;
+          }).toList()
+            ..sort((a, b) =>
+                int.parse(a['x']).compareTo(int.parse(b['x']))); // Sort here
+
+          return SectorData(
+            name: sector.name,
+            color: sector.color,
+            data: filteredSeriesData,
+            annotations: sector.annotations,
+          );
+        })
+        .where((sector) => sector.data.isNotEmpty)
+        .toList();
   }
+}
 
   Widget _buildSelectProductsButton() {
     return InkWell(
