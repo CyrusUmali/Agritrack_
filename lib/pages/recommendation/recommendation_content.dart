@@ -1,5 +1,4 @@
-import 'package:flareline/pages/recommendation/ai_models_info_widget.dart';
-import 'package:flareline/pages/recommendation/chatbot/chatbot_page.dart';
+import 'package:flareline/pages/recommendation/ai_models_info_widget.dart'; 
 import 'package:flareline/pages/recommendation/requirement_page.dart';
 import 'package:flareline/pages/recommendation/suitability/suitability_page.dart';
 import 'package:flareline/providers/user_provider.dart';
@@ -42,10 +41,10 @@ class RecommendationContentState extends State<RecommendationContent> {
                 // Responsive Header
                 _buildResponsiveHeader(isMobile, isTablet),
 
-                const SizedBox(height: 24),
+                // const SizedBox(height: 24),
 
-                // Model selection card
-                _buildModelSelectionCard(),
+                // // Model selection card
+                // _buildModelSelectionCard(),
 
                 const SizedBox(height: 24),
 
@@ -146,66 +145,68 @@ class RecommendationContentState extends State<RecommendationContent> {
             ],
           ),
 
-          Row(
-            children: [
-              // AI Models Info Button (Question Mark)
-              Tooltip(
-                message: context.translate('Learn about AI Models'),
-                child: InkWell(
-                  onTap: _showAiModelsInfo,
-                  borderRadius: BorderRadius.circular(50),
-                  hoverColor: Colors.grey.withOpacity(0.1),
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.grey[500]!,
-                        width: 2,
-                      ),
-                      color: Theme.of(context).cardTheme.color,
-                    ),
-                    child: Icon(
-                      Icons.lightbulb_outline,
-                      size: 24,
-                      // color: Colors.grey[700],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-           if (!isFarmer)
-              // Requirements Button
-              Tooltip(
-                message: context.translate('View Requirements'),
-                child: InkWell(
-                  onTap: _navigateToRequirements,
-                  borderRadius: BorderRadius.circular(50),
-                  hoverColor: Colors.grey.withOpacity(0.1),
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.grey[500]!,
-                        width: 2,
-                      ),
-                      color: Colors.white,
-                    ),
-                    child: Icon(
-                      Icons.menu_book_outlined,
-                      size: 24,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          // Row(
+          //   children: [
+          //     // AI Models Info Button (Question Mark)
+          //     Tooltip(
+          //       message: context.translate('Learn about AI Models'),
+          //       child: InkWell(
+          //         onTap: _showAiModelsInfo,
+          //         borderRadius: BorderRadius.circular(50),
+          //         hoverColor: Colors.grey.withOpacity(0.1),
+          //         child: Container(
+          //           width: 50,
+          //           height: 50,
+          //           padding: const EdgeInsets.all(8),
+          //           decoration: BoxDecoration(
+          //             shape: BoxShape.circle,
+          //             border: Border.all(
+          //               color: Colors.grey[500]!,
+          //               width: 2,
+          //             ),
+          //             color: Theme.of(context).cardTheme.color,
+          //           ),
+          //           child: Icon(
+          //             Icons.lightbulb_outline,
+          //             size: 24,
+          //             // color: Colors.grey[700],
+          //           ),
+          //         ),
+          //       ),
+          //     ),
+          //     const SizedBox(width: 12),
+          //  if (!isFarmer)
+          //     // Requirements Button
+          //     Tooltip(
+          //       message: context.translate('View Requirements'),
+          //       child: InkWell(
+          //         onTap: _navigateToRequirements,
+          //         borderRadius: BorderRadius.circular(50),
+          //         hoverColor: Colors.grey.withOpacity(0.1),
+          //         child: Container(
+          //           width: 50,
+          //           height: 50,
+          //           padding: const EdgeInsets.all(8),
+          //           decoration: BoxDecoration(
+          //             shape: BoxShape.circle,
+          //             border: Border.all(
+          //               color: Colors.grey[500]!,
+          //               width: 2,
+          //             ),
+          //             color: Colors.white,
+          //           ),
+          //           child: Icon(
+          //             Icons.menu_book_outlined,
+          //             size: 24,
+          //             color: Colors.grey[700],
+          //           ),
+          //         ),
+          //       ),
+          //     ),
+          //   ],
+          // ),
+        
+        
         ],
       );
     }
@@ -255,66 +256,68 @@ class RecommendationContentState extends State<RecommendationContent> {
                 ),
 
                 // Right side buttons for mobile
-                Row(
-                  children: [
-                    // AI Models Info Button (Question Mark)
-                    Tooltip(
-                      message: context.translate('Learn about AI Models'),
-                      child: InkWell(
-                        onTap: _showAiModelsInfo,
-                        borderRadius: BorderRadius.circular(50),
-                        child: Container(
-                          width: 25,
-                          height: 25,
-                          padding: const EdgeInsets.all(0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.grey[500]!,
-                              width: 1,
-                            ),
-                            color: Theme.of(context).cardTheme.color,
-                          ),
-                          child: Icon(
-                            Icons.lightbulb_outline,
-                            size: 15,
-                            // color: Colors.grey[700],
-                          ),
-                        ),
-                      ),
-                    ),
+                // Row(
+                //   children: [
+                //     // AI Models Info Button (Question Mark)
+                //     Tooltip(
+                //       message: context.translate('Learn about AI Models'),
+                //       child: InkWell(
+                //         onTap: _showAiModelsInfo,
+                //         borderRadius: BorderRadius.circular(50),
+                //         child: Container(
+                //           width: 25,
+                //           height: 25,
+                //           padding: const EdgeInsets.all(0),
+                //           decoration: BoxDecoration(
+                //             shape: BoxShape.circle,
+                //             border: Border.all(
+                //               color: Colors.grey[500]!,
+                //               width: 1,
+                //             ),
+                //             color: Theme.of(context).cardTheme.color,
+                //           ),
+                //           child: Icon(
+                //             Icons.lightbulb_outline,
+                //             size: 15,
+                //             // color: Colors.grey[700],
+                //           ),
+                //         ),
+                //       ),
+                //     ),
 
-                    const SizedBox(width: 8),
+                //     const SizedBox(width: 8),
 
-                  if (!isFarmer)
-                    // Requirements Button
-                    Tooltip(
-                      message: context.translate('View Requirements'),
-                      child: InkWell(
-                        onTap: _navigateToRequirements,
-                        borderRadius: BorderRadius.circular(50),
-                        child: Container(
-                          width: 25,
-                          height: 25,
-                          padding: const EdgeInsets.all(0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.grey[500]!,
-                              width: 1,
-                            ),
-                            color: Colors.white,
-                          ),
-                          child: Icon(
-                            Icons.menu_book_outlined,
-                            size: 15,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                //   if (!isFarmer)
+                //     // Requirements Button
+                //     Tooltip(
+                //       message: context.translate('View Requirements'),
+                //       child: InkWell(
+                //         onTap: _navigateToRequirements,
+                //         borderRadius: BorderRadius.circular(50),
+                //         child: Container(
+                //           width: 25,
+                //           height: 25,
+                //           padding: const EdgeInsets.all(0),
+                //           decoration: BoxDecoration(
+                //             shape: BoxShape.circle,
+                //             border: Border.all(
+                //               color: Colors.grey[500]!,
+                //               width: 1,
+                //             ),
+                //             color: Colors.white,
+                //           ),
+                //           child: Icon(
+                //             Icons.menu_book_outlined,
+                //             size: 15,
+                //             color: Colors.grey[700],
+                //           ),
+                //         ),
+                //       ),
+                //     ),
+                //   ],
+                // ),
+            
+            
               ],
             ),
           ],

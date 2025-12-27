@@ -255,8 +255,7 @@ class _UserInfoCardState extends State<UserInfoCard> {
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
     final isCurrentUser = userProvider.user?.id == widget.user['id'];
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
+    final theme = Theme.of(context); 
 
     return BlocListener<UserBloc, UserState>(
         listener: (context, state) {

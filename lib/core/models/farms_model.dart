@@ -148,8 +148,7 @@ class Farm extends Equatable {
       'products': products, // Add products to JSON
       'hectare': hectare,
       'sector': sector,
-      'status': status,
-      'status': status,
+      'status': status, 
       'sectorId': sectorId,
       'vertices': vertices
           ?.map((point) => {

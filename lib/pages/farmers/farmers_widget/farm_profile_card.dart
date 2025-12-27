@@ -1,4 +1,4 @@
-import 'package:flareline/pages/test/map_widget/farm_service.dart';
+import 'package:flareline/pages/map/map_widget/farm_service.dart';
 import 'package:flareline_uikit/components/card/common_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -194,92 +194,199 @@ class _FarmSelector extends StatelessWidget {
     this.onSelected,
   });
 
+  
+
+
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
+Widget build(BuildContext context) {
+  final isSmallScreen = MediaQuery.of(context).size.width < 600;
+  final isVerySmallScreen = MediaQuery.of(context).size.width < 400;
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 8.0 : 0),
+        child: Text(
           'Select Farm:',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color:
-                Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.all(4),
-          child: Row(
-            children: List.generate(farms.length, (index) {
-              final farm = farms[index];
-              final isSelected = index == selectedIndex;
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Material(
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.primaryContainer
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(4),
-                    child: InkWell(
+      ),
+      const SizedBox(height: 8),
+      Container(
+        margin: EdgeInsets.symmetric(horizontal: isSmallScreen ? 8.0 : 0),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        padding: EdgeInsets.all(isVerySmallScreen ? 2 : 4),
+        child: isVerySmallScreen
+            // Vertical layout for very small screens
+            ? Column(
+                children: List.generate(farms.length, (index) {
+                  final farm = farms[index];
+                  final isSelected = index == selectedIndex;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Material(
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primaryContainer
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(4),
-                      onTap: () {
-                        onSelected?.call(index);
-                        HapticFeedback.lightImpact();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 8),
-                        child: Column(
-                          children: [
-                            Text(
-                              farm['name']?.toString() ?? 'Farm ${index + 1}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    fontWeight: isSelected
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                    color: isSelected
-                                        ? Theme.of(context)
-                                            .colorScheme
-                                            .onPrimaryContainer
-                                        : null,
-                                  ),
-                            ),
-                            Text(
-                              farm['sectorName']?.toString() ?? 'No sector',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: isSelected
-                                        ? Theme.of(context)
-                                            .colorScheme
-                                            .onPrimaryContainer
-                                        : null,
-                                  ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(4),
+                        onTap: () {
+                          onSelected?.call(index);
+                          HapticFeedback.lightImpact();
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                            vertical: isVerySmallScreen ? 8 : 10,
+                            horizontal: isVerySmallScreen ? 4 : 8,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                farm['name']?.toString() ?? 'Farm ${index + 1}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      color: isSelected
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .onPrimaryContainer
+                                          : null,
+                                      fontSize: isVerySmallScreen ? 14 : null,
+                                    ),
+                                textAlign: TextAlign.center,
+                              ),
+                              if (!isVerySmallScreen || isSelected) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  farm['sectorName']?.toString() ?? 'No sector',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: isSelected
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .onPrimaryContainer
+                                            : null,
+                                        fontSize: isVerySmallScreen ? 12 : null,
+                                      ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  );
+                }),
+              )
+            // Horizontal layout for larger screens
+            : SingleChildScrollView(
+                scrollDirection: isSmallScreen ? Axis.horizontal : Axis.vertical,
+                child: isSmallScreen
+                    ? Row(
+                        children: List.generate(farms.length, (index) {
+                          return _buildFarmItem(context, index, isSmallScreen);
+                        }),
+                      )
+                    : Row(
+                        children: List.generate(farms.length, (index) {
+                          return _buildFarmItem(context, index, isSmallScreen);
+                        }),
+                      ),
+              ),
+      ),
+    ],
+  );
+}
+
+Widget _buildFarmItem(BuildContext context, int index, bool isSmallScreen) {
+  final farm = farms[index];
+  final isSelected = index == selectedIndex;
+
+  return Expanded(
+    child: Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: isSmallScreen ? 2 : 4,
+        vertical: isSmallScreen ? 2 : 0,
+      ),
+      child: Material(
+        color: isSelected
+            ? Theme.of(context).colorScheme.primaryContainer
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(4),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(4),
+          onTap: () {
+            onSelected?.call(index);
+            HapticFeedback.lightImpact();
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              vertical: isSmallScreen ? 8 : 10,
+              horizontal: isSmallScreen ? 6 : 8,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  farm['name']?.toString() ?? 'Farm ${index + 1}',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.onPrimaryContainer
+                            : null,
+                        fontSize: isSmallScreen ? 14 : null,
+                      ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              );
-            }),
+                if (!isSmallScreen || isSelected) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    farm['sectorName']?.toString() ?? 'No sector',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.onPrimaryContainer
+                              : null,
+                          fontSize: isSmallScreen ? 12 : null,
+                        ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
-      ],
-    );
-  }
+      ),
+    ),
+  );
+}
+  
+
+
+
 }
 
 class _FarmDetails extends StatelessWidget {

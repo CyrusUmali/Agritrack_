@@ -185,8 +185,8 @@ class DataTableWidget extends TableWidget<AssocsViewModel> {
   DataTableWidget({
     required this.associations,
     required this.selectedYear, // Make it required
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   AssocsViewModel viewModelBuilder(BuildContext context) {
@@ -438,14 +438,14 @@ class AssocsViewModel extends BaseTableProvider {
       row.add(totalMembersCell);
 
       var totalFarmsCell = TableDataRowsTableDataRows()
-        ..text = association.totalFarms.toString() ?? '0'
+        ..text = association.totalFarms.toString()
         ..dataType = CellDataType.TEXT.type
         ..columnName = 'Farms'
         ..id = association.id.toString();
       row.add(totalFarmsCell);
 
       var totalVolumeCell = TableDataRowsTableDataRows()
-        ..text = association.volume.toString() ?? '0'
+        ..text = association.volume.toString()
         ..dataType = CellDataType.TEXT.type
         ..columnName = ' Yield Volume'
         ..id = association.id.toString();

@@ -191,7 +191,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       if (_roleFilter != null &&
           _roleFilter!.isNotEmpty &&
           _roleFilter != 'All' &&
-          user.role?.toLowerCase() != _roleFilter!.toLowerCase()) {
+          user.role.toLowerCase() != _roleFilter!.toLowerCase()) {
         return false;
       }
 
@@ -207,7 +207,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       if (_searchQuery.isNotEmpty) {
         final matchesSearch = user.name.toLowerCase().contains(_searchQuery) ||
             user.email.toLowerCase().contains(_searchQuery) ||
-            (user.role?.toLowerCase().contains(_searchQuery) ?? false) ||
+            (user.role.toLowerCase().contains(_searchQuery)) ||
             (user.fname?.toLowerCase().contains(_searchQuery) ?? false) ||
             (user.lname?.toLowerCase().contains(_searchQuery) ?? false) ||
             (user.status?.toLowerCase().contains(_searchQuery) ?? false);
@@ -230,7 +230,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
             compareResult = a.email.compareTo(b.email);
             break;
           case 'Role':
-            compareResult = (a.role ?? '').compareTo(b.role ?? '');
+            compareResult = (a.role).compareTo(b.role);
             break;
           case 'Status':
             compareResult = (a.status ?? '').compareTo(b.status ?? '');

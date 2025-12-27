@@ -1,6 +1,4 @@
-// report_generator.dart
-import 'dart:math';
-
+// report_generator.dart 
 import 'package:flareline/services/report_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -86,7 +84,6 @@ class ReportGenerator {
     required selectedFarmer,
   }) async {
     await Future.delayed(const Duration(seconds: 2));
-    print(reportType);
 
     List<Map<String, dynamic>> rawData;
 
@@ -260,7 +257,6 @@ class ReportGenerator {
 
       return farmers;
     } catch (e) {
-      print('Error fetching farmers: $e');
       return [];
     }
   }

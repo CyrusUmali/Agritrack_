@@ -1,4 +1,5 @@
-import 'package:flareline/pages/recommendation/chatbot/chatbot_content.dart';
+ 
+import 'package:flareline/breaktab.dart';
 import 'package:flutter/material.dart';
 import 'package:flareline/pages/layout.dart';
 import 'recommendation_content.dart';
@@ -8,7 +9,7 @@ class RecommendationPage extends LayoutWidget {
 
   @override
   String breakTabTitle(BuildContext context) {
-    return '';
+    return BreakTab.hideAllTitle;
   }
 
   @override
@@ -17,7 +18,6 @@ class RecommendationPage extends LayoutWidget {
     return const RecommendationContent();
   }
 
-  @override
   Widget buildContent(BuildContext context) {
     return const RecommendationContent();
     // return const ChatbotWidget();

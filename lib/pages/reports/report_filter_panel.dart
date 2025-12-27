@@ -78,8 +78,7 @@ class ReportFilterPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final _isFarmer = userProvider.isFarmer;
-    final _farmerId = userProvider.farmer?.id;
+    final isFarmer = userProvider.isFarmer; 
  
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -110,10 +109,10 @@ class ReportFilterPanel extends StatelessWidget {
                   children: [
 
 
-     if (!_isFarmer)
+     if (!isFarmer)
   SegmentedFilter(
     label: context.translate('Report Type'),
-    options: FilterOptions.getFilteredReportTypes(_isFarmer),
+    options: FilterOptions.getFilteredReportTypes(isFarmer),
     selected: reportType,
     onChanged: onReportTypeChanged,
   ),
@@ -360,8 +359,8 @@ class _FiltersSection extends StatelessWidget {
 
   List<Widget> _buildDynamicFilters(BuildContext context, bool isDesktop) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final _isFarmer = userProvider.isFarmer;
-    final _farmerId = userProvider.farmer?.id;
+    final isFarmer = userProvider.isFarmer;
+    final farmerId = userProvider.farmer?.id;
 
     // Common filter widgets that can be reused
     Widget barangayFilter = buildComboBox(
@@ -450,7 +449,7 @@ class _FiltersSection extends StatelessWidget {
       buildWidget: (context) => buildComboBox(
         context: context,
         hint: 'Farm',
-        options: FilterOptions.getFarms(context, _farmerId),
+        options: FilterOptions.getFarms(context, farmerId),
         selectedValue: selectedFarm,
         onSelected: onFarmChanged,
         width: isDesktop ? 130 : double.infinity,
@@ -463,17 +462,17 @@ class _FiltersSection extends StatelessWidget {
     switch (reportType) {
       case 'farmers':
         return [
-          if (!_isFarmer) barangayFilter,
+          if (!isFarmer) barangayFilter,
           sectorFilter,
-          if (!_isFarmer) assocFilter,
+          if (!isFarmer) assocFilter,
           countFilter,
         ];
       case 'farmer':
         return [
-          if (!_isFarmer) farmerFilter,
+          if (!isFarmer) farmerFilter,
           productFilter,
           farmFilter,
-          if (!_isFarmer) assocFilter,
+          if (!isFarmer) assocFilter,
           viewByFilter,
           countFilter,
         ];
@@ -481,8 +480,8 @@ class _FiltersSection extends StatelessWidget {
         return [
           productFilter,
           viewByFilter,
-          if (!_isFarmer) barangayFilter,
-          if (!_isFarmer) sectorFilter,
+          if (!isFarmer) barangayFilter,
+          if (!isFarmer) sectorFilter,
           countFilter,
         ];
       case 'barangay':
@@ -582,10 +581,9 @@ Widget _buildErrorRetryWidget(BuildContext context, String errorMessage) {
     return MouseRegion(
       child: StatefulBuilder(
         builder: (context, setState) {
-          bool isHovered = false;
           final cardColor = Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor;
           
-          return Container(
+          return SizedBox(
             width: isDesktop ? 130 : double.infinity,
             height: 40,
             child: Material(
@@ -595,13 +593,11 @@ Widget _buildErrorRetryWidget(BuildContext context, String errorMessage) {
                 borderRadius: BorderRadius.circular(8),
                 onHover: (hovering) {
                   setState(() {
-                    isHovered = hovering;
                   });
                 },
                 child: Ink(
                   decoration: BoxDecoration(
-                    color: isHovered ? 
-                      cardColor.withOpacity(0.8) : // Slightly transparent on hover
+                    color: 
                       cardColor,
                     border: Border.all(
                       color: Colors.red.shade300,

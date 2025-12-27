@@ -1,6 +1,6 @@
-import 'dart:async';
-import 'dart:math';
+import 'dart:async'; 
 import 'package:flareline/repositories/yield_repository.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flareline/core/models/yield_model.dart';
@@ -10,7 +10,11 @@ part 'yield_state.dart';
 
 class YieldBloc extends Bloc<YieldEvent, YieldState> {
   final YieldRepository yieldRepository;
-  int? _currentFarmerId;
+  int? _currentFarmerId; 
+
+
+  Timer? _searchDebounceTimer;
+
 
   YieldBloc({required this.yieldRepository}) : super(YieldInitial()) {
     on<LoadYields>(_onLoadYields);
@@ -50,55 +54,132 @@ class YieldBloc extends Bloc<YieldEvent, YieldState> {
   String? get sortColumn => _sortColumn;
   bool get sortAscending => _sortAscending;
 
-  Future<void> _onAddYield(
-    AddYield event,
+  bool _isFarmerSpecific = false; 
+   bool get isFarmerSpecific => _isFarmerSpecific;
+ 
+   bool get isFarmSpecific => _isFarmerSpecific;
+
+     bool _isFarmSpecific = false; 
+
+
+
+Future<void> _onLoadYields(
+    LoadYields event,
     Emitter<YieldState> emit,
   ) async {
     emit(YieldsLoading());
+    
     try {
-      final newYield = Yield(
-        id: 0, // Will be assigned by server
-        farmerId: event.farmerId,
-        productId: event.productId,
-        harvestDate: event.harvestDate,
-        areaHarvested: event.areaHarvested,
-        farmId: event.farmId,
-        volume: event.volume,
-        notes: event.notes,
-        value: event.value,
-        images: event.images,
-      );
-
-      await yieldRepository.addYield(newYield);
-
-      // Refresh based on current context
-      if (_currentFarmerId != null) {
-        _yields = await yieldRepository.fetchYieldsByFarmer(_currentFarmerId!);
+      if (event.farmerId != null) {
+        // Load yields for specific farmer
+        _currentFarmerId = event.farmerId;
+        _isFarmerSpecific = true;
+        _yields = await yieldRepository.fetchYieldsByFarmer(event.farmerId!);
       } else {
+        // Load all yields
+        _currentFarmerId = null;
+        _isFarmerSpecific = false;
         _yields = await yieldRepository.fetchYields();
       }
-
-      emit(YieldsLoaded(_applyFilters(),
-          message: 'Yield record added successfully!'));
+      
+      emit(YieldsLoaded(_applyFilters()));
     } catch (e) {
-      emit(YieldsError('Failed to add yield record: ${e.toString()}'));
+      emit(YieldsError(e.toString()));
     }
   }
 
+
+Future<void> _onAddYield(
+  AddYield event,
+  Emitter<YieldState> emit,
+) async {
+  emit(YieldsLoading());
+  try {
+    final newYield = Yield(
+      id: 0, // Will be assigned by server
+      farmerId: event.farmerId,
+      productId: event.productId,
+      harvestDate: event.harvestDate,
+      areaHarvested: event.areaHarvested,
+      farmId: event.farmId,
+      volume: event.volume,
+      notes: event.notes,
+      value: event.value,
+      images: event.images,
+    );
+
+    await yieldRepository.addYield(newYield);
+
+    // Use the indicator to determine what to refresh
+    if (event.isFarmerSpecific) {
+      // Load yields only for this farmer
+      _currentFarmerId = event.farmerId;
+      _isFarmerSpecific = true;
+      _yields = await yieldRepository.getYieldByFarmId(event.farmId);
+          _yields = await yieldRepository.fetchYieldsByFarmer(event.farmerId);
+    }else if (event.isFarmSpecific){
+ 
+      _isFarmSpecific = true;
+      _yields = await yieldRepository.getYieldByFarmId(event.farmId);
+
+    }
+    
+     else {
+      // Load all yields
+      _currentFarmerId = null;
+      _isFarmerSpecific = false;
+      _yields = await yieldRepository.fetchYields();
+    }
+
+    emit(YieldsLoaded(_applyFilters(),
+        message: 'Yield record added successfully!'));
+  } catch (e) {
+    emit(YieldsError('Failed to add yield record: ${e.toString()}'));
+  }
+}
+
+  // Update other methods to maintain consistency
   Future<void> _onDeleteYield(
     DeleteYield event,
     Emitter<YieldState> emit,
   ) async {
-    emit(YieldsLoading());
+    emit(YieldsLoading()); 
     try {
       await yieldRepository.deleteYield(event.id);
-      _yields = _yields.where((y) => y.id != event.id).toList();
+      
+  
+
+
+
+    if (event.isFarmerSpecific) {
+      // Load yields only for this farmer
+      _currentFarmerId = event.farmerId;
+      _isFarmerSpecific = true;
+      _yields = await yieldRepository.getYieldByFarmId(event.farmId);
+          _yields = await yieldRepository.fetchYieldsByFarmer(event.farmerId);
+    }else if (event.isFarmSpecific){
+ 
+      _isFarmSpecific = true;
+      _yields = await yieldRepository.getYieldByFarmId(event.farmId);
+
+    } 
+
+ else {
+      // Load all yields
+      _currentFarmerId = null;
+      _isFarmerSpecific = false;
+      _yields = await yieldRepository.fetchYields();
+    }
+      
       emit(YieldsLoaded(_applyFilters(),
           message: 'Yield record deleted successfully!'));
     } catch (e) {
       emit(YieldsError('Failed to delete yield record: ${e.toString()}'));
     }
   }
+
+
+
 
   Future<void> _onUpdateYield(
     UpdateYield event,
@@ -118,9 +199,10 @@ class YieldBloc extends Bloc<YieldEvent, YieldState> {
       emit(YieldsLoaded(_applyFilters()));
     } catch (e) {
       // Print the full error stack trace for debugging
-      print('Error in _onUpdateYield: $e');
+      if (kDebugMode) {
+        print('Error in _onUpdateYield: $e');
+      }
       if (e is Error) {
-        print(e.stackTrace);
       }
 
       // Emit error state with user-friendly message
@@ -128,19 +210,6 @@ class YieldBloc extends Bloc<YieldEvent, YieldState> {
     }
   }
 
-  Future<void> _onLoadYields(
-    LoadYields event,
-    Emitter<YieldState> emit,
-  ) async {
-    emit(YieldsLoading());
-
-    try {
-      _yields = await yieldRepository.fetchYields();
-      emit(YieldsLoaded(_applyFilters()));
-    } catch (e) {
-      emit(YieldsError(e.toString()));
-    }
-  }
 
   Future<void> _onGetYieldByFarmId(
     GetYieldByFarmId event,
@@ -150,14 +219,12 @@ class YieldBloc extends Bloc<YieldEvent, YieldState> {
 
     try {
       _yields =
-          (await yieldRepository.getYieldByFarmId(event.farmId)) as List<Yield>;
+          (await yieldRepository.getYieldByFarmId(event.farmId));
 
       // emit(YieldsLoaded(yieldRecord as List<Yield>));
       emit(YieldsLoaded(_applyFilters()));
     } catch (e) {
-      print('[_onGetYieldByFarmId] Error occurred: $e');
       emit(YieldsError(e.toString()));
-      print('[_onGetYieldByFarmId] Emitted YieldsError state');
     }
   }
 
@@ -168,15 +235,12 @@ class YieldBloc extends Bloc<YieldEvent, YieldState> {
     emit(YieldsLoading());
 
     try {
-      _yields = (await yieldRepository.getYieldByBarangay(event.barangay))
-          as List<Yield>;
+      _yields = (await yieldRepository.getYieldByBarangay(event.barangay));
 
       // emit(YieldsLoaded(yieldRecord as List<Yield>));
       emit(YieldsLoaded(_applyFilters()));
     } catch (e) {
-      print('[__onGetYieldBybarangay] Error occurred: $e');
       emit(YieldsError(e.toString()));
-      print('[_onGetYieldBybarangay] Emitted YieldsError state');
     }
   }
 
@@ -190,9 +254,7 @@ class YieldBloc extends Bloc<YieldEvent, YieldState> {
       _yields = await yieldRepository.getYieldByLake(event.lake);
       emit(YieldsLoaded(_applyFilters()));
     } catch (e) {
-      print('[_onGetYieldByLake] Error occurred: $e');
       emit(YieldsError(e.toString()));
-      print('[_onGetYieldByLake] Emitted YieldsError state');
     }
   }
 
@@ -239,12 +301,44 @@ class YieldBloc extends Bloc<YieldEvent, YieldState> {
     emit(YieldsLoaded(_applyFilters()));
   }
 
-  Future<void> _onSearchYields(
-    SearchYields event,
-    Emitter<YieldState> emit,
-  ) async {
-    _searchQuery = event.query.trim().toLowerCase();
+ 
+ 
+
+
+Future<void> _onSearchYields(
+  SearchYields event,
+  Emitter<YieldState> emit,
+) async {
+  _searchDebounceTimer?.cancel();
+  
+  // If query is empty, process immediately
+  if (event.query.trim().isEmpty) {
+    _searchQuery = '';
     emit(YieldsLoaded(_applyFilters()));
+    return;
+  }
+  
+  // Use a Completer to make the timer awaitable
+  final completer = Completer<void>();
+  
+  _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+    if (!isClosed) {
+      _searchQuery = event.query.trim().toLowerCase();
+      emit(YieldsLoaded(_applyFilters()));
+    }
+    completer.complete();
+  });
+  
+  // Wait for the timer to complete
+  await completer.future;
+}
+
+
+
+  @override
+  Future<void> close() {
+    _searchDebounceTimer?.cancel();
+    return super.close();
   }
 
   Future<void> _onSortYields(
@@ -277,7 +371,7 @@ class YieldBloc extends Bloc<YieldEvent, YieldState> {
 
       // Product filter
       final matchesProduct = _productFilter == "All" ||
-          _productFilter.isEmpty ||
+          _productFilter.isEmpty || 
           (yield.productName != null && yield.productName == _productFilter);
 
       if (!matchesProduct) return false;
@@ -285,16 +379,14 @@ class YieldBloc extends Bloc<YieldEvent, YieldState> {
       // Farmer filter
       final matchesFarmer = _farmerFilter == "All" ||
           _farmerFilter.isEmpty ||
-          (yield.farmerId != null &&
-              yield.farmerId.toString() == _farmerFilter);
+          (yield.farmerId.toString() == _farmerFilter);
 
       if (!matchesFarmer) return false;
 
       // Year filter
       final matchesYear = _yearFilter == "All" ||
           _yearFilter.isEmpty ||
-          (yield.harvestDate != null &&
-              yield.harvestDate.year.toString() == _yearFilter);
+          (yield.harvestDate.year.toString() == _yearFilter);
 
       if (!matchesYear) return false;
 
@@ -317,6 +409,13 @@ class YieldBloc extends Bloc<YieldEvent, YieldState> {
       // Search filter
       if (_searchQuery.isEmpty) return true;
 
+
+        if (kDebugMode) {
+      print('Search query: $_searchQuery');
+      print('Yield productName: ${yield.productName}');
+      print('Yield farmerName: ${yield.farmerName}');
+    }
+
       final matchesSearch =
           (yield.notes?.toLowerCase().contains(_searchQuery) ?? false) ||
               (yield.farmerName?.toLowerCase().contains(_searchQuery) ??
@@ -324,11 +423,16 @@ class YieldBloc extends Bloc<YieldEvent, YieldState> {
               (yield.sector?.toLowerCase().contains(_searchQuery) ?? false) ||
               (yield.barangay?.toLowerCase().contains(_searchQuery) ?? false) ||
               (yield.status?.toLowerCase().contains(_searchQuery) ?? false) ||
-              (yield.harvestDate?.toString().contains(_searchQuery) ?? false) ||
+              (yield.harvestDate.toString().contains(_searchQuery)) ||
               (yield.hectare?.toString().contains(_searchQuery) ?? false) ||
-              (yield.id?.toString().contains(_searchQuery) ?? false) ||
-              (yield.volume?.toString().contains(_searchQuery) ?? false) ||
+              (yield.id.toString().contains(_searchQuery)) ||
+              (yield.volume.toString().contains(_searchQuery)) ||
               (yield.value?.toString().contains(_searchQuery) ?? false);
+              (yield.productName?.toLowerCase().contains(_searchQuery) ?? false);
+
+               if (kDebugMode) {
+      print('Matches search: $matchesSearch');
+    }
 
       return matchesSearch;
     }).toList();

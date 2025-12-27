@@ -4,12 +4,10 @@ import 'package:flareline_uikit/components/modal/modal_dialog.dart';
 import 'package:flareline_uikit/components/buttons/button_widget.dart';
 import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io' if (dart.library.html) 'dart:html' as html;
-import 'package:http/http.dart' as http;
-import 'package:path/path.dart' as path;
+import 'package:http/http.dart' as http; 
 import 'dart:convert';
 
-import 'package:flareline/pages/test/map_widget/stored_polygons.dart';
+import 'package:flareline/pages/map/map_widget/stored_polygons.dart';
 
 class AddFarmerModal extends StatefulWidget {
   final Function(FarmerData) onFarmerAdded;
@@ -17,11 +15,11 @@ class AddFarmerModal extends StatefulWidget {
   final String? email;
 
   const AddFarmerModal({
-    Key? key,
+    super.key,
     required this.onFarmerAdded,
     this.authMethod,
     this.email,
-  }) : super(key: key);
+  });
 
   static Future<void> show({
     required BuildContext context,
@@ -98,12 +96,12 @@ class _AddFarmerModalContent extends StatefulWidget {
   final String? email;
 
   const _AddFarmerModalContent({
-    Key? key,
+    super.key,
     required this.onLoadingStateChanged,
     required this.onFarmerAdded,
     this.authMethod,
     this.email,
-  }) : super(key: key);
+  });
 
   @override
   State<_AddFarmerModalContent> createState() => _AddFarmerModalContentState();
@@ -117,11 +115,10 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController barangayController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  String selectedSector = 'HVC';
-  html.File? _selectedImage;
+  String selectedSector = 'HVC'; 
   String? _imageUrl;
   bool _isUploading = false;
-  bool _isSubmitting = false;
+  bool isSubmitting = false;
 
   // Track which fields have been validated
   bool _nameValidated = false;
@@ -234,13 +231,13 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
     }
 
     setState(() {
-      _isSubmitting = true;
+      isSubmitting = true;
       widget.onLoadingStateChanged(true);
     });
 
     if (_isUploading) {
       setState(() {
-        _isSubmitting = false;
+        isSubmitting = false;
         widget.onLoadingStateChanged(false);
       });
       throw Exception('Please wait for image to upload');
@@ -273,7 +270,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
     } finally {
       if (mounted) {
         setState(() {
-          _isSubmitting = false;
+          isSubmitting = false;
           widget.onLoadingStateChanged(false);
         });
       }
@@ -356,7 +353,15 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
               controller: nameController,
               decoration: InputDecoration(
                 labelText: 'Full Name *',
-                border: const OutlineInputBorder(),
+                
+               border: OutlineInputBorder(
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ),
+    enabledBorder: OutlineInputBorder( // Add this
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ), 
                 contentPadding: EdgeInsets.symmetric(
                   vertical: screenWidth < 600 ? 10.0 : 16.0,
                   horizontal: 10.0,
@@ -403,7 +408,14 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
                   widget.authMethod == 'google', // Lock email for Google auth
               decoration: InputDecoration(
                 labelText: 'Email *',
-                border: const OutlineInputBorder(),
+        border: OutlineInputBorder(
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ),
+    enabledBorder: OutlineInputBorder( // Add this
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ), 
                 contentPadding: EdgeInsets.symmetric(
                   vertical: screenWidth < 600 ? 10.0 : 16.0,
                   horizontal: 10.0,
@@ -460,7 +472,14 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: 'Password *',
-                      border: const OutlineInputBorder(),
+                      border: OutlineInputBorder(
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ),
+    enabledBorder: OutlineInputBorder( // Add this
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ), 
                       contentPadding: EdgeInsets.symmetric(
                         vertical: screenWidth < 600 ? 10.0 : 16.0,
                         horizontal: 10.0,
@@ -510,7 +529,14 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
               controller: phoneController,
               decoration: InputDecoration(
                 labelText: 'Phone Number',
-                border: const OutlineInputBorder(),
+                border: OutlineInputBorder(
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ),
+    enabledBorder: OutlineInputBorder( // Add this
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ), 
                 contentPadding: EdgeInsets.symmetric(
                   vertical: screenWidth < 600 ? 10.0 : 16.0,
                   horizontal: 10.0,
@@ -584,7 +610,14 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
                     focusNode: focusNode,
                     decoration: InputDecoration(
                       labelText: 'Barangay *',
-                      border: const OutlineInputBorder(),
+                     border: OutlineInputBorder(
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ),
+    enabledBorder: OutlineInputBorder( // Add this
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ), 
                       suffixIcon: const Icon(Icons.arrow_drop_down),
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 12),
@@ -635,7 +668,14 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
               value: selectedSector,
               decoration: InputDecoration(
                 labelText: 'Sector *',
-                border: const OutlineInputBorder(),
+            border: OutlineInputBorder(
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ),
+    enabledBorder: OutlineInputBorder( // Add this
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ), 
                 contentPadding: EdgeInsets.symmetric(
                   vertical: screenWidth < 600 ? 10.0 : 16.0,
                   horizontal: 10.0,
@@ -786,11 +826,10 @@ class _AddFarmerModalFooter extends StatelessWidget {
   final bool isLoading;
 
   const _AddFarmerModalFooter({
-    Key? key,
     required this.onSubmit,
     required this.onCancel,
     this.isLoading = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

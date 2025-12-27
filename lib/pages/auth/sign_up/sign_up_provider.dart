@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
+
+
 class SignUpProvider extends BaseViewModel {
   int currentStep = 0;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -28,8 +30,13 @@ class SignUpProvider extends BaseViewModel {
   late TextEditingController lastNameController;
   late TextEditingController extensionController;
   late TextEditingController spouseNameController;
-  String? sex;
-  String? civilStatus;
+  
+  // ADD THESE: Controllers for sex and civil status
+  late TextEditingController sexController;
+  late TextEditingController civilStatusController;
+  
+ 
+  
   late TextEditingController birthDateController;
 
   // Household Info
@@ -60,6 +67,11 @@ class SignUpProvider extends BaseViewModel {
     lastNameController = TextEditingController();
     extensionController = TextEditingController();
     spouseNameController = TextEditingController();
+    
+    // ADD THESE: Initialize sex and civil status controllers
+    sexController = TextEditingController();
+    civilStatusController = TextEditingController();
+    
     birthDateController = TextEditingController();
 
     householdHeadController = TextEditingController();
@@ -138,6 +150,7 @@ class SignUpProvider extends BaseViewModel {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
 
+      // Use values from controllers
       final farmer = FarmerData(
         name: '${firstNameController.text} ${lastNameController.text}',
         password: passwordController.text,
@@ -153,8 +166,11 @@ class SignUpProvider extends BaseViewModel {
         mname: middleNameController.text,
         extension: extensionController.text,
         birthDate: birthDateController.text,
-        sex: sex,
-        civilStatus: civilStatus,
+        
+        // Use controller values, with fallback to old properties if needed
+        sex:  sexController.text ,
+        civilStatus:  civilStatusController.text ,
+        
         spouseName: spouseNameController.text,
         householdHead: householdHeadController.text,
         householdNum: int.tryParse(householdNumController.text) ?? 0,
@@ -181,8 +197,11 @@ class SignUpProvider extends BaseViewModel {
         'mname': farmer.mname,
         'extension': farmer.extension,
         'birthDate': farmer.birthDate,
+        
+        // Send the sex and civil status values
         'sex': farmer.sex,
         'civilStatus': farmer.civilStatus,
+        
         'spouseName': farmer.spouseName,
         'householdHead': farmer.householdHead,
         'householdNum': farmer.householdNum,
@@ -229,6 +248,11 @@ class SignUpProvider extends BaseViewModel {
     lastNameController.dispose();
     extensionController.dispose();
     spouseNameController.dispose();
+    
+    // ADD THESE: Dispose sex and civil status controllers
+    sexController.dispose();
+    civilStatusController.dispose();
+    
     birthDateController.dispose();
     householdHeadController.dispose();
     householdNumController.dispose();

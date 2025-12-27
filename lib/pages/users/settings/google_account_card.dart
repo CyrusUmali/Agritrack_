@@ -1,6 +1,5 @@
 import 'dart:async';
-
-import 'package:flareline/core/theme/global_colors.dart';
+ 
 import 'package:flareline/pages/users/settings/sync_service.dart';
 import 'package:flareline/providers/user_provider.dart';
 import 'package:flareline/services/lanugage_extension.dart';

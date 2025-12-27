@@ -81,8 +81,7 @@ abstract class BaseRepository {
       {required String operation}) {
     switch (e.code) {
       case 'wrong-password':
-        print('error code');
-        print(e.code);
+     
         throw Exception('Current password is incorrect');
       case 'weak-password':
         throw Exception(

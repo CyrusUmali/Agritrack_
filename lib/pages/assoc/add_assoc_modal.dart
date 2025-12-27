@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:toastification/toastification.dart';
 
 class AddAssociationModal extends StatefulWidget {
-  const AddAssociationModal({Key? key}) : super(key: key);
+  const AddAssociationModal({super.key});
 
   static Future<void> show(BuildContext context) async {
     final associationBloc = BlocProvider.of<AssocsBloc>(context);
@@ -57,9 +57,9 @@ class _AddAssociationModalContent extends StatefulWidget {
   final Function(bool) onLoadingStateChanged;
 
   const _AddAssociationModalContent({
-    Key? key,
+    super.key,
     required this.onLoadingStateChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<_AddAssociationModalContent> createState() =>
@@ -70,7 +70,7 @@ class _AddAssociationModalContentState
     extends State<_AddAssociationModalContent> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  bool _isSubmitting = false;
+  bool isSubmitting = false;
 
   @override
   void initState() {
@@ -84,7 +84,7 @@ class _AddAssociationModalContentState
     final description = _descriptionController.text.trim();
 
     setState(() {
-      _isSubmitting = true;
+      isSubmitting = true;
       widget.onLoadingStateChanged(true);
     });
 
@@ -99,7 +99,7 @@ class _AddAssociationModalContentState
         autoCloseDuration: const Duration(seconds: 4),
       );
       setState(() {
-        _isSubmitting = false;
+        isSubmitting = false;
         widget.onLoadingStateChanged(false);
       });
       return;
@@ -130,7 +130,7 @@ class _AddAssociationModalContentState
     } finally {
       if (mounted) {
         setState(() {
-          _isSubmitting = false;
+          isSubmitting = false;
           widget.onLoadingStateChanged(false);
         });
       }
@@ -188,11 +188,10 @@ class _AddAssociationModalFooter extends StatelessWidget {
   final bool isLoading;
 
   const _AddAssociationModalFooter({
-    Key? key,
     required this.onSubmit,
     required this.onCancel,
     this.isLoading = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

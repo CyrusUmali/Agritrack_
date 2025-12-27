@@ -17,7 +17,6 @@ class RequirementPage extends LayoutWidget {
     return const CropRequirementsWidget();
   }
 
-  @override
   Widget buildContent(BuildContext context) {
     return const CropRequirementsWidget();
   }

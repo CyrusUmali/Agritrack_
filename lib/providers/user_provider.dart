@@ -12,6 +12,7 @@ class UserProvider extends ChangeNotifier {
 
   UserModel? get user => _user;
   Farmer? get farmer => _farmer;
+   bool get isReady => user != null;
 
   bool get isFarmer => _user?.role == 'farmer';
 

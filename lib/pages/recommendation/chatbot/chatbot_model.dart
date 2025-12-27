@@ -1,4 +1,4 @@
-// Updated chatbot_model.dart with debugging
+// updated_chatbot_model.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:uuid/uuid.dart';
@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'yield_data_handler.dart'; // Import ang bagong file
 
 class ChatbotModel extends ChangeNotifier {
   final List<types.Message> _messages = [];
@@ -16,29 +17,52 @@ class ChatbotModel extends ChangeNotifier {
   String _currentStreamingText = '';
   List<String> _latestSuggestions = [];
   
+  // Bagong instance ng YieldDataHandler
+  final YieldDataHandler _yieldDataHandler = YieldDataHandler();
+  
   // Update this to your actual backend URL
-  // static const String backendUrl = 'http://localhost:3001/auth';
-
-    static const String backendUrl = 'https://agritrack-server.onrender.com/auth';
-   
-
+  static const String backendUrl = 'https://agritrack-server.onrender.com/auth';
+  
+  // GETTERS
   List<types.Message> get messages => _messages;
   bool get isTyping => _isTyping;
   types.User get user => _user;
   types.User get bot => _bot;
   List<String> get latestSuggestions => _latestSuggestions;
-
-  ChatbotModel() {
+  YieldDataHandler get yieldDataHandler => _yieldDataHandler;
   
-    _initializeChat();
+  ChatbotModel() {
+    // Optional: Initialize with default welcome
+    _initializeWithWelcome();
   }
-
+  
+  void _initializeWithWelcome() {
+    final welcomeMessage = types.TextMessage(
+      author: _bot,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+      id: const Uuid().v4(),
+      text: 'Kumusta! Ako si AgriBot. Paano kita matutulungan ngayon?',
+    );
+    
+    _messages.insert(0, welcomeMessage);
+    _latestSuggestions = [
+      'Anong mga scholarships ang available?',
+      'Paano mag-apply para sa financial aid?',
+      'Ano ang mga requirements para sa admission?',
+    ];
+  }
+  
+  // PARA SA YIELD DATA MANAGEMENT
+  void setYieldData(List<dynamic>? yieldData) {
+    _yieldDataHandler.setYieldData(yieldData);
+    notifyListeners();
+  }
+  
   Future<String?> _getAuthToken() async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
         final token = await currentUser.getIdToken();
-         
         return token;
       } 
       return null;
@@ -46,97 +70,43 @@ class ChatbotModel extends ChangeNotifier {
       return null;
     }
   }
-
-  Future<void> _initializeChat() async {
-    try {
-    
-      final token = await _getAuthToken();
-      
-      if (token == null) {
-        
-        _addErrorMessage('Hindi nakuha ang authentication. Pakisubukan muli.');
-        return;
-      }
-
-   
-      
-      final response = await http.post(
-        Uri.parse('$backendUrl/chatbot/init'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          throw TimeoutException('Connection timeout');
-        },
-      );
-
   
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final welcomeMessage = types.TextMessage(
-          author: _bot,
-          createdAt: DateTime.now().millisecondsSinceEpoch,
-          id: const Uuid().v4(),
-          text: data['welcomeMessage'] ?? 'Kumusta!',
-        );
-        
-        _messages.insert(0, welcomeMessage);
-        _latestSuggestions = List<String>.from(data['suggestions'] ?? []);
-       notifyListeners();
-      } else {
-      _addErrorMessage('Hindi ma-initialize ang chat. Status: ${response.statusCode}');
-      }
-    } catch (e) { 
-      _addErrorMessage('May problema sa koneksyon. Error: $e');
-    }
+  void clearChat() {
+    // Clear all local state
+    _messages.clear();
+    _isTyping = false;
+    _currentStreamingMessageId = '';
+    _currentStreamingText = '';
+    _latestSuggestions.clear();
+    
+    // Add a fresh welcome message
+    final welcomeMessage = types.TextMessage(
+      author: _bot,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+      id: const Uuid().v4(),
+      text: 'Kumusta! Paano kita matutulungan ngayon?',
+    );
+    
+    _messages.insert(0, welcomeMessage);
+    
+    // Optionally add some default suggestions
+    _latestSuggestions = [
+      'Anong mga scholarships ang available?',
+      'Paano mag-apply para sa financial aid?',
+      'Ano ang mga requirements para sa admission?',
+    ];
+    
+    notifyListeners();
   }
-
-  void clearChat() async {
-    try {
-     final token = await _getAuthToken();
-      if (token == null) {
-     return;
-      }
-
-      _messages.clear();
-      _isTyping = false;
-      _currentStreamingMessageId = '';
-      _currentStreamingText = '';
-      _latestSuggestions = [];
-      notifyListeners();
-
-      final response = await http.post(
-        Uri.parse('$backendUrl/chatbot/clear'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 10));
-
- 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final welcomeMessage = types.TextMessage(
-          author: _bot,
-          createdAt: DateTime.now().millisecondsSinceEpoch,
-          id: const Uuid().v4(),
-          text: data['welcomeMessage'] ?? 'Kumusta!',
-        );
-        
-        _messages.insert(0, welcomeMessage);
-        _latestSuggestions = List<String>.from(data['suggestions'] ?? []);
-      notifyListeners();
-      }
-    } catch (e) {
-    _addErrorMessage('Hindi ma-clear ang chat. Pakisubukan muli.');
+  
+  // UPDATED: Pwede nang magpasa ng yield data
+  void addUserMessage(String text, {List<dynamic>? yieldData}) {
+    // Update yield data kung meron
+    if (yieldData != null) {
+      setYieldData(yieldData);
     }
-  }
-
-  void addUserMessage(String text) {
-  final userMessage = types.TextMessage(
+    
+    final userMessage = types.TextMessage(
       author: _user,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: const Uuid().v4(),
@@ -148,10 +118,13 @@ class ChatbotModel extends ChangeNotifier {
     _latestSuggestions = [];
     notifyListeners();
   }
-
+  
+  // UPDATED: Auto-attach yield data kapag kailangan
   Future<void> getBotResponse(String userMessage) async {
     try {
-     
+      // Enhance the prompt with yield data if needed
+      final enhancedPrompt = _yieldDataHandler.enhancePromptWithYieldData(userMessage);
+      
       final token = await _getAuthToken();
       if (token == null) { 
         _addErrorMessage('Hindi nakuha ang authentication. Pakisubukan muli.');
@@ -170,7 +143,6 @@ class ChatbotModel extends ChangeNotifier {
       );
       _messages.insert(0, initialMessage);
       notifyListeners();
-
  
       final request = http.Request(
         'POST',
@@ -183,7 +155,8 @@ class ChatbotModel extends ChangeNotifier {
         'Accept': 'text/event-stream',
       });
       
-      request.body = json.encode({'message': userMessage});
+      // Use enhanced prompt instead of original
+      request.body = json.encode({'message': enhancedPrompt});
 
      final streamedResponse = await request.send().timeout(
         const Duration(seconds: 30),
@@ -191,10 +164,9 @@ class ChatbotModel extends ChangeNotifier {
           throw TimeoutException('Request timeout');
         },
       );
-
     
       if (streamedResponse.statusCode == 200) {
-      int chunkCount = 0;
+        int chunkCount = 0;
         
         await for (var chunk in streamedResponse.stream.transform(utf8.decoder)) {
           chunkCount++;
@@ -208,12 +180,12 @@ class ChatbotModel extends ChangeNotifier {
                 final data = json.decode(jsonData);
           
                 if (data['error'] == true) {
-              _handleError(data['message'] ?? 'May nangyaring error');
+                  _handleError(data['message'] ?? 'May nangyaring error');
                   break;
                 }
                 
                 if (data['done'] == true) {
-              _finishStreaming(
+                  _finishStreaming(
                     data['fullResponse'] ?? _currentStreamingText,
                     List<String>.from(data['suggestions'] ?? []),
                   );
@@ -222,19 +194,26 @@ class ChatbotModel extends ChangeNotifier {
                   _updateStreamingMessage(_currentStreamingText);
                 }
               } catch (e) {
-         }
+                // Continue processing other chunks
+              }
             }
           }
         }
         
      } else { 
-        final responseBody = await streamedResponse.stream.bytesToString(); 
         _handleError('May problema sa pagkonekta sa server (${streamedResponse.statusCode})');
       }
-    } catch (e, stackTrace) { 
-      _handleError('May problema sa koneksyon. Error: $e');
+    } catch (e) { 
+      _handleError('May problema sa koneksyon.');
     }
   }
+ 
+
+  // Add this method to your ChatbotModel class
+void clearMessages() {
+  _messages.clear();
+  notifyListeners();
+}
 
   void _updateStreamingMessage(String text) {
     final messageIndex = _messages.indexWhere(
@@ -260,7 +239,6 @@ class ChatbotModel extends ChangeNotifier {
   }
 
   void _finishStreaming(String finalText, List<String> suggestions) { 
-    
     final messageIndex = _messages.indexWhere(
       (msg) => msg.id == _currentStreamingMessageId,
     );
@@ -275,7 +253,7 @@ class ChatbotModel extends ChangeNotifier {
 
       _messages[messageIndex] = updatedMessage;
     }
-
+ 
     _latestSuggestions = suggestions;
     _isTyping = false;
     _currentStreamingMessageId = '';
@@ -309,7 +287,6 @@ class ChatbotModel extends ChangeNotifier {
   }
 
   void _addErrorMessage(String message) {
- 
     final errorMessage = types.TextMessage(
       author: _bot,
       createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -320,9 +297,15 @@ class ChatbotModel extends ChangeNotifier {
     _messages.insert(0, errorMessage);
     notifyListeners();
   }
-
-  void handleSendPressed(types.PartialText message) {
-    addUserMessage(message.text);
+  
+  // PARA SA EASY INTEGRATION
+  void handleSendPressed(types.PartialText message, {List<dynamic>? yieldData}) {
+    addUserMessage(message.text, yieldData: yieldData);
     getBotResponse(message.text);
+  }
+  
+  // PARA SA DEBUGGING
+  Map<String, dynamic> getYieldDebugInfo() {
+    return _yieldDataHandler.getDebugInfo();
   }
 }

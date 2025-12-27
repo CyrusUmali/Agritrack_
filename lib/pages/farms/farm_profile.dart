@@ -1,8 +1,8 @@
+import 'package:flareline/breaktab.dart';
 import 'package:flareline/core/theme/global_colors.dart';
 import 'package:flareline/core/models/farms_model.dart';
 import 'package:flareline/pages/farms/farm_widgets/recent_records.dart';
-import 'package:flareline/providers/user_provider.dart';
-import 'package:flareline_uikit/components/breaktab.dart';
+import 'package:flareline/providers/user_provider.dart'; 
 import 'package:flutter/material.dart';
 import 'package:flareline/pages/layout.dart';
 import 'package:flareline_uikit/components/card/common_card.dart';
@@ -30,8 +30,7 @@ class FarmProfile extends LayoutWidget {
 
   @override
   List<BreadcrumbItem> breakTabBreadcrumbs(BuildContext context) {
-    return [
-      BreadcrumbItem(context.translate('Dashboard'), '/'),
+    return [ 
       BreadcrumbItem(context.translate('Farms'), '/farms'),
     ];
   }
@@ -51,7 +50,7 @@ class FarmProfile extends LayoutWidget {
           )..add(GetYieldByFarmId(farmId)),
         )
       ],
-      child: const FarmProfileDesktop(),
+    child: FarmProfileDesktop(farmId: farmId),
     );
   }
 
@@ -70,13 +69,14 @@ class FarmProfile extends LayoutWidget {
           )..add(GetYieldByFarmId(farmId)),
         )
       ],
-      child: const FarmProfileMobile(),
+      child: FarmProfileMobile(farmId: farmId),
     );
   }
 }
 
 class FarmProfileDesktop extends StatefulWidget {
-  const FarmProfileDesktop({super.key});
+    final int farmId; 
+   const FarmProfileDesktop({super.key, required this.farmId}); 
 
   @override
   State<FarmProfileDesktop> createState() => _FarmProfileDesktopState();
@@ -118,6 +118,7 @@ class _FarmProfileDesktopState extends State<FarmProfileDesktop> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final _isFarmer = userProvider.isFarmer;
     final _farmerId = userProvider.farmer?.id;
+ 
 
     if (farmState is FarmsLoading || yieldState is YieldsLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -142,6 +143,15 @@ class _FarmProfileDesktopState extends State<FarmProfileDesktop> {
     final hasYields = yieldState.yields.isNotEmpty;
 
  
+
+//  print('widget.farmId');
+// print(widget.farmId);
+
+// print('_farmerId');
+// print(transformedFarm['farmerId']);
+
+
+
     // Check if we should show the toggle and content
     final shouldShowToggleAndContent = !_isFarmer ||
         (_isFarmer &&
@@ -202,7 +212,8 @@ class _FarmProfileDesktopState extends State<FarmProfileDesktop> {
 
               // Content based on selection
               if (_selectedViewIndex == 0) ...[
-                RecentRecord(yields: yieldState.yields),
+ 
+                RecentRecord(yields: yieldState.yields , farmId: widget.farmId  , farmerId:transformedFarm['farmerId'] ,),
               ] else if (hasProducts || hasYields) ...[
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,8 +243,7 @@ class _FarmProfileDesktopState extends State<FarmProfileDesktop> {
   }
 
   Widget _buildViewToggle(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
+   
 
     return Container(
       decoration: BoxDecoration(
@@ -368,7 +378,8 @@ class _FarmProfileDesktopState extends State<FarmProfileDesktop> {
 }
 
 class FarmProfileMobile extends StatefulWidget {
-  const FarmProfileMobile({super.key});
+    final int farmId; // Add this
+   const FarmProfileMobile({super.key, required this.farmId});
 
   @override
   State<FarmProfileMobile> createState() => _FarmProfileMobileState();
@@ -474,7 +485,7 @@ class _FarmProfileMobileState extends State<FarmProfileMobile> {
 
                   // Content based on selection
                   if (_selectedViewIndex == 0)
-                    RecentRecord(yields: yieldState.yields),
+                  RecentRecord(yields: yieldState.yields , farmId: widget.farmId  , farmerId:transformedFarm['farmerId'] ,),
                   if (_selectedViewIndex != 0 && (hasProducts || hasYields))
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -499,8 +510,7 @@ class _FarmProfileMobileState extends State<FarmProfileMobile> {
   }
 
   Widget _buildViewToggle(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
+ 
 
     return Container(
       decoration: BoxDecoration(
@@ -659,7 +669,7 @@ Map<String, dynamic> transformFarmData(
   // Transform farm data if loaded
   if (farmState is FarmLoaded) {
     transformedFarm = {
-      'farmName': farmState.farm.name ?? 'Unknown Farm',
+      'farmName': farmState.farm.name,
       'farmOwner': farmState.farm.owner ?? 'Unknown Owner',
       'establishedYear': farmState.farm.createdAt?.year.toString() ?? 'Unknown',
       'farmSize': farmState.farm.hectare ?? 0.0,
@@ -684,10 +694,10 @@ Map<String, dynamic> transformFarmData(
 
     for (var yield in yieldState.yields) {
       final productName = yield.productName ?? 'Unknown Product';
-      final harvestDate = yield.harvestDate ?? DateTime.now();
+      final harvestDate = yield.harvestDate;
       final year = harvestDate.year;
       final month = harvestDate.month;
-      final volume = yield.volume?.toDouble() ?? 0.0;
+      final volume = yield.volume.toDouble();
 
       // Initialize product if not exists
       productMap.putIfAbsent(productName, () => {});

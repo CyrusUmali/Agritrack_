@@ -6,15 +6,13 @@ import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io' if (dart.library.html) 'dart:html' as html;
-import 'package:http/http.dart' as http;
-import 'package:path/path.dart' as path;
+import 'package:image_picker/image_picker.dart'; 
+import 'package:http/http.dart' as http; 
 import 'dart:convert';
 import 'package:toastification/toastification.dart';
 
 class AddProductModal extends StatefulWidget {
-  const AddProductModal({Key? key}) : super(key: key);
+  const AddProductModal({super.key});
 
   static Future<void> show(BuildContext context) async {
     final productBloc = BlocProvider.of<ProductBloc>(context);
@@ -66,10 +64,10 @@ class _AddProductModalContent extends StatefulWidget {
   final Function(bool) onLoadingStateChanged;
 
   const _AddProductModalContent({
-    Key? key,
+    super.key,
     required this.onSubmit,
     required this.onLoadingStateChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<_AddProductModalContent> createState() =>
@@ -79,11 +77,10 @@ class _AddProductModalContent extends StatefulWidget {
 class _AddProductModalContentState extends State<_AddProductModalContent> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
-  String selectedCategory = 'HVC';
-  html.File? _selectedImage;
+  String selectedCategory = 'HVC'; 
   String? _imageUrl;
   bool _isUploading = false;
-  bool _isSubmitting = false;
+  bool isSubmitting = false;
 
   @override
   void initState() {
@@ -164,15 +161,12 @@ class _AddProductModalContentState extends State<_AddProductModalContent> {
 
   void _submitProduct() async {
     // In your modal's submit method
-    print('Modal context: ${context.hashCode}');
-    print(
-        'BLoC available: ${BlocProvider.of<ProductBloc>(context, listen: false).hashCode}');
     final productBloc = context.read<ProductBloc>();
     final name = nameController.text.trim();
     final description = descriptionController.text.trim();
 
     setState(() {
-      _isSubmitting = true;
+      isSubmitting = true;
       widget.onLoadingStateChanged(true);
     });
 
@@ -187,7 +181,7 @@ class _AddProductModalContentState extends State<_AddProductModalContent> {
         autoCloseDuration: const Duration(seconds: 4),
       );
       setState(() {
-        _isSubmitting = false;
+        isSubmitting = false;
         widget.onLoadingStateChanged(false);
       });
       return;
@@ -203,7 +197,7 @@ class _AddProductModalContentState extends State<_AddProductModalContent> {
         autoCloseDuration: const Duration(seconds: 4),
       );
       setState(() {
-        _isSubmitting = false;
+        isSubmitting = false;
         widget.onLoadingStateChanged(false);
       });
       return;
@@ -230,8 +224,6 @@ class _AddProductModalContentState extends State<_AddProductModalContent> {
         imageUrl: _imageUrl,
       ));
 
-      print('selectedCategory');
-      print(selectedCategory);
 
       // Wait for either success or error state
       // await completer.future;
@@ -257,7 +249,7 @@ class _AddProductModalContentState extends State<_AddProductModalContent> {
     } finally {
       if (mounted) {
         setState(() {
-          _isSubmitting = false;
+          isSubmitting = false;
           widget.onLoadingStateChanged(false);
         });
       }
@@ -467,11 +459,10 @@ class _AddProductModalFooter extends StatelessWidget {
   final bool isLoading;
 
   const _AddProductModalFooter({
-    Key? key,
     required this.onSubmit,
     required this.onCancel,
     this.isLoading = false,
-  }) : super(key: key);
+  });
 
 
 

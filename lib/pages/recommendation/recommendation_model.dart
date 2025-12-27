@@ -5,13 +5,13 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class RecommendationModel extends ChangeNotifier {
-  String selectedModel = 'XGBoost';
-  double soil_ph = 6.2;
-  double fertility_ec = 1443;
-  double sunlight = 44844;
-  double soil_temp = 25.8;
-  double humidity = 68;
-  double soil_moisture = 63;
+  String selectedModel = 'Random Forest';
+  double soil_ph = 6.6;
+  double fertility_ec = 535;
+  double sunlight = 2600;
+  double soil_temp = 28.7;
+  double humidity = 75;
+  double soil_moisture = 94;
 
   String? recommendationResult;
   bool isLoading = false;
@@ -76,7 +76,6 @@ class RecommendationModel extends ChangeNotifier {
       }
     } catch (e) {
       // You might want to handle this error in the UI
-      print("Error: $e");
       rethrow;
     } finally {
       isLoading = false;

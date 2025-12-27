@@ -1,3 +1,4 @@
+import 'package:flareline/breaktab.dart';
 import 'package:flutter/material.dart';
 import 'package:flareline/pages/layout.dart';
 import 'suitability_content.dart';
@@ -7,7 +8,7 @@ class SuitabilityPage extends LayoutWidget {
 
   @override
   String breakTabTitle(BuildContext context) {
-    return '';
+    return BreakTab.hideAllTitle;
   }
 
   @override
@@ -15,7 +16,6 @@ class SuitabilityPage extends LayoutWidget {
     return const SuitabilityContent();
   }
 
-  @override
   Widget buildContent(BuildContext context) {
     return const SuitabilityContent();
   }

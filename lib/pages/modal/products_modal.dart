@@ -5,8 +5,7 @@ import 'package:flareline_uikit/components/buttons/button_widget.dart';
 import 'package:flareline_uikit/components/modal/modal_dialog.dart';
 import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flareline/repositories/product_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; 
 import 'package:flareline/core/models/product_model.dart';
 
 void showProductsModal(

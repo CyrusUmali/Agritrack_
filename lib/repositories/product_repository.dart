@@ -50,10 +50,11 @@ class ProductRepository extends BaseRepository {
 
   // Helper method for product validation
   void _validateProductRequiredFields(Product product) {
-    if (product.name == null || product.name!.isEmpty) {
+    if (product.name.isEmpty) {
       throw Exception('Product name is required');
     }
-    if (product.sector == null || product.sector!.isEmpty) {
+    if (
+      product.sector.isEmpty) {
       throw Exception('Sector is required');
     }
   }
@@ -63,7 +64,7 @@ class ProductRepository extends BaseRepository {
     return {
       'name': product.name,
       'description': product.description,
-      'sector_id': getSectorId(product.sector!), // Use inherited method
+      'sector_id': getSectorId(product.sector), // Use inherited method
       'imageUrl': product.imageUrl,
     };
   }

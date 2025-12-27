@@ -2,8 +2,8 @@ import 'package:flareline/core/models/farms_model.dart';
 import 'package:flareline/core/theme/global_colors.dart';
 import 'package:flareline/pages/farms/farm_bloc/farm_bloc.dart';
 import 'package:flareline/pages/farms/farm_profile.dart';
-import 'package:flareline/pages/test/map_widget/pin_style.dart';
-import 'package:flareline/pages/test/map_widget/stored_polygons.dart';
+import 'package:flareline/pages/map/map_widget/pin_style.dart';
+import 'package:flareline/pages/map/map_widget/stored_polygons.dart';
 import 'package:flareline/pages/toast/toast_helper.dart';
 import 'package:flareline/pages/widget/combo_box.dart';
 import 'package:flareline/pages/widget/network_error.dart';
@@ -70,26 +70,22 @@ class _FarmsTableWidgetState extends State<FarmsTableWidget> {
   }
 
   Widget _farmsWeb(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final _isFarmer = userProvider.isFarmer;
 
-
-final userProvider = Provider.of<UserProvider>(context, listen: false);
-final _isFarmer = userProvider.isFarmer;
-
-final screenHeight = MediaQuery.of(context).size.height;
-double height; 
-if (screenHeight < 400) {
-  height = screenHeight * (_isFarmer ? 0.7 : 0.6); // 10% more for farmers
-} else if (screenHeight < 600) {
-  height = screenHeight * (_isFarmer ? 0.65 : 0.50);
-} else if (screenHeight < 800) {
-  height = screenHeight * (_isFarmer ? 0.72 : 0.56);
-} else if (screenHeight < 1500) {
-  height = screenHeight * (_isFarmer ? 0.79 : 0.63);
-} else {
-
-  height = screenHeight * (_isFarmer ? 0.33 : 0.3);
-}
-
+    final screenHeight = MediaQuery.of(context).size.height;
+    double height;
+    if (screenHeight < 400) {
+      height = screenHeight * (_isFarmer ? 0.7 : 0.6); // 10% more for farmers
+    } else if (screenHeight < 600) {
+      height = screenHeight * (_isFarmer ? 0.65 : 0.50);
+    } else if (screenHeight < 800) {
+      height = screenHeight * (_isFarmer ? 0.72 : 0.56);
+    } else if (screenHeight < 1500) {
+      height = screenHeight * (_isFarmer ? 0.79 : 0.63);
+    } else {
+      height = screenHeight * (_isFarmer ? 0.33 : 0.3);
+    }
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -151,7 +147,7 @@ if (screenHeight < 400) {
         ConstrainedBox(
           constraints: BoxConstraints(
             maxHeight:
-                MediaQuery.of(context).size.height * 0.7, // 70% of screen
+                MediaQuery.of(context).size.height * 0.7,  
             minHeight: 200, // Minimum height
           ),
           child: BlocBuilder<FarmBloc, FarmState>(
@@ -485,8 +481,8 @@ class DataTableWidget extends TableWidget<FarmsViewModel> {
 
   DataTableWidget({
     required this.state,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   FarmsViewModel viewModelBuilder(BuildContext context) {
@@ -540,25 +536,21 @@ class DataTableWidget extends TableWidget<FarmsViewModel> {
     );
   }
 
-
-   @override
-  void onCellTap(BuildContext context, TableDataRowsTableDataRows columnData, FarmsViewModel viewModel) {
- 
-    
-   final farm = viewModel.state.farms.firstWhere(
+  @override
+  void onCellTap(BuildContext context, TableDataRowsTableDataRows columnData,
+      FarmsViewModel viewModel) {
+    final farm = viewModel.state.farms.firstWhere(
       (f) => f.id.toString() == columnData.id,
     );
- 
+
     // Navigate to YieldProfile when any cell in the row is tapped
     Navigator.push(
       context,
       MaterialPageRoute(
-                      builder: (context) => FarmProfile(farmId: farm.id),
-                    ),
+        builder: (context) => FarmProfile(farmId: farm.id),
+      ),
     );
   }
-
- 
 
   @override
   Widget actionWidgetsBuilder(
@@ -589,7 +581,7 @@ class DataTableWidget extends TableWidget<FarmsViewModel> {
                 modalType: ModalType.medium,
                 onCancelTap: () => Navigator.of(context).pop(),
                 onSaveTap: () {
-                  context.read<FarmBloc>().add(DeleteFarm(farm.id!));
+                  context.read<FarmBloc>().add(DeleteFarm(farm.id));
                   Navigator.of(context).pop();
                 },
                 child: Center(
@@ -621,9 +613,7 @@ class DataTableWidget extends TableWidget<FarmsViewModel> {
                           child: ButtonWidget(
                             btnText: 'Delete',
                             onTap: () {
-                              context
-                                  .read<FarmBloc>()
-                                  .add(DeleteFarm(farm.id!));
+                              context.read<FarmBloc>().add(DeleteFarm(farm.id));
                               Navigator.of(context).pop();
                             },
                             type: ButtonType.primary.type,
@@ -783,8 +773,8 @@ class MobileFarmListWidget extends StatefulWidget {
   const MobileFarmListWidget({
     required this.state,
     this.itemsPerPage = 10,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<MobileFarmListWidget> createState() => _MobileFarmListWidgetState();
@@ -881,6 +871,9 @@ class _MobileFarmListWidgetState extends State<MobileFarmListWidget> {
 
   @override
   Widget build(BuildContext context) {
+
+    final theme = Theme.of(context);
+
     if (widget.state.farms.isEmpty) {
       return CommonCard(
         margin: EdgeInsets.all(0),
@@ -891,303 +884,337 @@ class _MobileFarmListWidgetState extends State<MobileFarmListWidget> {
       );
     }
 
-    return CommonCard(
-      margin: EdgeInsets.all(0),
-      padding: EdgeInsets.zero,
-      child: Column(
-        children: [
-          // List content
-          Expanded(
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: currentPageData.length,
-              itemBuilder: (context, index) {
-                final farm = currentPageData[index];
-                final pinStyle = parsePinStyle(farm.sector!);
-                final exceedsLimit = _farmExceedsAreaLimit(farm);
+    return Column(
+      children: [
+        // List content
+        Expanded(
+          child: ListView.separated(
+            shrinkWrap: true,
+            physics: const AlwaysScrollableScrollPhysics(),
+            itemCount: currentPageData.length,
+            separatorBuilder: (context, index) => const SizedBox(
+                height: 12), // Increased separator height to match products
+            itemBuilder: (context, index) {
+              final farm = currentPageData[index];
+              final exceedsLimit = _farmExceedsAreaLimit(farm);
 
-                return ListTile(
-                  // Replaced CircleAvatar with polygon preview
-
-                  leading: _buildPolygonPreview(farm),
-                  title: Text(
-                    farm.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: exceedsLimit ? Colors.red : null,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${farm.owner} • ${farm.barangay}',
-                        style: const TextStyle(fontSize: 12),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        '${farm.hectare} ha • ${farm.sector}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey.shade600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      // Add warning text if area exceeds limit
-                      if (exceedsLimit)
-                        Row(
-                          children: [
-                            Icon(Icons.square_foot,
-                                size: 12, color: Colors.red),
-                            SizedBox(width: 4),
-                            Text(
-                              'Area exceeds limit',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-
-                  // In the MobileFarmListWidget build method, replace the IconButton in the trailing section:
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(farm.status!).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: _getStatusColor(farm.status!),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          farm.status!,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: _getStatusColor(farm.status!),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      // REPLACE THIS IconButton:
-
-                      IconButton(
-                        key: ValueKey('mobile_delete_${farm.id}'),
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          ModalDialog.show(
-                            context: context,
-                            title: 'Delete Farm',
-                            showTitle: true,
-                            showTitleDivider: true,
-                            modalType: ModalType.medium,
-                            onCancelTap: () => Navigator.of(context).pop(),
-                            onSaveTap: () {
-                              context
-                                  .read<FarmBloc>()
-                                  .add(DeleteFarm(farm.id!));
-                              Navigator.of(context).pop();
-                            },
-                            child: Center(
-                              child: Text(
-                                'Are you sure you want to delete ${farm.name}?',
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            footer: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20.0,
-                                vertical: 10.0,
-                              ),
-                              child: Center(
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    SizedBox(
-                                      width: 120,
-                                      child: ButtonWidget(
-                                        btnText: 'Cancel',
-                                        textColor:
-                                            FlarelineColors.darkBlackText,
-                                        onTap: () =>
-                                            Navigator.of(context).pop(),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 20),
-                                    SizedBox(
-                                      width: 120,
-                                      child: ButtonWidget(
-                                        btnText: 'Delete',
-                                        onTap: () {
-                                          context
-                                              .read<FarmBloc>()
-                                              .add(DeleteFarm(farm.id!));
-                                          Navigator.of(context).pop();
-                                        },
-                                        type: ButtonType.primary.type,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-
+              return CommonCard(
+                margin:
+                    EdgeInsets.zero, // No margin to match product list style
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => FarmProfile(farmId: farm.id),
                     ),
                   ),
-                );
-              },
-            ),
-          ),
+                  onLongPress: () {
+                    // Show delete confirmation on long press
 
-          // Pagination controls
-          if (totalPages > 1)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: Colors.grey.shade300,
-                    width: 0.5,
-                  ),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Previous button
-                  IconButton(
-                    onPressed: currentPage > 0 ? _previousPage : null,
-                    icon: Icon(
-                      Icons.chevron_left,
-                      color:
-                          currentPage > 0 ? GlobalColors.primary : Colors.grey,
-                    ),
-                  ),
-
-                  // Page indicators
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Show page numbers (limited to 5 visible pages)
-                        ...List.generate(
-                          totalPages.clamp(0, 5),
-                          (index) {
-                            int pageIndex;
-                            if (totalPages <= 5) {
-                              pageIndex = index;
-                            } else {
-                              // Smart pagination: show current page in center
-                              int start =
-                                  (currentPage - 2).clamp(0, totalPages - 5);
-                              pageIndex = start + index;
-                            }
-
-                            return GestureDetector(
-                              onTap: () => _goToPage(pageIndex),
-                              child: Container(
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 4),
-                                width: 32,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: currentPage == pageIndex
-                                      ? GlobalColors.primary
-                                      : Colors.transparent,
-                                  border: Border.all(
-                                    color: currentPage == pageIndex
-                                        ? GlobalColors.primary
-                                        : Colors.grey.shade400,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '${pageIndex + 1}',
-                                    style: TextStyle(
-                                      color: currentPage == pageIndex
-                                          ? Colors.white
-                                          : null,
-                                      fontSize: 12,
-                                      fontWeight: currentPage == pageIndex
-                                          ? FontWeight.w600
-                                          : FontWeight.normal,
-                                    ),
-                                  ),
+                    ModalDialog.show(
+                      context: context,
+                      title: 'Delete Farm',
+                      showTitle: true,
+                      showTitleDivider: true,
+                      modalType: ModalType.medium,
+                      onCancelTap: () => Navigator.of(context).pop(),
+                      onSaveTap: () {
+                        context.read<FarmBloc>().add(DeleteFarm(farm.id));
+                        Navigator.of(context).pop();
+                      },
+                      child: Center(
+                        child: Text(
+                          'Are you sure you want to delete ${farm.name}?',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      footer: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20.0,
+                          vertical: 10.0,
+                        ),
+                        child: Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 120,
+                                child: ButtonWidget(
+                                  btnText: 'Cancel',
+                                  textColor: FlarelineColors.darkBlackText,
+                                  onTap: () => Navigator.of(context).pop(),
                                 ),
                               ),
-                            );
-                          },
+                              const SizedBox(width: 20),
+                              SizedBox(
+                                width: 120,
+                                child: ButtonWidget(
+                                  btnText: 'Delete',
+                                  onTap: () {
+                                    context
+                                        .read<FarmBloc>()
+                                        .add(DeleteFarm(farm.id));
+                                    Navigator.of(context).pop();
+                                  },
+                                  type: ButtonType.primary.type,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        // Leading polygon preview
+                        _buildPolygonPreview(farm),
+
+                        const SizedBox(width: 16),
+
+                        // Farm info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Farm name and status on the same row
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      farm.name,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color: exceedsLimit
+                                                ? Colors.red
+                                                : null,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: _getStatusColor(farm.status!)
+                                          .withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      farm.status!,
+                                      style: TextStyle(
+                                        color: _getStatusColor(farm.status!),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 4),
+
+                              // Owner and barangay
+                              Text(
+                                '${farm.owner} • ${farm.barangay}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+
+                              const SizedBox(height: 2),
+
+                              // Hectare and sector
+                              Text(
+                                '${farm.hectare} ha • ${farm.sector}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+
+                              // Area limit warning
+                              if (exceedsLimit) const SizedBox(height: 2),
+
+                              if (exceedsLimit)
+                                Row(
+                                  children: [
+                                    Icon(Icons.square_foot,
+                                        size: 12, color: Colors.red),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Area exceeds limit',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
                         ),
 
-                        // Show ellipsis if there are more pages
-                        if (totalPages > 5)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Text(
-                              '...',
-                              style: TextStyle(color: Colors.grey),
+                        const SizedBox(width: 8),
+
+                  
+
+
+
+                  
+
+
+                      Icon(
+                              Icons.chevron_right,
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.3),
                             ),
-                          ),
+                  
+                     
+                     
                       ],
                     ),
                   ),
+                ),
+              );
+            },
+          ),
+        ),
 
-                  // Next button
-                  IconButton(
-                    onPressed: currentPage < totalPages - 1 ? _nextPage : null,
-                    icon: Icon(
-                      Icons.chevron_right,
-                      color: currentPage < totalPages - 1
-                          ? GlobalColors.primary
-                          : Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-          // Page info
-          if (totalPages > 1)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                'Page ${currentPage + 1} of $totalPages • ${widget.state.farms.length} total farms',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
+        // Pagination controls
+        if (totalPages > 1)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Colors.grey.shade300,
+                  width: 0.5,
                 ),
               ),
             ),
-        ],
-      ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Previous button
+                IconButton(
+                  onPressed: currentPage > 0 ? _previousPage : null,
+                  icon: Icon(
+                    Icons.chevron_left,
+                    color: currentPage > 0 ? GlobalColors.primary : Colors.grey,
+                  ),
+                ),
+
+                // Page indicators
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Show page numbers (limited to 5 visible pages)
+                      ...List.generate(
+                        totalPages.clamp(0, 5),
+                        (index) {
+                          int pageIndex;
+                          if (totalPages <= 5) {
+                            pageIndex = index;
+                          } else {
+                            // Smart pagination: show current page in center
+                            int start =
+                                (currentPage - 2).clamp(0, totalPages - 5);
+                            pageIndex = start + index;
+                          }
+
+                          return GestureDetector(
+                            onTap: () => _goToPage(pageIndex),
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: currentPage == pageIndex
+                                    ? GlobalColors.primary
+                                    : Colors.transparent,
+                                border: Border.all(
+                                  color: currentPage == pageIndex
+                                      ? GlobalColors.primary
+                                      : Colors.grey.shade400,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${pageIndex + 1}',
+                                  style: TextStyle(
+                                    color: currentPage == pageIndex
+                                        ? Colors.white
+                                        : null,
+                                    fontSize: 12,
+                                    fontWeight: currentPage == pageIndex
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+                      // Show ellipsis if there are more pages
+                      if (totalPages > 5)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Text(
+                            '...',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+
+                // Next button
+                IconButton(
+                  onPressed: currentPage < totalPages - 1 ? _nextPage : null,
+                  icon: Icon(
+                    Icons.chevron_right,
+                    color: currentPage < totalPages - 1
+                        ? GlobalColors.primary
+                        : Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+        // Page info
+        if (totalPages > 1)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              'Page ${currentPage + 1} of $totalPages • ${widget.state.farms.length} total farms',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ),
+      ],
     );
   }
-
-  // Removed _getSectorIcon and _getSectorColor methods as they're replaced by pin_style.dart
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {

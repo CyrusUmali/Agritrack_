@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart'; 
 
 Widget buildComboBox({
   required BuildContext context,
@@ -9,29 +8,28 @@ Widget buildComboBox({
   required ValueChanged<String> onSelected,
   double? width,
   double? height,
-  Color? backgroundColor, // New optional parameter
-  Color? borderColor, // New optional border color parameter
+  Color? backgroundColor, 
+  Color? borderColor,  
 }) {
-  // Helper function to format display text - removes "1: ", "2: ", etc.
+   
   String getDisplayText(String value) {
-    // if (value.isEmpty || value == 'All') return value;
-    // Remove pattern like "1: ", "2: ", etc. from the beginning
+   
     final regex = RegExp(r'^\d+:\s*');
     return value.replaceFirst(regex, '');
   }
 
   final allOptions = [...options];
-  // Only use 'All' if selectedValue is explicitly empty AND we have options
+  
   final displayValue =
       selectedValue.isEmpty && options.isNotEmpty ? '' : selectedValue;
 
   return Container(
     decoration: BoxDecoration(
       color: backgroundColor ??
-          Theme.of(context).cardTheme.color, // Use provided color or default
+          Theme.of(context).cardTheme.color,  
       borderRadius: BorderRadius.circular(8),
       border: Border.all(
-        color: borderColor ?? // Use provided border color or default
+        color: borderColor ??  
             Theme.of(context).cardTheme.surfaceTintColor ??
             Colors.grey[300]!,
       ),
@@ -44,7 +42,7 @@ Widget buildComboBox({
             (context, textEditingController, focusNode, onFieldSubmitted) {
           bool isOptionsOpen = false;
 
-          // Update the text controller when selectedValue changes
+          
           WidgetsBinding.instance.addPostFrameCallback((_) {
             final cleanedValue = getDisplayText(displayValue);
             if (textEditingController.text != cleanedValue) {
@@ -83,7 +81,7 @@ Widget buildComboBox({
                    enabledBorder: OutlineInputBorder(
   borderRadius: BorderRadius.circular(8),
   borderSide: BorderSide(
-    color: Colors.transparent, // ← hides the enabled border
+    color: Colors.transparent,  
     width: 0,
   ),
 ),
@@ -121,7 +119,7 @@ Widget buildComboBox({
           if (textEditingValue.text.isEmpty) {
             return allOptions;
           }
-          // Filter based on display text (cleaned), not original value
+         
           return allOptions.where((option) {
             final displayText = getDisplayText(option);
             return displayText
@@ -130,8 +128,7 @@ Widget buildComboBox({
           }).toList();
         },
         onSelected: (String selection) {
-          // Pass the original value (with number) to onSelected
-          // but display the cleaned version in the text field
+         
           onSelected(selection == 'All' ? '' : selection);
         },
         optionsViewBuilder: (context, onSelected, options) {
@@ -142,7 +139,7 @@ Widget buildComboBox({
               color: backgroundColor ??
                   Theme.of(context)
                       .cardTheme
-                      .color, // Use provided color or default for dropdown
+                      .color,  
               child: ConstrainedBox(
                 constraints: const BoxConstraints(
                   maxHeight: 200,
@@ -161,7 +158,7 @@ Widget buildComboBox({
 
                       return ListTile(
                         title: Text(
-                          // Display cleaned text in the option list
+                           
                           getDisplayText(option),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,

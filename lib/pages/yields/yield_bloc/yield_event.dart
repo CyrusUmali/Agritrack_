@@ -7,7 +7,14 @@ abstract class YieldEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadYields extends YieldEvent {}
+class LoadYields extends YieldEvent {
+  final int? farmerId; // Make this optional
+
+  const LoadYields({this.farmerId});
+
+  @override
+  List<Object> get props => [if (farmerId != null) farmerId!];
+}
 
 class LoadYieldsByFarmer extends YieldEvent {
   final int farmerId;
@@ -36,6 +43,8 @@ class AddYield extends YieldEvent {
   final double volume;
   final String? notes;
   final double? value;
+  final bool isFarmerSpecific;
+  final bool isFarmSpecific;
   final List<String?> images;
 
   const AddYield({
@@ -47,6 +56,8 @@ class AddYield extends YieldEvent {
     this.areaHarvested,
     this.notes,
     this.value,
+    this.isFarmerSpecific = false, 
+    this.isFarmSpecific = false,
     this.images = const [],
   });
 
@@ -60,17 +71,31 @@ class AddYield extends YieldEvent {
         volume,
         notes,
         value,
+        isFarmerSpecific,
+         isFarmSpecific,
         images,
       ];
 }
 
 class DeleteYield extends YieldEvent {
   final int id;
+  final int farmId;
+    final int farmerId;
+  final bool isFarmSpecific;
+   final bool isFarmerSpecific;
 
-  const DeleteYield(this.id);
+  const DeleteYield(
+      {required this.id, 
+   required   this.farmId, 
+        required   this.farmerId, 
+      this.isFarmSpecific = false,
+       this.isFarmerSpecific = false
+      
+      
+      });
 
   @override
-  List<Object> get props => [id];
+  List<Object> get props => [id, isFarmSpecific , farmerId , isFarmerSpecific];
 }
 
 class FilterYields extends YieldEvent {

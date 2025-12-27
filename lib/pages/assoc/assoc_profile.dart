@@ -1,3 +1,4 @@
+import 'package:flareline/breaktab.dart';
 import 'package:flareline/core/models/assocs_model.dart';
 import 'package:flareline/pages/assoc/assoc_bloc/assocs_bloc.dart';
 import 'package:flareline/pages/assoc/assoc_profile/assoc_kpi.dart';
@@ -5,8 +6,7 @@ import 'package:flareline/pages/assoc/assoc_profile/assoc_overview.dart';
 import 'package:flareline/pages/assoc/assoc_profile/assoc_yield_data.dart';
 import 'package:flareline/pages/assoc/assoc_profile/sector_header.dart';
 import 'package:flareline/pages/sectors/sector_service.dart';
-import 'package:flareline/services/lanugage_extension.dart';
-import 'package:flareline_uikit/components/breaktab.dart';
+import 'package:flareline/services/lanugage_extension.dart'; 
 import 'package:flutter/material.dart';
 import 'package:flareline/pages/layout.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -55,13 +55,13 @@ class _AssocProfileContent extends StatefulWidget {
 
 class _AssocProfileContentState extends State<_AssocProfileContent> {
   late Association _currentAssociation;
-  late SectorService _sectorService;
+  late SectorService sectorService;
 
   @override
   void initState() {
     super.initState();
     _currentAssociation = widget.association; 
-    _sectorService = Provider.of<SectorService>(context, listen: false);
+    sectorService = Provider.of<SectorService>(context, listen: false);
   }
 
   Widget _buildContent() {

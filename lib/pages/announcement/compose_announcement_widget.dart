@@ -107,6 +107,8 @@ class ComposeAnnouncementWidget extends StatelessWidget {
                                 color: recipientType == 'everyone'
                                     ? Colors.blue.shade50
                                     : Theme.of(context).cardTheme.surfaceTintColor!,
+ 
+
                               ),
                               child: Row(
                                 children: [
@@ -128,14 +130,15 @@ class ComposeAnnouncementWidget extends StatelessWidget {
                                             fontWeight: FontWeight.w600,
                                             color: recipientType == 'everyone'
                                                 ? Colors.blue.shade700
-                                                : Colors.black,
+                                                : null,
                                           ),
                                         ),
                                         Text(
                                           'Send to all registered farmers',
                                           style: TextStyle(
                                             fontSize: 13,
-                                            color: Colors.grey.shade600,
+                                            
+                                            color: Colors.grey.shade400,
                                           ),
                                         ),
                                       ],
@@ -226,78 +229,7 @@ class ComposeAnnouncementWidget extends StatelessWidget {
 
 
 _buildFarmerSelectionDropdown(),
-                  // // Farmer Selection (conditional)
-                  // ValueListenableBuilder<String>(
-                  //   valueListenable: recipientTypeNotifier,
-                  //   builder: (context, recipientType, child) {
-                  //     if (recipientType != 'specific') return const SizedBox.shrink();
-                      
-                  //     return Column(
-                  //       crossAxisAlignment: CrossAxisAlignment.start,
-                  //       children: [
-                  //         const SizedBox(height: 20),
-                  //         const Text(
-                  //           'Select Farmer',
-                  //           style: TextStyle(
-                  //             fontSize: 15,
-                  //             fontWeight: FontWeight.w600,
-                  //           ),
-                  //         ),
-                  //         const SizedBox(height: 12),
-                  //         ValueListenableBuilder<String?>(
-                  //           valueListenable: selectedFarmerNotifier,
-                  //           builder: (context, selectedFarmer, child) {
-                  //             return Container(
-                  //               decoration: BoxDecoration(
-                  //                 border: Border.all(color: Colors.grey.shade300),
-                  //                 borderRadius: BorderRadius.circular(8),
-                  //               ),
-                  //               child: DropdownButtonHideUnderline(
-                  //                 child: DropdownButton<String>(
-                  //                   value: selectedFarmer,
-                  //                   isExpanded: true,
-                  //                   hint: const Padding(
-                  //                     padding: EdgeInsets.symmetric(horizontal: 16),
-                  //                     child: Text('Choose a farmer'),
-                  //                   ),
-                  //                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  //                   items: farmers.map((farmer) {
-                  //                     return DropdownMenuItem<String>(
-                  //                       value: farmer.id.toString(),
-                  //                       child: Column(
-                  //                         crossAxisAlignment: CrossAxisAlignment.start,
-                  //                         mainAxisSize: MainAxisSize.min,
-                  //                         children: [
-                  //                           Text(
-                  //                             farmer.name,
-                  //                             style: const TextStyle(
-                  //                               fontSize: 14,
-                  //                               fontWeight: FontWeight.w500,
-                  //                             ),
-                  //                           ),
-                  //                           Text(
-                  //                             farmer.email!,
-                  //                             style: TextStyle(
-                  //                               fontSize: 12,
-                  //                               color: Colors.grey.shade600,
-                  //                             ),
-                  //                           ),
-                  //                         ],
-                  //                       ),
-                  //                     );
-                  //                   }).toList(),
-                  //                   onChanged: (value) {
-                  //                     selectedFarmerNotifier.value = value;
-                  //                   },
-                  //                 ),
-                  //               ),
-                  //             );
-                  //           },
-                  //         ),
-                  //       ],
-                  //     );
-                  //   },
-                  // ),
+                
 
                   const SizedBox(height: 20),
 
@@ -446,8 +378,6 @@ _buildFarmerSelectionDropdown(),
 
 
 
-
-
 Widget _buildFarmerSelectionDropdown() {
   return ValueListenableBuilder<String>(
     valueListenable: recipientTypeNotifier,
@@ -469,6 +399,10 @@ Widget _buildFarmerSelectionDropdown() {
           ValueListenableBuilder<String?>(
             valueListenable: selectedFarmerNotifier,
             builder: (context, selectedFarmer, child) {
+              // Define your colors here
+              final fieldBgColor = Theme.of(context).cardTheme.color; // Light grey for field
+              final dropdownBgColor = Theme.of(context).cardTheme.color; // White for dropdown
+              
               return Autocomplete<Farmer>(
                 optionsBuilder: (TextEditingValue textEditingValue) {
                   if (textEditingValue.text.isEmpty) {
@@ -514,7 +448,7 @@ Widget _buildFarmerSelectionDropdown() {
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color:Theme.of(context).cardTheme.surfaceTintColor!),
+                        borderSide: BorderSide(color: Theme.of(context).cardTheme.surfaceTintColor!),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -525,7 +459,7 @@ Widget _buildFarmerSelectionDropdown() {
                         borderSide: const BorderSide(color: Colors.blue, width: 1),
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: fieldBgColor, // Use your field background color
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 16,
@@ -573,14 +507,14 @@ Widget _buildFarmerSelectionDropdown() {
                                 child: Container(
                                   padding: const EdgeInsets.all(16.0),
                                   decoration: BoxDecoration(
+                                    color: dropdownBgColor, // Use your dropdown background color
                                     border: index < options.length - 1
                                         ? Border(
                                             bottom: BorderSide(
-                                              color:Theme.of(context).cardTheme.surfaceTintColor!,
+                                              color: Theme.of(context).cardTheme.surfaceTintColor!,
                                             ),
                                           )
                                         : null,
-                                    color: Colors.white,
                                   ),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -620,6 +554,7 @@ Widget _buildFarmerSelectionDropdown() {
     },
   );
 }
+
 
 
 }

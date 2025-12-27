@@ -2,8 +2,7 @@ import 'package:flareline/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flareline/pages/products/add_product_modal.dart';
-import 'package:flareline/pages/products/product/product_bloc.dart';
-import 'package:flareline/core/theme/global_colors.dart';
+import 'package:flareline/pages/products/product/product_bloc.dart'; 
 import 'package:provider/provider.dart';
 
 class ProductFilterWidget extends StatelessWidget {

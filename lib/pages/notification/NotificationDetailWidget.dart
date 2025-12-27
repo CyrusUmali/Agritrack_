@@ -1,8 +1,6 @@
 import 'package:flareline/pages/announcement/announcements_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flareline_uikit/components/card/common_card.dart';
-import 'package:flareline_uikit/components/buttons/button_widget.dart';
-import 'package:flareline_uikit/core/theme/flareline_colors.dart';
+import 'package:flareline_uikit/components/card/common_card.dart'; 
 
 class NotificationDetailWidget extends StatelessWidget {
   final ValueNotifier<List<Announcement>> notificationsNotifier;

@@ -32,15 +32,15 @@ class _FarmMapCardState extends State<FarmMapCard> {
     super.dispose();
   }
 
-  double _calculateZoomLevel(double hectare) {
-   
-    if (hectare < 0.5) return 20.0;
-    if (hectare < 0.6) return 19.0;
-    if (hectare < 5) return 18.0;
-    if (hectare < 20) return 16.0;
-    if (hectare < 50) return 14.0;
-    return 10.0;
-  }
+double _calculateZoomLevel(double hectare) {
+  // Lower numbers = more zoomed out
+  if (hectare < 0.5) return 19.0;  // Changed from 20.0
+  if (hectare < 0.6) return 18.0;  // Changed from 19.0
+  if (hectare < 5) return 16.0;    // Changed from 18.0
+  if (hectare < 20) return 14.0;   // Changed from 16.0
+  if (hectare < 50) return 12.0;   // Changed from 14.0
+  return 8.0;                      // Changed from 10.0
+}
 
   Color _getColorForSector(String sector) {
     switch (sector) {

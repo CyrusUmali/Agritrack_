@@ -14,7 +14,6 @@ class AssocKpiCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-   
     return isMobile ? _buildMobileGrid(context) : _buildDesktopRow(context);
   }
 
@@ -49,8 +48,6 @@ class AssocKpiCards extends StatelessWidget {
   }
 
   List<Widget> _buildAllCards(BuildContext context) {
-    // Access stats from the nested object
-
     return [
       _buildKpiCard(
         context,
@@ -102,13 +99,12 @@ class AssocKpiCards extends StatelessWidget {
     required String title,
     required String value,
     required IconData icon,
-    bool isPositive = true,
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return Card(
-      elevation: 80,
+      elevation: 8,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
@@ -138,25 +134,154 @@ class AssocKpiCards extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: colorScheme.onSurface,
-              ),
-            ),
+            // Value with hover/tap functionality
+            isMobile
+                ? GestureDetector(
+                    onTap: () {
+                      _showValueDialog(context, title, value);
+                    },
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  )
+                : Tooltip(
+                    message: value,
+                    textStyle: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.white,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black87,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    preferBelow: false,
+                    waitDuration: const Duration(milliseconds: 300),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ),
             const SizedBox(height: 4),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 13,
-                color: colorScheme.onSurface.withOpacity(0.7),
-              ),
-            ),
+            // Title with hover/tap functionality
+            isMobile
+                ? GestureDetector(
+                    onTap: () {
+                      _showValueDialog(context, title, value);
+                    },
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colorScheme.onSurface.withOpacity(0.7),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  )
+                : Tooltip(
+                    message: title,
+                    textStyle: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.white,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black87,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    preferBelow: false,
+                    waitDuration: const Duration(milliseconds: 300),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colorScheme.onSurface.withOpacity(0.7),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showValueDialog(BuildContext context, String title, String value) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(16),
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

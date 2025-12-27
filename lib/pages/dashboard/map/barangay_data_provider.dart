@@ -121,16 +121,12 @@ class BarangayDataProvider extends ChangeNotifier {
 
   List<Yield> _filterYieldsByYear(List<Yield> yields, int year) {
     return yields.where((yield) {
-      if (yield.harvestDate == null) return false;
-
       DateTime harvestDate;
       if (yield.harvestDate is String) {
         harvestDate = DateTime.parse(yield.harvestDate as String);
-      } else if (yield.harvestDate is DateTime) {
-        harvestDate = yield.harvestDate as DateTime;
-      } else {
-        return false;
-      }
+      } else 
+         harvestDate = yield.harvestDate;
+    
 
       return harvestDate.year == year;
     }).toList();
@@ -151,7 +147,7 @@ class BarangayDataProvider extends ChangeNotifier {
   }
 
   void printBarangayColors() {
-    int nonZeroCount = 0;
+    // int nonZeroCount = 0;
 
     for (var barangay in _data) {
       final yield = activeProduct.isEmpty
@@ -162,23 +158,23 @@ class BarangayDataProvider extends ChangeNotifier {
         continue;
       }
 
-      final color = barangay.color;
+      // final color = barangay.color;
 
-      print('${barangay.name}:');
-      print('  - Color: ${color.toString()}');
-      print('  - HEX: #${color.value.toRadixString(16).padLeft(8, '0')}');
-      print('  - Yield: $yield');
-      print('  - Area: ${barangay.area} hectares');
-      print('  - Top Products: ${barangay.topProducts}');
-      print('  - Yield Data: ${barangay.yieldData}');
-      print('');
+      // print('${barangay.name}:');
+      // print('  - Color: ${color.toString()}');
+      // print('  - HEX: #${color.value.toRadixString(16).padLeft(8, '0')}');
+      // print('  - Yield: $yield');
+      // print('  - Area: ${barangay.area} hectares');
+      // print('  - Top Products: ${barangay.topProducts}');
+      // print('  - Yield Data: ${barangay.yieldData}');
+      // print('');
 
-      nonZeroCount++;
+      // nonZeroCount++;
     }
 
-    print('Total barangays with non-zero yield: $nonZeroCount');
-    print('Total barangays processed: ${_data.length}');
-    print('================================\n');
+    // print('Total barangays with non-zero yield: $nonZeroCount');
+    // print('Total barangays processed: ${_data.length}');
+    // print('================================\n');
   }
 
   Future<void> init() async {
@@ -201,9 +197,9 @@ class BarangayDataProvider extends ChangeNotifier {
 
       for (var _yield in filteredYields) {
         final barangay = _yield.barangay ?? 'Unknown';
-        final farmId = _yield.farmId ?? 0;
+        final farmId = _yield.farmId;
         final productName = _yield.productName ?? 'Unknown';
-        final volume = _yield.volume ?? 0.0;
+        final volume = _yield.volume;
         final hectare = _yield.hectare ?? 0.0;
 
         if (!farmAreas.containsKey(barangay)) {

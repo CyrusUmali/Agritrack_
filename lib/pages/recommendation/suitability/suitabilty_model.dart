@@ -5,27 +5,77 @@ import 'dart:convert';
 import 'package:flareline/pages/recommendation/api_uri.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+
+
+
+class AlternativeCrop {
+  final String crop;
+  final double confidence;
+  final String reason;
+  final String? imageUrl;
+  final List<String> parameterMismatches;
+  final List<String> supportingModels; // Add this field
+  final double modelAgreement; // Optional: percentage of models that recommended this
+
+  AlternativeCrop({
+    required this.crop,
+    required this.confidence,
+    required this.reason,
+    this.imageUrl,
+    required this.parameterMismatches,
+    required this.supportingModels, // Add to constructor
+    this.modelAgreement = 1.0,
+  });
+
+  factory AlternativeCrop.fromJson(Map<String, dynamic> json) {
+    return AlternativeCrop(
+      crop: json['crop'] ?? '',
+      confidence: (json['confidence'] ?? 0.0).toDouble(),
+      reason: json['reason'] ?? '',
+      imageUrl: json['image_url'],
+      parameterMismatches: (json['parameter_mismatches'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      supportingModels: (json['supporting_models'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [], // Parse from JSON
+      modelAgreement: (json['model_agreement'] ?? 1.0).toDouble(),
+    );
+  }
+}
+
+
+
 class SuitabilityModel extends ChangeNotifier {
   final LanguageProvider languageProvider;
 
   // Backend URL
-  // static const String backendUrl = 'http://localhost:3001/auth';
   static const String backendUrl = 'https://agritrack-server.onrender.com/auth';
 
   // Model selection
-  String selectedModel = 'XGBoost';
+  String selectedModel = 'Random Forest';
   String? selectedCrop;
   bool _isStreamingSuggestions = false;
 
   bool get isStreamingSuggestions => _isStreamingSuggestions;
   
   // Input parameters
-  double soil_ph = 6.2;
-  double fertility_ec = 1443;
-  double sunlight = 44844;
-  double soil_temp = 25.8;
-  double humidity = 68;
-  double soil_moisture = 63;
+  // double soil_ph = 5.9;
+  // double fertility_ec = 390;
+  // double sunlight = 1500;
+  // double soil_temp = 27.8;
+  // double humidity = 82;
+  // double soil_moisture = 80;
+
+
+    double soil_ph = 6.6;
+  double fertility_ec = 535;
+  double sunlight = 2600;
+  double soil_temp = 28.7;
+  double humidity = 75;
+  double soil_moisture = 94;
 
   // Results
   bool isLoading = false;
@@ -51,12 +101,14 @@ class SuitabilityModel extends ChangeNotifier {
       }
       return null;
     } catch (e) {
-      // print('❌ Error getting auth token: $e');
       return null;
     }
   }
 
-  Future<void> checkSuitability() async {
+  Future<void> checkSuitability({
+    bool includeAlternatives = true,
+    int numAlternatives = 6,
+  }) async {
     if (selectedCrop == null) {
       throw Exception('Please select a crop first');
     }
@@ -65,7 +117,14 @@ class SuitabilityModel extends ChangeNotifier {
     suitabilityResult = null;
     notifyListeners();
 
-    final uri = Uri.parse(ApiConstants.checkSuitability);
+    // Build query parameters
+    final queryParams = {
+      'include_alternatives': includeAlternatives.toString(),
+      'num_alternatives': numAlternatives.toString(),
+    };
+
+    final uri = Uri.parse(ApiConstants.checkSuitability)
+        .replace(queryParameters: queryParams);
 
     try {
       List<String> selectedModels = [];
@@ -90,21 +149,36 @@ class SuitabilityModel extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        suitabilityResult = data;
+        
+        // Parse alternatives if present
+        List<AlternativeCrop> alternatives = [];
+        if (data['alternatives'] != null && data['alternatives'] is List) {
+          alternatives = (data['alternatives'] as List)
+              .map((alt) => AlternativeCrop.fromJson(alt))
+              .toList();
+        }
 
+        // Add parsed alternatives to result
+        suitabilityResult = {
+          ...data,
+          'parsed_alternatives': alternatives,
+        };
+
+        // Update model accuracy display based on new confidence metrics
         if (selectedModel == 'All Models' && data['model_used'] is List) {
           final modelsUsed = (data['model_used'] as List).length;
+          final finalConf = data['final_confidence'] ?? 0.0;
+          final paramConf = data['parameter_confidence'] ?? 0.0;
           modelAccuracy =
-              'Average confidence: ${(data['confidence'] * 100).toStringAsFixed(2)}% (${modelsUsed} models)';
+              'Final: ${(finalConf * 100).toStringAsFixed(2)}% | Params: ${(paramConf * 100).toStringAsFixed(2)}% (${modelsUsed} models)';
         } else {
-          modelAccuracy =
-              'Confidence: ${(data['confidence'] * 100).toStringAsFixed(2)}%';
+          final finalConf = data['final_confidence'] ?? 0.0;
+          modelAccuracy = 'Confidence: ${(finalConf * 100).toStringAsFixed(2)}%';
         }
       } else {
         throw Exception('Failed to check suitability: ${response.statusCode}');
       }
     } catch (e) {
-      // print("❌ Error: $e");
       rethrow;
     } finally {
       isLoading = false;
@@ -116,8 +190,6 @@ class SuitabilityModel extends ChangeNotifier {
     if (selectedCrop == null) {
       throw Exception('Please select a crop first');
     }
-
-    // print('🌾 Getting suggestions for deficient params: $deficientParams');
 
     _isStreamingSuggestions = true;
     
@@ -152,16 +224,12 @@ class SuitabilityModel extends ChangeNotifier {
       if (deficiencies.isEmpty) {
         suitabilityResult = {
           ...?suitabilityResult,
-          'suggestions': ['Walang makabuluhang kakulangan sa mga napiling parameter.'],
+          'suggestions': ['No significant deficiencies in selected parameters.'],
         };
         _isStreamingSuggestions = false;
         notifyListeners();
         return;
       }
-
-      // print('📤 Sending request to backend...');
-      // print('Crop: $selectedCrop');
-      // print('Deficiencies: $deficiencies');
 
       // Call backend endpoint
       final request = http.Request(
@@ -182,18 +250,11 @@ class SuitabilityModel extends ChangeNotifier {
 
       final streamedResponse = await request.send();
 
-      // print('📡 Response status: ${streamedResponse.statusCode}');
-
       if (streamedResponse.statusCode == 200) {
-        // print('✅ Starting to receive stream...');
-        
         String buffer = '';
         final List<String> completedSuggestions = [];
-        int chunkCount = 0;
 
         await for (var chunk in streamedResponse.stream.transform(utf8.decoder)) {
-          chunkCount++;
-          
           final lines = chunk.split('\n');
           
           for (var line in lines) {
@@ -203,13 +264,10 @@ class SuitabilityModel extends ChangeNotifier {
                 final data = json.decode(jsonData);
                 
                 if (data['error'] == true) {
-                  // print('❌ Error in stream: ${data['message']}');
-                  throw Exception(data['message'] ?? 'May nangyaring error');
+                  throw Exception(data['message'] ?? 'An error occurred');
                 }
                 
                 if (data['done'] == true) {
-                  // print('✅ Stream complete. Total chunks: $chunkCount');
-                  
                   // Process any remaining buffer
                   if (buffer.trim().isNotEmpty) {
                     final cleanedBuffer = _cleanSuggestionText(buffer.trim());
@@ -254,22 +312,19 @@ class SuitabilityModel extends ChangeNotifier {
                   }
                 }
               } catch (e) {
-                print('❌ Error parsing SSE data: $e');
+                // Silent error handling for streaming chunks
               }
             }
           }
         }
       } else {
-        final responseBody = await streamedResponse.stream.bytesToString();
-        print('❌ Bad response: $responseBody');
-        throw Exception('May problema sa pagkonekta sa server (${streamedResponse.statusCode})');
+        throw Exception('Connection issue (${streamedResponse.statusCode})');
       }
 
     } catch (e) {
-      print('❌ Stream error: $e');
       suitabilityResult = {
         ...?suitabilityResult,
-        'suggestions': ['Error sa pagbuo ng mga rekomendasyon: ${e.toString()}'],
+        'suggestions': ['Error generating recommendations: ${e.toString()}'],
       };
       notifyListeners();
     } finally {
@@ -344,7 +399,7 @@ class SuitabilityModel extends ChangeNotifier {
     
     // Remove markdown formatting but keep basic structure
     cleaned = cleaned
-        .replaceAll('**', '')
+        .replaceAll('**', '') 
         .replaceAll('*', '')
         .replaceAll('__', '')
         .replaceAll('-', '')

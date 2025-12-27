@@ -112,7 +112,7 @@ class _HouseholdInfoCardState extends State<HouseholdInfoCard> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            
             widget.isEditing
                 ? EditableField(
                     label: 'Name of Spouse (if married)',
@@ -123,7 +123,7 @@ class _HouseholdInfoCardState extends State<HouseholdInfoCard> {
                 : DetailField(
                     label: 'Name of Spouse (if married)',
                     value: getValue('spouse_name')),
-            const SizedBox(height: 12),
+            
             widget.isEditing
                 ? EditableField(
                     label: "Mother's Maiden Name",
@@ -134,7 +134,7 @@ class _HouseholdInfoCardState extends State<HouseholdInfoCard> {
                 : DetailField(
                     label: "Mother's Maiden Name",
                     value: getValue('mother_maiden_name')),
-            const SizedBox(height: 12),
+            
             Row(
               children: [
                 Expanded(
@@ -163,7 +163,7 @@ class _HouseholdInfoCardState extends State<HouseholdInfoCard> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            
             Row(
               children: [
                 Expanded(

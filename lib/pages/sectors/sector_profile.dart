@@ -1,7 +1,7 @@
-import 'package:flareline/services/lanugage_extension.dart';
-import 'package:flareline_uikit/components/breaktab.dart';
+import 'package:flareline/breaktab.dart';
+import 'package:flareline/services/lanugage_extension.dart'; 
 import 'package:flareline/pages/sectors/sector_service.dart';
-import 'package:flareline/pages/test/map_widget/map_panel/polygon_modal_components/lake_yield_data_table.dart';
+import 'package:flareline/pages/map/map_widget/map_panel/polygon_modal_components/lake_yield_data_table.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flareline/pages/layout.dart';
@@ -56,11 +56,11 @@ class _SectorProfileContent extends StatefulWidget {
 class _SectorProfileContentState extends State<_SectorProfileContent> {
   late SectorService _sectorService;
   Map<String, dynamic>? _updatedSector;
-  List<Map<String, dynamic>>? _yieldDistribution;
+  List<Map<String, dynamic>>? yieldDistribution;
   bool _isLoading = false;
-  bool _isLoadingYield = false;
+  bool isLoadingYield = false;
   String? _error;
-  String? _yieldError;
+  String? yieldError;
   String _selectedLake = 'Sampaloc Lake'; // Default selected lake
 
   static const List<String> _lakes = [
@@ -85,8 +85,8 @@ class _SectorProfileContentState extends State<_SectorProfileContent> {
     if (widget.sector['id'] == null) return;
 
     setState(() {
-      _isLoadingYield = true;
-      _yieldError = null;
+      isLoadingYield = true;
+      yieldError = null;
     });
 
     try {
@@ -96,13 +96,13 @@ class _SectorProfileContentState extends State<_SectorProfileContent> {
         // year: 2023,
       );
       setState(() {
-        _yieldDistribution = distribution;
-        _isLoadingYield = false;
+        yieldDistribution = distribution;
+        isLoadingYield = false;
       });
     } catch (e) {
       setState(() {
-        _yieldError = e.toString();
-        _isLoadingYield = false;
+        yieldError = e.toString();
+        isLoadingYield = false;
       });
     }
   }

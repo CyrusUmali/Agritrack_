@@ -48,10 +48,10 @@ class LineChartWidget extends BaseWidget<LineChartProvider> {
               annotations: [
                 CartesianChartAnnotation(
                   widget: Container(
-                    child: Column(
+                    child: const Column(
                       children: [
                         Icon(Icons.info, color: Colors.red, size: 20),
-                        Text('Drought', style: TextStyle(fontSize: 10)),
+                        Text('Drought', style: const TextStyle(fontSize: 10)),
                       ],
                     ),
                   ),
@@ -88,12 +88,12 @@ class LineChartWidget extends BaseWidget<LineChartProvider> {
                     int pointIndex, int seriesIndex) {
                   final note = series.dataSource[pointIndex]['note'];
                   return Container(
-                    padding: EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(4),
                       boxShadow: [
-                        BoxShadow(color: Colors.black12, blurRadius: 4)
+                        const BoxShadow(color: Colors.black12, blurRadius: 4)
                       ],
                     ),
                     child: Column(
@@ -101,7 +101,7 @@ class LineChartWidget extends BaseWidget<LineChartProvider> {
                       children: [
                         Text('${data['x']}: ${data['y']}'),
                         if (note != null)
-                          Text(note, style: TextStyle(fontSize: 12)),
+                          Text(note, style: const TextStyle(fontSize: 12)),
                       ],
                     ),
                   );
@@ -261,7 +261,7 @@ class LineChartWidget extends BaseWidget<LineChartProvider> {
           }
           return item['color'];
         },
-        dataLabelSettings: DataLabelSettings(
+        dataLabelSettings: const DataLabelSettings(
           isVisible: false, // We'll use tooltips instead
         ),
         onPointTap: (ChartPointDetails details) {
@@ -289,14 +289,14 @@ class LineChartWidget extends BaseWidget<LineChartProvider> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Value: $y"),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text("Note: $note"),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("OK"),
+            child: const Text("OK"),
           ),
         ],
       ),

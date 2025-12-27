@@ -1,10 +1,9 @@
 import 'package:flareline/core/theme/global_colors.dart';
 import 'package:flareline/pages/farmers/farmer/farmer_bloc.dart';
-import 'package:flareline/pages/test/map_widget/stored_polygons.dart';
+import 'package:flareline/pages/map/map_widget/stored_polygons.dart';
 import 'package:flareline/pages/widget/combo_box.dart';
 import 'package:flareline/providers/user_provider.dart';
-import 'package:flareline_uikit/components/forms/outborder_text_form_field.dart';
-import 'package:flareline_uikit/core/theme/flareline_colors.dart';
+import 'package:flareline_uikit/components/forms/outborder_text_form_field.dart'; 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -664,7 +663,7 @@ class _FarmInfoCardState extends State<FarmInfoCard> {
                               ),
                           ],
                         )
-                      : Container(
+                      : SizedBox(
                           width: double.infinity,
                           child: Wrap(
                             alignment: WrapAlignment.center,

@@ -353,8 +353,7 @@ class _AdditionalWeatherInfo extends StatelessWidget {
   const _AdditionalWeatherInfo({required this.weatherData});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget build(BuildContext context) { 
     final isSmallScreen = MediaQuery.of(context).size.width < 600;
 
     return Row(
@@ -409,7 +408,7 @@ class _WeatherStatItem extends StatelessWidget {
         Text(
           value,
           style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
+            // fontWeight: FontWeight.w500,
             fontSize: isSmallScreen ? 12 : 12,
           ),
         ),

@@ -2,12 +2,12 @@ import 'package:flareline/core/models/yield_model.dart';
 import 'package:flareline/core/theme/global_colors.dart';
 import 'package:flareline/pages/reports/export_utils.dart';
 import 'package:flareline/pages/sectors/sector_service.dart';
-import 'package:flareline/pages/test/map_widget/map_panel/barangay_bar_chart.dart';
-import 'package:flareline/pages/test/map_widget/map_panel/polygon_modal_components/barangay_yield_line_chart.dart';
-import 'package:flareline/pages/test/map_widget/map_panel/polygon_modal_components/barangay_yield_pie_chart.dart';
-import 'package:flareline/pages/test/map_widget/map_panel/polygon_modal_components/monthly_data_table.dart';
-import 'package:flareline/pages/test/map_widget/map_panel/polygon_modal_components/product_selection_card.dart';
-import 'package:flareline/pages/test/map_widget/map_panel/polygon_modal_components/yearly_data_table.dart';
+import 'package:flareline/pages/map/map_widget/map_panel/barangay_bar_chart.dart';
+import 'package:flareline/pages/map/map_widget/map_panel/polygon_modal_components/barangay_yield_line_chart.dart';
+import 'package:flareline/pages/map/map_widget/map_panel/polygon_modal_components/barangay_yield_pie_chart.dart';
+import 'package:flareline/pages/map/map_widget/map_panel/polygon_modal_components/monthly_data_table.dart';
+import 'package:flareline/pages/map/map_widget/map_panel/polygon_modal_components/product_selection_card.dart';
+import 'package:flareline/pages/map/map_widget/map_panel/polygon_modal_components/yearly_data_table.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,7 +39,6 @@ class _SectorYieldDataTableState extends State<SectorYieldDataTable> {
   OverlayEntry? _loadingOverlay;
 
   bool _showPieByVolume = true;
-  bool _showPieChartToggle = true;
 
   @override
   void initState() {
@@ -48,51 +47,66 @@ class _SectorYieldDataTableState extends State<SectorYieldDataTable> {
     _loadYieldData();
   }
 
-  void _showLoadingDialog(String message) {
-    setState(() {
-      _isExporting = true;
-    });
 
-    _loadingOverlay = OverlayEntry(
-      builder: (context) => Container(
-        color: Colors.black54,
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
+
+
+void _showLoadingDialog(String message, {VoidCallback? onCancel}) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => WillPopScope(
+      onWillPop: () async => false, // Prevent back button dismiss
+      child: AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(strokeWidth: 3),
+            const SizedBox(height: 20),
+            Text(
+              message,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              textAlign: TextAlign.center,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 16),
-                Text(message),
-              ],
+            const SizedBox(height: 8),
+            const Text(
+              'This may take a moment...',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+              textAlign: TextAlign.center,
             ),
-          ),
+            if (onCancel != null) ...[
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () {
+                  onCancel();
+                  Navigator.of(context).pop();
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                ),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ],
         ),
       ),
-    );
+    ),
+  );
+}
 
-    Overlay.of(context).insert(_loadingOverlay!);
+void _closeLoadingDialog() {
+  if (Navigator.of(context).canPop()) {
+    Navigator.of(context).pop();
   }
+}
 
-  void _closeLoadingDialog() {
-    _loadingOverlay?.remove();
-    _loadingOverlay = null;
-    setState(() {
-      _isExporting = false;
-    });
-  }
 
   Future<void> _exportData({bool isPDF = false}) async {
     if (isPDF) {
       await YieldExportUtils.exportYieldDataToPDF(
         context: context,
         yields: _yields,
-        polygonName: widget.sectorName ?? 'Unknown',
+        polygonName: widget.sectorName,
         selectedProduct: _selectedProduct,
         isMonthlyView: _showMonthlyData,
         selectedYear: selectedYear,
@@ -103,7 +117,7 @@ class _SectorYieldDataTableState extends State<SectorYieldDataTable> {
       await YieldExportUtils.exportYieldDataToExcel(
         context: context,
         yields: _yields,
-        polygonName: widget.sectorName ?? 'Unknown',
+        polygonName: widget.sectorName,
         selectedProduct: _selectedProduct,
         isMonthlyView: _showMonthlyData,
         selectedYear: selectedYear,
@@ -176,13 +190,13 @@ class _SectorYieldDataTableState extends State<SectorYieldDataTable> {
       final yearGroups = <int, List<Yield>>{};
 
       for (final yield in _yields.where((y) => y.productName == product)) {
-        final year = yield.harvestDate?.year ?? DateTime.now().year;
+        final year = yield.harvestDate.year;
         yearGroups.putIfAbsent(year, () => []).add(yield);
       }
 
       for (final entry in yearGroups.entries) {
         final totalVolume = entry.value
-            .fold<double>(0, (sum, yield) => sum + (yield.volume ?? 0));
+            .fold<double>(0, (sum, yield) => sum + (yield.volume));
         // final totalAreaHarvested = entry.value
         //     .fold<double>(0, (sum, yield) => sum + (yield.areaHarvested ?? 0));
 
@@ -228,16 +242,17 @@ class _SectorYieldDataTableState extends State<SectorYieldDataTable> {
     }
 
     final relevantYields = _yields.where((yield) {
-      final yieldYear = yield.harvestDate?.year ?? DateTime.now().year;
+      final yieldYear = yield.harvestDate.year
+      ;
       return yield.productName == product && yieldYear == year;
     });
 
     for (final yield in relevantYields) {
-      final month = yield.harvestDate?.month ?? 1;
+      final month = yield.harvestDate.month;
       final monthName = monthNames[month - 1];
 
       monthlyData[monthName]!['volume'] =
-          (monthlyData[monthName]!['volume'] ?? 0) + (yield.volume ?? 0);
+          (monthlyData[monthName]!['volume'] ?? 0) + (yield.volume);
 
       if (yield.sectorId != 4) {
         monthlyData[monthName]!['areaHarvested'] =
@@ -853,7 +868,7 @@ class _SectorYieldDataTableState extends State<SectorYieldDataTable> {
           controller: scrollController,
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
-          child: Container(
+          child: SizedBox(
             width: _showMonthlyData ? 800 : 600,
             child: chartWidget,
           ),

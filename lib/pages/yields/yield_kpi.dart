@@ -1,6 +1,8 @@
+import 'package:flareline_uikit/service/year_picker_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flareline_uikit/components/card/common_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
 import 'package:iconify_flutter_plus/icons/mdi.dart';
@@ -9,12 +11,12 @@ import 'package:flareline/services/lanugage_extension.dart';
 import 'package:flareline/pages/sectors/sector_service.dart';
 
 class YieldKpi extends StatefulWidget {
-  final int selectedYear; // Add selectedYear as a required parameter
+  final int selectedYear;
   final int? farmerId;
   const YieldKpi(
       {super.key,
       required this.selectedYear,
-      this.farmerId}); // Update constructor
+      this.farmerId});
 
   @override
   State<YieldKpi> createState() => _YieldKpiState();
@@ -31,8 +33,37 @@ class _YieldKpiState extends State<YieldKpi> {
     _fetchYieldStatistics();
   }
 
+
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Listen for year changes and refresh data
+    final yearProvider =
+        Provider.of<YearPickerProvider>(context, listen: false);
+    yearProvider.addListener(_fetchYieldStatistics);
+  }
+
+  @override
+  void dispose() { 
+    // Clean up the listener
+    final yearProvider =
+        Provider.of<YearPickerProvider>(context, listen: false);
+    yearProvider.removeListener(_fetchYieldStatistics);
+    super.dispose();
+  }
+
+
+
+
+
+
   Future<void> _fetchYieldStatistics() async {
     final sectorService = RepositoryProvider.of<SectorService>(context);
+    
+    final yearProvider =
+        Provider.of<YearPickerProvider>(context, listen: false);
+    final selectedYear = yearProvider.selectedYear;
 
     setState(() {
       _isLoading = true;
@@ -40,9 +71,8 @@ class _YieldKpiState extends State<YieldKpi> {
     });
 
     try {
-      // Pass both selectedYear and farmerId (if available) to fetchYieldStatistics
       final stats = await sectorService.fetchYieldStatistics(
-        year: widget.selectedYear,
+        year: selectedYear,
         farmerId: widget.farmerId,
       );
 
@@ -73,7 +103,6 @@ class _YieldKpiState extends State<YieldKpi> {
 
   Widget _buildErrorLayout(
       BuildContext context, String error, VoidCallback onRetry) {
-    // Determine the error message based on the error type
     String errorMessage;
     if (error.contains('timeout') || error.contains('network')) {
       errorMessage =
@@ -126,13 +155,7 @@ class _YieldKpiState extends State<YieldKpi> {
                   context,
                   const Iconify(Mdi.weight, color: Colors.deepPurple),
                   '${_yieldStats?['totalYield'] ?? '0'}kg',
-                
-
                   context.translate('Total Yield'),
-
-                 
-                              
-
                   DeviceScreenType.desktop,
                   Colors.deepPurple[50]!,
                 ),
@@ -145,9 +168,7 @@ class _YieldKpiState extends State<YieldKpi> {
                   context,
                   const Iconify(Mdi.sack, color: Colors.teal),
                   _yieldStats?['averageYieldPerHectare'] ?? '0 t/ha',
-                
-                context.translate('Avg. per Hectare'),
-
+                  context.translate('Avg. per Hectare'),
                   DeviceScreenType.desktop,
                   Colors.teal[50]!,
                 ),
@@ -160,10 +181,7 @@ class _YieldKpiState extends State<YieldKpi> {
                   context,
                   const Iconify(Mdi.rice, color: Colors.orange),
                   '${_yieldStats?['topCrop']?['volume'] ?? '0'} kg ${_yieldStats?['topCrop']?['product'] ?? '-'}',
-
                   context.translate('Top Crop'),
-
-
                   DeviceScreenType.desktop,
                   Colors.orange[50]!,
                 ),
@@ -176,9 +194,7 @@ class _YieldKpiState extends State<YieldKpi> {
                   context,
                   const Iconify(Mdi.calendar_check, color: Colors.blue),
                   '${_yieldStats?['thisMonthYield'] ?? '0'}kg',
-              
-                context.translate('This Month') ,
-
+                  context.translate('This Month'),
                   DeviceScreenType.desktop,
                   Colors.blue[50]!,
                 ),
@@ -202,9 +218,7 @@ class _YieldKpiState extends State<YieldKpi> {
                 context,
                 const Iconify(Mdi.weight, color: Colors.deepPurple),
                 '${_yieldStats?['totalYield'] ?? '0'}kg',
-              
-                                  context.translate('Total Yield'),
-
+                context.translate('Total Yield'),
                 DeviceScreenType.mobile,
                 Colors.deepPurple[50]!,
               ),
@@ -214,10 +228,7 @@ class _YieldKpiState extends State<YieldKpi> {
                 context,
                 const Iconify(Mdi.sack, color: Colors.teal),
                 _yieldStats?['averageYieldPerHectare'] ?? '0 t/ha',
-              
                 context.translate('Avg. per Hectare'),
-
-
                 DeviceScreenType.mobile,
                 Colors.teal[50]!,
               ),
@@ -227,10 +238,8 @@ class _YieldKpiState extends State<YieldKpi> {
                 context,
                 const Iconify(Mdi.rice, color: Colors.orange),
                 '${_yieldStats?['topCrop']?['volume'] ?? '0'} kg ${_yieldStats?['topCrop']?['product'] ?? '-'}',
-              
-                  context.translate('Top Crop'),
-
-                DeviceScreenType.desktop,
+                context.translate('Top Crop'),
+                DeviceScreenType.mobile,
                 Colors.orange[50]!,
               ),
         _isLoading
@@ -239,10 +248,7 @@ class _YieldKpiState extends State<YieldKpi> {
                 context,
                 const Iconify(Mdi.calendar_check, color: Colors.blue),
                 '${_yieldStats?['thisMonthYield'] ?? '0'}kg',
-              
-                context.translate('This Month') 
-                
-                 ,
+                context.translate('This Month'),
                 DeviceScreenType.mobile,
                 Colors.blue[50]!,
               ),
@@ -260,7 +266,6 @@ class _YieldKpiState extends State<YieldKpi> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Shimmer Icon
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
@@ -271,7 +276,6 @@ class _YieldKpiState extends State<YieldKpi> {
               height: 40,
             ),
             const SizedBox(width: 12),
-            // Shimmer Content
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -314,7 +318,6 @@ class _YieldKpiState extends State<YieldKpi> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Icon Column
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
@@ -324,8 +327,6 @@ class _YieldKpiState extends State<YieldKpi> {
               child: icon,
             ),
             const SizedBox(width: 12),
-
-            // Content Column
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -341,26 +342,108 @@ class _YieldKpiState extends State<YieldKpi> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  // Modified this part to handle overflow better
-                  SizedBox(
-                    width: double.infinity, // Take full available width
-                    child: Text(
-                      value,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1, // Allow up to 2 lines before ellipsis
-                      style: TextStyle(
-                        fontSize: isDesktop ? 18 : 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ),
+                  // Tap to show full value on mobile, hover tooltip on desktop
+                  isDesktop
+                      ? Tooltip(
+                          message: value,
+                          textStyle: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.white,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black87,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          preferBelow: false,
+                          waitDuration: const Duration(milliseconds: 300),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              value,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ),
+                        )
+                      : GestureDetector(
+                          onTap: () {
+                            _showValueDialog(context, title, value);
+                          },
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              value,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ),
+                        ),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showValueDialog(BuildContext context, String title, String value) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(16),
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

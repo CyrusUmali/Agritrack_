@@ -12,11 +12,17 @@ class ChartAnnotationManager {
   Map<int, int> annotationIndexToId = {}; // Map annotation index to database ID
   final Function(VoidCallback) setState;
   late BuildContext _context;
+  bool _isContextSet = false;
 
   ChartAnnotationManager({required this.setState});
 
   void setContext(BuildContext context) {
     _context = context;
+    _isContextSet = true;
+  } 
+
+  bool isContextSet() {
+    return _isContextSet;
   }
 
   void handleChartTap(
@@ -93,16 +99,8 @@ class ChartAnnotationManager {
           'verticalAlignment': 'far',
         });
 
-        print("Raw API Response: ${response.toString()}");
-
-        // Enhanced null checking and response validation
-        if (response == null) {
-          throw Exception("API returned null");
-        }
-
         // Check if response has the expected structure
-        if (response is Map<String, dynamic> &&
-            response['success'] == true &&
+        if (response['success'] == true &&
             response.containsKey('annotation')) {
           final annotationData = response['annotation'] as Map<String, dynamic>;
           final databaseId =
@@ -139,6 +137,7 @@ class ChartAnnotationManager {
               'Annotation saved successfully', _context);
         } else {
           // More detailed error message
+          // ignore: unnecessary_type_check
           final errorMsg = response is Map
               ? 'Invalid response structure: ${response.keys.join(', ')}'
               : 'Invalid response type: ${response.runtimeType}';
@@ -345,7 +344,6 @@ class ChartAnnotationManager {
         return _extractFromContainer(widget);
       }
     } catch (e) {
-      print('Error extracting text from widget: $e');
     }
     return '';
   }
@@ -378,10 +376,10 @@ class ChartAnnotationManager {
         customAnnotations.clear();
         annotationIndexToId.clear();
 
-        customAnnotations = annotations?.asMap().entries.map((entry) {
+        customAnnotations = annotations.asMap().entries.map((entry) {
               final index = entry.key;
               final ann = entry.value;
-              final databaseId = ann?['id'] as int?; // Get the database ID
+              final databaseId = ann['id'] as int?; // Get the database ID
 
               if (databaseId != null) {
                 annotationIndexToId[index] = databaseId; // Store the mapping
@@ -389,21 +387,20 @@ class ChartAnnotationManager {
 
               return chart.CartesianChartAnnotation(
                 widget: _buildAnnotationWidget(
-                  ann?['text'] ?? '',
+                  ann['text'] ?? '',
                   index, // Use the list index
-                  ann?['value'] ?? 0,
+                  ann['value'] ?? 0,
                 ),
-                x: ann?['year'] ?? '',
-                y: ann?['value'] ?? 0,
+                x: ann['year'] ?? '',
+                y: ann['value'] ?? 0,
                 coordinateUnit: chart.CoordinateUnit.point,
                 horizontalAlignment: chart.ChartAlignment.near,
                 verticalAlignment: chart.ChartAlignment.far,
               );
-            })?.toList() ??
-            [];
+            }).toList();
       });
     } catch (e) {
-      ToastHelper.showErrorToast('Failed to load annotations', _context);
+      // ToastHelper.showErrorToast('Failed to load annotations', _context);
       debugPrint('Error loading annotations: $e');
     }
   }

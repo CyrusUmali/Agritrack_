@@ -1,6 +1,7 @@
+import 'package:flareline/breaktab.dart';
 import 'package:flareline/pages/toast/toast_helper.dart';
 import 'package:flareline/providers/user_provider.dart';
-import 'package:flareline/services/lanugage_extension.dart';
+import 'package:flareline/services/lanugage_extension.dart'; 
 import 'package:flutter/material.dart'; 
 import 'package:flareline_uikit/components/buttons/button_widget.dart';
 import 'package:flareline_uikit/components/card/common_card.dart';
@@ -29,6 +30,20 @@ class ContactUsPage extends LayoutWidget {
     return 'Contact Support';
   }
 
+ @override
+  List<BreadcrumbItem> breakTabBreadcrumbs(BuildContext context) {
+    return [
+      BreadcrumbItem(context.translate('Dashboard'), '/'), 
+    ];
+  }
+ 
+  @override
+  bool get showBreadcrumbsOnlyOnDesktop => true; // Show only on desktop
+
+
+
+  
+ 
   
     @override
   EdgeInsetsGeometry? get customPadding => const EdgeInsets.all(9);

@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flareline_uikit/components/tables/table_widget.dart';
 import 'package:flareline_uikit/entity/table_data_entity.dart';
 import 'package:responsive_builder/responsive_builder.dart';
-import 'package:collection/collection.dart';
-import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+import 'package:collection/collection.dart'; 
 
 class ReportPreview extends StatefulWidget {
   final List<Map<String, dynamic>> reportData;
@@ -97,8 +96,8 @@ class ReportDataTable extends StatefulWidget {
     required this.reportData,
     required this.selectedColumns,
     required this.onDeleteSelected,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<ReportDataTable> createState() => _ReportDataTableState();
@@ -204,8 +203,8 @@ class _ReportTableWidget extends TableWidget<ReportTableViewModel> {
     required this.sortAscending,
     required this.onSort,
     required this.onDeleteSelected,
-    Key? key,
-  }) : super(key: key);
+     super.key,
+  });
 
   @override
   bool get showCheckboxColumn => true;

@@ -1,9 +1,7 @@
 import 'package:flareline/pages/sectors/sector_service.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flareline/pages/assoc/assoc_bloc/assocs_bloc.dart';
+import 'package:flutter/foundation.dart'; 
 import 'package:flareline/pages/auth/sign_up/sign_up_provider.dart';
-import 'package:flareline/pages/auth/sign_up/sign_up_forms.dart';
-import 'package:flareline/pages/test/map_widget/stored_polygons.dart';
+import 'package:flareline/pages/auth/sign_up/sign_up_forms.dart'; 
 import 'package:flutter/material.dart';
 import 'package:flareline_uikit/core/mvvm/base_widget.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -174,7 +172,7 @@ class SignUpWidget extends BaseWidget<SignUpProvider> {
  
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20.0),
-      child: Container(
+      child: SizedBox(
         height: isMobile ? 300 : 120,
         child: Stepper(
           currentStep: viewModel.currentStep,
@@ -324,7 +322,7 @@ class SignUpWidget extends BaseWidget<SignUpProvider> {
                                   Text(
                                     "1. Your registration details have been submitted\n"
                                     "2. DA personnel will review your information\n"
-                                    "3. You'll receive an SMS/email once approved\n"
+                                    "3. You'll receive an email once approved\n"
                                     "4. This process typically takes 1-2 business days",
                                     style: TextStyle(
                                       fontSize: isMobile ? 14 : 15,

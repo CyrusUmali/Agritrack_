@@ -1,4 +1,4 @@
-import 'package:flareline/components/charts/map_chart.dart';
+ 
 import 'package:flareline/core/models/farmer_model.dart';
 import 'package:flareline/core/theme/global_colors.dart';
 import 'package:flareline/pages/dashboard/map_widget.dart';
@@ -165,13 +165,13 @@ class AnalyticsWidget extends StatelessWidget {
             child: _buildEmptyStateContent(title, subtitle, icon, onRetry),
           ),
         ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 200,
-          child: CommonCard(
-            child: const MapMiniView(),
-          ),
-        ),
+        // const SizedBox(height: 16),
+        // SizedBox(
+        //   height: 200,
+        //   child: CommonCard(
+        //     child: const MapMiniView(),
+        //   ),
+        // ),
         const SizedBox(height: 16),
         SizedBox(
           height: 280,

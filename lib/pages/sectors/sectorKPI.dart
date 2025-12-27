@@ -1,3 +1,6 @@
+// ignore: file_names
+// ignore_for_file: file_names
+
 import 'package:flareline_uikit/service/year_picker_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flareline_uikit/components/card/common_card.dart';
@@ -361,22 +364,108 @@ class _SectorKpiState extends State<SectorKpi> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    value,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    style: TextStyle(
-                      fontSize: isDesktop ? 18 : 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
-                    ),
-                  ),
+                  // Tap to show full value on mobile, hover tooltip on desktop
+                  isDesktop
+                      ? Tooltip(
+                          message: value,
+                          textStyle: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.white,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black87,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          preferBelow: false,
+                          waitDuration: const Duration(milliseconds: 300),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              value,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ),
+                        )
+                      : GestureDetector(
+                          onTap: () {
+                            _showValueDialog(context, title, value);
+                          },
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              value,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ),
+                        ),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showValueDialog(BuildContext context, String title, String value) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(16),
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

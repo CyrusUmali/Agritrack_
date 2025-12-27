@@ -3,6 +3,7 @@ import 'package:flareline_uikit/components/card/common_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:flareline/pages/sectors/sector_service.dart';
+import 'package:flareline/services/lanugage_extension.dart';
 
 class FarmerKpi extends StatefulWidget {
   const FarmerKpi({super.key});
@@ -112,7 +113,7 @@ class _FarmerKpiState extends State<FarmerKpi> {
                   context,
                   Icons.people_outline,
                   '${_farmerStats?['totalFarmers'] ?? '0'}',
-                  'Total Farmers',
+                  context.translate('Total Farmers'),
                   DeviceScreenType.desktop,
                   Colors.blue[50]!,
                 ),
@@ -125,7 +126,7 @@ class _FarmerKpiState extends State<FarmerKpi> {
                   context,
                   Icons.work_outline,
                   '${_farmerStats?['activeFarmers'] ?? '0'}',
-                  'Active Farmers',
+                  context.translate('Active Farmers'),
                   DeviceScreenType.desktop,
                   Colors.green[50]!,
                 ),
@@ -138,7 +139,7 @@ class _FarmerKpiState extends State<FarmerKpi> {
                   context,
                   Icons.person_off_outlined,
                   '${_farmerStats?['unregisteredFarmers'] ?? '0'}',
-                  'Unregistered Farmers',
+                  context.translate('Unregistered Farmers'),
                   DeviceScreenType.desktop,
                   Colors.orange[50]!,
                 ),
@@ -151,7 +152,7 @@ class _FarmerKpiState extends State<FarmerKpi> {
                   context,
                   Icons.how_to_reg,
                   '${_farmerStats?['registeredFarmers'] ?? '0'}',
-                  'Registered Farmers',
+                  context.translate('Registered Farmers'),
                   DeviceScreenType.desktop,
                   Colors.purple[50]!,
                 ),
@@ -175,7 +176,7 @@ class _FarmerKpiState extends State<FarmerKpi> {
                 context,
                 Icons.people_outline,
                 '${_farmerStats?['totalFarmers'] ?? '0'}',
-                'Total Farmers',
+                context.translate('Total Farmers'),
                 DeviceScreenType.mobile,
                 Colors.blue[50]!,
               ),
@@ -185,7 +186,7 @@ class _FarmerKpiState extends State<FarmerKpi> {
                 context,
                 Icons.work_outline,
                 '${_farmerStats?['activeFarmers'] ?? '0'}',
-                'Active Farmers',
+                context.translate('Active Farmers'),
                 DeviceScreenType.mobile,
                 Colors.green[50]!,
               ),
@@ -195,7 +196,7 @@ class _FarmerKpiState extends State<FarmerKpi> {
                 context,
                 Icons.person_off_outlined,
                 '${_farmerStats?['unregisteredFarmers'] ?? '0'}',
-                'Unregistered Farmers',
+                context.translate('Unregistered Farmers'),
                 DeviceScreenType.mobile,
                 Colors.orange[50]!,
               ),
@@ -205,7 +206,7 @@ class _FarmerKpiState extends State<FarmerKpi> {
                 context,
                 Icons.how_to_reg,
                 '${_farmerStats?['registeredFarmers'] ?? '0'}',
-                'Registered Farmers',
+                context.translate('Registered Farmers'),
                 DeviceScreenType.mobile,
                 Colors.purple[50]!,
               ),
@@ -304,16 +305,56 @@ class _FarmerKpiState extends State<FarmerKpi> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    value,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    style: TextStyle(
-                      fontSize: isDesktop ? 18 : 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
-                    ),
-                  ),
+                  // Tap to show full value on mobile, hover tooltip on desktop
+                  isDesktop
+                      ? Tooltip(
+                          message: value,
+                          textStyle: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.white,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black87,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          preferBelow: false,
+                          waitDuration: const Duration(milliseconds: 300),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              value,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ),
+                        )
+                      : GestureDetector(
+                          onTap: () {
+                            _showValueDialog(context, title, value);
+                          },
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              value,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ),
+                        ),
                 ],
               ),
             ),
@@ -329,5 +370,51 @@ class _FarmerKpiState extends State<FarmerKpi> {
     if (bgColor == Colors.orange[50]) return Colors.orange;
     if (bgColor == Colors.purple[50]) return Colors.purple;
     return Colors.black;
+  }
+
+  void _showValueDialog(BuildContext context, String title, String value) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(16),
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }

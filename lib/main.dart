@@ -4,7 +4,7 @@ import 'package:flareline/pages/dashboard/yield_service.dart';
 import 'package:flareline/pages/farmers/farmer/farmer_bloc.dart';
 import 'package:flareline/pages/farms/farm_bloc/farm_bloc.dart';
 import 'package:flareline/pages/products/product/product_bloc.dart';
-import 'package:flareline/pages/test/map_widget/farm_service.dart';
+import 'package:flareline/pages/map/map_widget/farm_service.dart';
 import 'package:flareline/pages/users/user_bloc/user_bloc.dart';
 import 'package:flareline/pages/yields/yield_bloc/yield_bloc.dart';
 import 'package:flareline/providers/language_provider.dart';
@@ -22,8 +22,7 @@ import 'package:flareline/routes.dart';
 import 'package:flareline_uikit/service/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flareline/flutter_gen/app_localizations.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; 
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:provider/provider.dart';
@@ -165,12 +164,7 @@ class MyApp extends StatelessWidget {
         final RouteObserver<PageRoute> routeObserver =
             RouteObserver<PageRoute>();
 
-        FirebaseAuth.instance.authStateChanges().listen((User? user) {
-          if (user == null) {
-            RouteConfiguration.navigatorKey.currentState
-                ?.pushReplacementNamed('/signIn');
-          }
-        });
+  
 
         return MaterialApp(
           navigatorObservers: [routeObserver],
@@ -190,11 +184,15 @@ class MyApp extends StatelessWidget {
           theme: GlobalTheme.lightThemeData,
           darkTheme: GlobalTheme.darkThemeData,
           builder: (context, widget) {
+            // Show blank screen during initial navigation
+            if (widget == null) {
+              return const Scaffold(body: SizedBox.shrink());
+            }
             return ToastificationWrapper(
               child: MediaQuery(
                 data: MediaQuery.of(context)
                     .copyWith(textScaler: TextScaler.noScaling),
-                child: widget!,
+                child: widget,
               ),
             );
           },
@@ -203,4 +201,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
- 

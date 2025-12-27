@@ -78,8 +78,8 @@ Map<String, List<SectorData>> buildSectorDataFromYields(List<Yield> yields) {
     // Group yields by product and aggregate by year
     for (final yield in sectorYields) {
       final productName = yield.productName ?? 'Unknown';
-      final year = yield.harvestDate?.year.toString() ?? '2023';
-      final volume = yield.volume ?? 0;
+      final year = yield.harvestDate.year.toString();
+      final volume = yield.volume;
 
       // Initialize product map if not exists
       if (!productsMap.containsKey(productName)) {
@@ -127,3 +127,5 @@ Map<String, List<SectorData>> buildSectorDataFromYields(List<Yield> yields) {
 
   return sectorMap;
 }
+
+

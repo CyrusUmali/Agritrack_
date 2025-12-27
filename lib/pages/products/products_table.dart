@@ -31,34 +31,32 @@ class ProductsTable extends StatelessWidget {
   }
 
   Widget _productsWeb(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
 
-  final screenHeight = MediaQuery.of(context).size.height;
-   
-  double height;
+    double height;
 
-
-if (screenHeight < 400) {
-    height = screenHeight * 0.7; // 70% for very small screens (old phones)
-    // print('📏 Using SMALL screen height: 70% ($height)');
-  } else if (screenHeight < 600) {
-    height = screenHeight * 0.65; // 65% for small screens
-    // print('📏 Using MEDIUM-SMALL screen height: 65% ($height)');
-  } else if (screenHeight < 800) {
-    height = screenHeight * 0.7; // 75% for medium screens (most phones)
-    // print('📏 Using MEDIUM screen height: 75% ($height)');
-  } else if (screenHeight < 1000) {
-    height = screenHeight * 0.75; // 70% for large phones/tablets
-    // print('📏 Using LARGE screen height: 70% ($height)');
-  } else if (screenHeight < 1200) {
-    height = screenHeight * 0.6; // 60% for small tablets
-    // print('📏 Using TABLET screen height: 60% ($height)');
-  } else if (screenHeight < 1600) {
-    height = screenHeight * 0.5; // 50% for medium tablets
-    // print('📏 Using LARGE TABLET screen height: 50% ($height)');
-  } else {
-    height = screenHeight * 0.4; // 40% for desktop/large screens
-    // print('📏 Using DESKTOP screen height: 40% ($height)');
-  }
+    if (screenHeight < 400) {
+      height = screenHeight * 0.7; // 70% for very small screens (old phones)
+      // print('📏 Using SMALL screen height: 70% ($height)');
+    } else if (screenHeight < 600) {
+      height = screenHeight * 0.65; // 65% for small screens
+      // print('📏 Using MEDIUM-SMALL screen height: 65% ($height)');
+    } else if (screenHeight < 800) {
+      height = screenHeight * 0.7; // 75% for medium screens (most phones)
+      // print('📏 Using MEDIUM screen height: 75% ($height)');
+    } else if (screenHeight < 1000) {
+      height = screenHeight * 0.75; // 70% for large phones/tablets
+      // print('📏 Using LARGE screen height: 70% ($height)');
+    } else if (screenHeight < 1200) {
+      height = screenHeight * 0.6; // 60% for small tablets
+      // print('📏 Using TABLET screen height: 60% ($height)');
+    } else if (screenHeight < 1600) {
+      height = screenHeight * 0.5; // 50% for medium tablets
+      // print('📏 Using LARGE TABLET screen height: 50% ($height)');
+    } else {
+      height = screenHeight * 0.4; // 40% for desktop/large screens
+      // print('📏 Using DESKTOP screen height: 40% ($height)');
+    }
 
     return BlocListener<ProductBloc, ProductState>(
       listenWhen: (previous, current) {
@@ -83,7 +81,6 @@ if (screenHeight < 400) {
         // height: 600,
         height: height,
         // height: MediaQuery.of(context).size.height * 0.80,
-
 
         child: Column(
           children: [
@@ -131,28 +128,19 @@ if (screenHeight < 400) {
   }
 
   Widget _productsMobile(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
 
+    double height;
 
-
-      final screenHeight = MediaQuery.of(context).size.height;
-   
- double height;
- 
- 
-if (screenHeight < 400) {
-  height = screenHeight * 0.6;  
- 
-} else if (screenHeight < 600) {
-  height = screenHeight * 0.50;    
-} else if (screenHeight < 800) {
-  height = screenHeight * 0.70;    
-} else if (screenHeight < 1000) {
-  height = screenHeight * 0.73;    
-}  else {
-  height = screenHeight * 0.3;    
-}
-
-
+    if (screenHeight < 400) {
+      height = screenHeight * 0.6;
+    } else if (screenHeight < 600) { 
+      height = screenHeight * 0.50;
+    } else if (screenHeight < 800) {
+      height = screenHeight * 0.70;
+    } else {
+      height = screenHeight * 0.73;
+    }  
 
     return BlocListener<ProductBloc, ProductState>(
       listener: (context, state) {
@@ -175,8 +163,8 @@ if (screenHeight < 400) {
           const ProductFilterWidget(),
           const SizedBox(height: 16),
           SizedBox(
-            // height: 850, 
-            height : height  , 
+            // height: 850,
+            height: height,
             child: BlocBuilder<ProductBloc, ProductState>(
               builder: (context, state) {
                 if (state is ProductsLoading) {
@@ -245,8 +233,8 @@ class DataTableWidget extends TableWidget<ProductsViewModel> {
 
   DataTableWidget({
     required this.state,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   // Add getter for products for backward compatibility
   List<Product> get products => state.products;
@@ -265,7 +253,6 @@ class DataTableWidget extends TableWidget<ProductsViewModel> {
 
     return InkWell(
       onTap: () {
-        final currentState = context.read<ProductBloc>().state;
         context.read<ProductBloc>().add(SortProducts(headerName));
       },
       child: Row(
@@ -304,27 +291,21 @@ class DataTableWidget extends TableWidget<ProductsViewModel> {
     );
   }
 
-
-
-
- @override
-  void onCellTap(BuildContext context, TableDataRowsTableDataRows columnData, ProductsViewModel viewModel) {
- 
-    
-   final product = viewModel.products.firstWhere(
+  @override
+  void onCellTap(BuildContext context, TableDataRowsTableDataRows columnData,
+      ProductsViewModel viewModel) {
+    final product = viewModel.products.firstWhere(
       (p) => p.id.toString() == columnData.id,
     );
- 
+
     // Navigate to YieldProfile when any cell in the row is tapped
     Navigator.push(
       context,
       MaterialPageRoute(
-     builder: (context) => ProductProfile(product: product),
+        builder: (context) => ProductProfile(product: product),
       ),
     );
   }
-
- 
 
   @override
   Widget actionWidgetsBuilder(
@@ -528,8 +509,8 @@ class MobileProductListWidget extends StatefulWidget {
   const MobileProductListWidget({
     required this.state,
     this.itemsPerPage = 10, // Default items per page
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<MobileProductListWidget> createState() =>
@@ -661,7 +642,7 @@ class _MobileProductListWidgetState extends State<MobileProductListWidget> {
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                    ), 
+                                    ),
                                   ),
                                   const SizedBox(width: 8),
                                   Container(

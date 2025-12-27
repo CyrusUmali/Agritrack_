@@ -5,8 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flareline_uikit/components/buttons/button_widget.dart';
 import 'package:flareline_uikit/components/card/common_card.dart';
 import 'package:flareline_uikit/components/forms/outborder_text_form_field.dart';
-import 'package:flareline/core/theme/global_colors.dart';
-import 'package:flareline/flutter_gen/app_localizations.dart';
+import 'package:flareline/core/theme/global_colors.dart'; 
 import 'package:responsive_builder/responsive_builder.dart';
 
 class ForgotPasswordWidget extends BaseWidget<ForgotPasswordProvider> {
@@ -120,10 +119,10 @@ class ForgotPasswordWidget extends BaseWidget<ForgotPasswordProvider> {
 
   Widget _buildEmailForm(
       BuildContext context, ForgotPasswordProvider viewModel) {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
 
     return Form(
-      key: _formKey,
+      key: formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -163,7 +162,7 @@ class ForgotPasswordWidget extends BaseWidget<ForgotPasswordProvider> {
               type: ButtonType.primary.type,
               btnText: "Send OTP",
               onTap: () async {
-                if (_formKey.currentState!.validate()) {
+                if (formKey.currentState!.validate()) {
                   await viewModel.sendResetOTP(context);
                 }
               },
@@ -196,10 +195,10 @@ class ForgotPasswordWidget extends BaseWidget<ForgotPasswordProvider> {
 
   Widget _buildVerifyOtpForm(
       BuildContext context, ForgotPasswordProvider viewModel) {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
 
     return Form(
-      key: _formKey,
+      key: formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -228,7 +227,7 @@ class ForgotPasswordWidget extends BaseWidget<ForgotPasswordProvider> {
               type: ButtonType.primary.type,
               btnText: "Verify OTP",
               onTap: () async {
-                if (_formKey.currentState!.validate()) {
+                if (formKey.currentState!.validate()) {
                   await viewModel.verifyOTP(context);
                 }
               },
@@ -271,10 +270,10 @@ class ForgotPasswordWidget extends BaseWidget<ForgotPasswordProvider> {
 
   Widget _buildResetPasswordForm(
       BuildContext context, ForgotPasswordProvider viewModel) {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
 
     return Form(
-      key: _formKey,
+      key: formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -320,7 +319,7 @@ class ForgotPasswordWidget extends BaseWidget<ForgotPasswordProvider> {
               type: ButtonType.primary.type,
               btnText: "Reset Password",
               onTap: () async {
-                if (_formKey.currentState!.validate()) {
+                if (formKey.currentState!.validate()) {
                   await viewModel.resetPassword(context);
                 }
               },

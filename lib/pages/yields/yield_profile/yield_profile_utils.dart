@@ -94,9 +94,14 @@ Widget buildDatePickerField(String label, bool isMobile,
     decoration: InputDecoration(
       labelText: label,
       hintText: 'DD/MM/YYYY',
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+              border: OutlineInputBorder(
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ),
+    enabledBorder: OutlineInputBorder( // Add this
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ), 
       contentPadding: EdgeInsets.symmetric(
         vertical: isMobile ? 14 : 16,
         horizontal: 12,

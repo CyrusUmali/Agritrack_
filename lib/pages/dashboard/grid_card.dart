@@ -46,7 +46,7 @@ class _GridCardState extends State<GridCard> {
   Future<void> _fetchUserRole() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     _isFarmer = userProvider.isFarmer;
-    _farmerId = userProvider.farmer?.id?.toString();
+    _farmerId = userProvider.farmer?.id.toString();
 
     await _fetchShiValues();
   }

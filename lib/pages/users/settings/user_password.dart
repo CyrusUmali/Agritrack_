@@ -20,7 +20,6 @@ class PasswordChangeCard extends StatefulWidget {
 }
 
 class _PasswordChangeCardState extends State<PasswordChangeCard> {
-  final _formKey = GlobalKey<FormState>();
   final _passwordService = FirebasePasswordService();
 
   late TextEditingController _passwordController;

@@ -1,3 +1,4 @@
+import 'package:flareline/breaktab.dart';
 import 'package:flareline/pages/dashboard/map/map_chart_widget.dart';
 import 'package:flareline/core/models/farms_model.dart';
 import 'package:flareline/core/models/product_model.dart';
@@ -5,9 +6,7 @@ import 'package:flareline/core/models/yield_model.dart';
 import 'package:flareline/pages/yields/yield_bloc/yield_bloc.dart';
 import 'package:flareline/pages/farms/farm_bloc/farm_bloc.dart';
 import 'package:flareline/repositories/yield_repository.dart';
-import 'package:flareline/repositories/farm_repository.dart';
-import 'package:flareline/services/lanugage_extension.dart';
-import 'package:flareline_uikit/components/breaktab.dart';
+import 'package:flareline/repositories/farm_repository.dart'; 
 import 'package:flareline_uikit/components/card/common_card.dart';
 import 'package:flareline_uikit/service/year_picker_provider.dart';
 import 'package:flutter/material.dart';
@@ -113,7 +112,7 @@ class _ProductProfileContentState extends State<_ProductProfileContent> {
     final yieldsByYear = <String, List<Yield>>{};
 
     for (final yield in acceptedYields) {
-      final year = yield.harvestDate?.year.toString() ?? 'Unknown';
+      final year = yield.harvestDate.year.toString();
       yieldsByYear.putIfAbsent(year, () => []).add(yield);
     }
 
@@ -125,10 +124,10 @@ class _ProductProfileContentState extends State<_ProductProfileContent> {
       final monthlyYieldPerHectare = List<num>.filled(12, 0);
 
       for (final yield in yearYields) {
-        final month = yield.harvestDate?.month ?? 1;
+        final month = yield.harvestDate.month;
         final index = month - 1;
 
-        monthlyVolume[index] += yield.volume ?? 0;
+        monthlyVolume[index] += yield.volume;
         monthlyArea[index] += yield.areaHarvested ?? 0;
       }
 
@@ -163,8 +162,7 @@ class _ProductProfileContentState extends State<_ProductProfileContent> {
   }
 
   Widget _buildViewToggle(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
+  
 
     return Container(
       decoration: BoxDecoration(
@@ -264,7 +262,6 @@ class _ProductProfileContentState extends State<_ProductProfileContent> {
                       transformedYieldData = transformYields(state.yields);
                     });
                   } else if (state is YieldsError) {
-                    print('Error loading yields: ${state.message}');
                   }
                 },
                 builder: (context, state) {

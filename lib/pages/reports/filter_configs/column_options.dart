@@ -2,6 +2,8 @@ class ColumnOptions {
   static const Map<String, List<String>> reportColumns = {
     'farmers': [
       'Name',
+      'Sex',
+      'Birthday',
       'Sector',
       'Association',
       'Farms',
@@ -43,8 +45,7 @@ class ColumnOptions {
       'Value',
       'Area Harvested',
     ],
-    'farmer': [
-      'Farmer Id',
+    'farmer': [ 
       'Farmer Name',
       'Barangay',
       'Product',

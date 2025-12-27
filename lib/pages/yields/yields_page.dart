@@ -22,7 +22,7 @@ class YieldsPage extends LayoutWidget {
   @override
   Widget contentDesktopWidget(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final farmerId = userProvider.farmer?.id?.toString();
+    final farmerId = userProvider.farmer?.id.toString();
 
     return RepositoryProvider(
       create: (context) => YieldRepository(apiService: ApiService()),

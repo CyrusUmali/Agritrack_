@@ -31,6 +31,9 @@ class AnnouncementsPage extends LayoutWidget {
   final ValueNotifier<bool> isSendingNotifier = ValueNotifier(false);
   final ValueNotifier<bool> isDeletingNotifier = ValueNotifier(false);
 
+ 
+  @override
+  bool get showBreadcrumbsOnlyOnDesktop => true; // Show only on desktop
 
  @override
   EdgeInsetsGeometry? get customPadding => const EdgeInsets.all(9);
@@ -465,7 +468,7 @@ Future<void> _sendAnnouncement(BuildContext context, List<Farmer> farmers) async
         context,
       );
     }
-  } catch (e, stackTrace) {
+  } catch (e) {
  
     ToastHelper.showErrorToast(
       'Failed to send announcement: $e',
@@ -573,7 +576,6 @@ Future<void> _performDelete(BuildContext context, String announcementId) async {
 
 
 
-  @override
   void dispose() {
     selectedAnnouncementNotifier.dispose();
     isLoadingNotifier.dispose();

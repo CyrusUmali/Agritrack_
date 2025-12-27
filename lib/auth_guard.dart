@@ -16,7 +16,7 @@ class AuthGuard {
 
   static bool isPublicRoute(String path) {
     return publicRoutes.contains(path);
-  }
+  } 
 
   static bool isAuthenticated(BuildContext context) {
     final firebaseUser = FirebaseAuth.instance.currentUser;

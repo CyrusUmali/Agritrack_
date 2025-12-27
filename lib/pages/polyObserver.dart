@@ -1,4 +1,4 @@
-import 'package:flareline/pages/test/map_widget/polygon_manager.dart';
+import 'package:flareline/pages/map/map_widget/polygon_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

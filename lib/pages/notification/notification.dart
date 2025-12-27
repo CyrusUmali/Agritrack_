@@ -26,6 +26,11 @@ class NotificationsPage extends LayoutWidget {
     return 'Notifications';
   }
 
+   
+  @override
+  bool get showBreadcrumbsOnlyOnDesktop => true; // Show only on desktop
+
+
    @override
   EdgeInsetsGeometry? get customPadding => const EdgeInsets.all(8);
 
@@ -294,7 +299,6 @@ class NotificationsPage extends LayoutWidget {
     }
   }
 
-  @override
   void dispose() {
     selectedNotificationNotifier.dispose();
     isLoadingNotifier.dispose();

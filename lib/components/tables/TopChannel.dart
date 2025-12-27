@@ -22,7 +22,6 @@ class TopChannelWidget extends TableWidget {
     return TopChannelViewModel(context);
   }
 
-  @override
   Widget buildBody(BuildContext context) {
     final viewModel = viewModelBuilder(context) as TopChannelViewModel;
 

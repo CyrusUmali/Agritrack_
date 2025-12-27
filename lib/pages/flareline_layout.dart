@@ -1,28 +1,28 @@
 library flareline_uikit;
 
+import 'package:flareline/breaktab.dart';
 import 'package:flareline/pages/sectors/sector_service.dart';
 import 'package:flareline/pages/toolbar.dart';
 import 'package:flareline/providers/user_provider.dart';
 import 'package:flareline_uikit/components/sidebar/side_bar.dart';
 import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 import 'package:flareline_uikit/service/sidebar_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flareline_uikit/components/breaktab.dart';
+import 'package:flutter/material.dart'; 
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 abstract class FlarelineLayoutWidget extends StatelessWidget {
-  ValueNotifier<bool> get _sidebarPinnedNotifier => ValueNotifier(false);
 
   const FlarelineLayoutWidget({super.key});
 
   String get appName => 'AgriTrack';
   bool get showTitle => true;
+  
   bool get isAlignCenter => false;
   bool get showSideBar => true;
-
+bool get showCurrentRouteInBreadcrumb => true;
   bool showToolBar(BuildContext context) => true;
   bool get showDrawer => false;
   bool get isContentScroll => true;
@@ -32,6 +32,7 @@ abstract class FlarelineLayoutWidget extends StatelessWidget {
   double get sideBarWidth => 240;
   double get sideBarCollapsedWidth => 100;
   bool get isSidebarCollapsible => true;
+    bool get showBreadcrumbsOnlyOnDesktop => false;
 
   String sideBarAsset(BuildContext context) =>
       'assets/routes/menu_route_en.json';
@@ -110,8 +111,7 @@ abstract class FlarelineLayoutWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final farmer = userProvider.farmer;
+ 
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -152,66 +152,76 @@ abstract class FlarelineLayoutWidget extends StatelessWidget {
     );
   }
 
-  Widget rightContentWidget(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-    final farmer = userProvider.farmer;
+Widget rightContentWidget(BuildContext context) {
+  final userProvider = Provider.of<UserProvider>(context);
+  final farmer = userProvider.farmer;
 
-    Widget contentWidget = Column(
-      children: [
-        if (showTitle && breakTabTitle(context).isNotEmpty)
-          SizedBox(
-            height: 50,
-            child: breakTabWidget(context) ??
-                BreakTab(
-                  breakTabTitle(context),
-                  breadcrumbs: breakTabBreadcrumbs(context),
-                  rightWidget: breakTabRightWidget(context),
-                ),
-          ),
-        if (showTitle) const SizedBox(height: 10),
-        isContentScroll
-            ? ScreenTypeLayout.builder(
+  Widget contentWidget = Column(
+    children: [
+      if (showTitle)
+        SizedBox(
+          height: 50,
+          child: breakTabWidget(context) ??
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isDesktop = constraints.maxWidth > 600;
+                  final shouldShowBreadcrumbs = 
+                      !showBreadcrumbsOnlyOnDesktop || isDesktop;
+                  
+                  return BreakTab(
+                    breakTabTitle(context),
+                    breadcrumbs: breakTabBreadcrumbs(context),
+                    rightWidget: breakTabRightWidget(context),
+                    showBreadcrumbs: shouldShowBreadcrumbs && breakTabTitle(context).isNotEmpty,
+                    showCurrentRoute: showCurrentRouteInBreadcrumb,
+                  );
+                },
+              ),
+        ),
+      if (showTitle) const SizedBox(height: 10),
+      isContentScroll
+          ? ScreenTypeLayout.builder(
+              desktop: contentDesktopWidget,
+              mobile: contentMobileWidget,
+              tablet: contentMobileWidget,
+            )
+          : Expanded(
+              child: ScreenTypeLayout.builder(
                 desktop: contentDesktopWidget,
                 mobile: contentMobileWidget,
                 tablet: contentMobileWidget,
-              )
-            : Expanded(
-                child: ScreenTypeLayout.builder(
-                  desktop: contentDesktopWidget,
-                  mobile: contentMobileWidget,
-                  tablet: contentMobileWidget,
-                ),
               ),
-      ],
-    );
+            ),
+    ],
+  );
 
-    return Column(
-      children: [
-        if (showToolBar(context))
-          ToolBarWidget(
-                showMore: showDrawer,
-                showChangeTheme: true,
-                userInfoWidget: _NotificationBadgeAvatar(
-                  farmerId: farmer?.id,
-                  imageUrl: farmer?.imageUrl,
-                ),
-              ) ??
-              const SizedBox.shrink(),
-        if (showToolBar(context)) const SizedBox(height: 0),
-        Expanded(
-          child: Container(
-            width: double.maxFinite,
-            height: double.maxFinite,
-            alignment: isAlignCenter ? Alignment.center : null,
-            padding: customPadding ?? padding,
-            child: isContentScroll
-                ? SingleChildScrollView(child: contentWidget)
-                : contentWidget,
-          ),
+  return Column(
+    children: [
+      if (showToolBar(context))
+        ToolBarWidget(
+              showMore: showDrawer,
+              showChangeTheme: true,
+              userInfoWidget: _NotificationBadgeAvatar(
+                farmerId: farmer?.id,
+                imageUrl: farmer?.imageUrl,
+              ),
+            ),
+      if (showToolBar(context)) const SizedBox(height: 0),
+      Expanded(
+        child: Container(
+          width: double.maxFinite,
+          height: double.maxFinite,
+          alignment: isAlignCenter ? Alignment.center : null,
+          padding: customPadding ?? padding,
+          child: isContentScroll
+              ? SingleChildScrollView(child: contentWidget)
+              : contentWidget,
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
+
 }
 
 class _NotificationBadgeAvatar extends StatefulWidget {
@@ -230,7 +240,7 @@ class _NotificationBadgeAvatar extends StatefulWidget {
 
 class _NotificationBadgeAvatarState extends State<_NotificationBadgeAvatar> {
   int _unreadCount = 0;
-  bool _isLoading = false;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -242,7 +252,7 @@ class _NotificationBadgeAvatarState extends State<_NotificationBadgeAvatar> {
   }
 
   Future<void> _fetchUnreadCount() async {
-    setState(() => _isLoading = true);
+    setState(() => isLoading = true);
 
     try {
       final sectorService =
@@ -263,12 +273,12 @@ class _NotificationBadgeAvatarState extends State<_NotificationBadgeAvatar> {
 
         setState(() {
           _unreadCount = count;
-          _isLoading = false;
+          isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() => isLoading = false);
       }
       debugPrint('Error fetching unread notifications: $e');
     }
@@ -286,14 +296,15 @@ class _NotificationBadgeAvatarState extends State<_NotificationBadgeAvatar> {
           radius: 22,
           child: widget.imageUrl == null
               ? ClipRRect(
-  borderRadius: BorderRadius.circular(22), // Adjust radius as needed
-  child: SvgPicture.asset(
-    'assets/DA_image.svg',
-    width: 44,
-    height: 44,
-    fit: BoxFit.cover,
-  ),
-)
+                  borderRadius:
+                      BorderRadius.circular(22), // Adjust radius as needed
+                  child: SvgPicture.asset(
+                    'assets/DA_image.svg',
+                    width: 44,
+                    height: 44,
+                    fit: BoxFit.cover,
+                  ),
+                )
               : null,
         ),
         if (_unreadCount > 0)

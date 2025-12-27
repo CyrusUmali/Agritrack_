@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flareline/core/models/farmer_model.dart';
-import 'package:flareline/services/api_service.dart';
+import 'package:flareline/core/models/farmer_model.dart'; 
 import 'package:flareline/repositories/base_repository.dart'; // Import the base repository
 
 class FarmerRepository extends BaseRepository {
@@ -45,7 +44,7 @@ class FarmerRepository extends BaseRepository {
       'address': farmer.address,
       'sex': farmer.sex,
       'barangay': farmer.barangay,
-      'sectorId': getSectorId(farmer.sector!), // Use inherited method
+      'sectorId': getSectorId(farmer.sector), // Use inherited method
       'imageUrl': farmer.imageUrl,
       'farm_name': farmer.farmName,
       'association': farmer.association,
@@ -93,25 +92,22 @@ class FarmerRepository extends BaseRepository {
 
   // Helper method for farmer validation (PRESERVED - no changes)
   void _validateFarmerRequiredFields(Farmer farmer) {
-    if (farmer.name == null || farmer.name!.isEmpty) {
+    if (farmer.name.isEmpty) {
       throw Exception('Farmer name is required');
     }
     if (farmer.barangay == null || farmer.barangay!.isEmpty) {
       throw Exception('Barangay is required');
-    }
-    if (farmer.sector == null) {
-      throw Exception('Sector is required');
     }
   }
 
   // Helper method to build add data (PRESERVED - no changes)
   Map<String, dynamic> _buildFarmerAddData(Farmer farmer) {
     return {
-      'name': farmer.name!,
+      'name': farmer.name,
       'email': farmer.email ?? "---",
       'phone': farmer.phone ?? "---",
       'barangay': farmer.barangay!,
-      'sectorId': getSectorId(farmer.sector!), // Use inherited method
+      'sectorId': getSectorId(farmer.sector), // Use inherited method
       'imageUrl': farmer.imageUrl ?? "---",
       // Add other optional fields if needed
     };

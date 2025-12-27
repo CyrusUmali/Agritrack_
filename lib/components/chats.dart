@@ -1,5 +1,4 @@
-import 'package:flareline/core/theme/global_colors.dart';
-import 'package:flareline/flutter_gen/app_localizations.dart';
+import 'package:flareline/core/theme/global_colors.dart'; 
 import 'package:flareline/pages/dashboard/yield_service.dart';
 import 'package:flareline/pages/farmers/farmer_profile.dart';
 import 'package:flareline/pages/widget/network_error.dart';

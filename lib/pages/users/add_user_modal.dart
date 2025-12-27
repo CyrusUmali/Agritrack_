@@ -6,7 +6,7 @@ import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 class AddUserModal extends StatefulWidget {
   final Function(UserData) onUserAdded;
 
-  const AddUserModal({Key? key, required this.onUserAdded}) : super(key: key);
+  const AddUserModal({super.key, required this.onUserAdded});
 
   static Future<void> show({
     required BuildContext context,
@@ -74,11 +74,11 @@ class _AddUserModalContent extends StatefulWidget {
   final String role;
 
   const _AddUserModalContent({
-    Key? key,
+    super.key,
     required this.onLoadingStateChanged,
     required this.onUserAdded,
     required this.role,
-  }) : super(key: key);
+  });
 
   @override
   State<_AddUserModalContent> createState() => _AddUserModalContentState();
@@ -89,7 +89,7 @@ class _AddUserModalContentState extends State<_AddUserModalContent> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _isSubmitting = false;
+  bool isSubmitting = false;
 
   // Track which fields have been validated
   bool _nameValidated = false;
@@ -110,7 +110,7 @@ class _AddUserModalContentState extends State<_AddUserModalContent> {
     }
 
     setState(() {
-      _isSubmitting = true;
+      isSubmitting = true;
       widget.onLoadingStateChanged(true);
     });
 
@@ -136,7 +136,7 @@ class _AddUserModalContentState extends State<_AddUserModalContent> {
     } finally {
       if (mounted) {
         setState(() {
-          _isSubmitting = false;
+          isSubmitting = false;
           widget.onLoadingStateChanged(false);
         });
       }
@@ -154,7 +154,6 @@ class _AddUserModalContentState extends State<_AddUserModalContent> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final fieldHeight = screenWidth < 600 ? 48.0 : 56.0;
 
     return Form(
       key: _formKey,
@@ -318,11 +317,10 @@ class _AddUserModalFooter extends StatelessWidget {
   final bool isLoading;
 
   const _AddUserModalFooter({
-    Key? key,
     required this.onSubmit,
     required this.onCancel,
     this.isLoading = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

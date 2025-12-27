@@ -1,10 +1,8 @@
 import 'package:flareline/core/models/farmer_model.dart';
-import 'package:flareline/pages/farmers/add_farmer_modal_2.dart';
-import 'package:flareline/pages/farmers/farmer/farmer_bloc.dart';
+import 'package:flareline/pages/farmers/add_farmer_modal_2.dart'; 
 import 'package:flareline/pages/users/auth_service.dart';
 import 'package:flareline/pages/users/link_modal.dart';
-import 'package:flareline/pages/users/user_bloc/user_bloc.dart';
-import 'package:flareline_uikit/components/buttons/button_widget.dart';
+import 'package:flareline/pages/users/user_bloc/user_bloc.dart'; 
 import 'package:flareline_uikit/components/modal/modal_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

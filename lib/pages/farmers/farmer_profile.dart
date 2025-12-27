@@ -1,13 +1,16 @@
 import 'dart:convert';
 
+import 'package:flareline/breaktab.dart';
 import 'package:flareline/core/models/assocs_model.dart';
 import 'package:flareline/core/models/farmer_model.dart';
 import 'package:flareline/pages/assoc/assoc_bloc/assocs_bloc.dart';
 import 'package:flareline/pages/farmers/farmer/farmer_bloc.dart';
 import 'package:flareline/pages/farmers/farmers_widget/personal_info_card.dart';
-import 'package:flareline/pages/test/map_widget/stored_polygons.dart';
-import 'package:flareline/providers/user_provider.dart';
-import 'package:flareline_uikit/components/breaktab.dart';
+import 'package:flareline/pages/map/map_widget/stored_polygons.dart';
+import 'package:flareline/providers/user_provider.dart'; 
+import 'package:flareline_uikit/components/buttons/button_widget.dart';
+import 'package:flareline_uikit/components/modal/modal_dialog.dart';
+import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flareline_uikit/components/card/common_card.dart';
@@ -24,38 +27,25 @@ import './farmers_widget/emergency_contacts_card.dart';
 
 class FarmersProfile extends LayoutWidget {
   final int? farmerID;
-  
 
   const FarmersProfile({super.key, this.farmerID});
-
-  
 
   @override
   String breakTabTitle(BuildContext context) => 'Farmer Profile';
 
   @override
   List<BreadcrumbItem> breakTabBreadcrumbs(BuildContext context) {
-
-  final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     final _isFarmer = userProvider.isFarmer;
 
     return [
-      BreadcrumbItem(context.translate('Dashboard'), '/'), 
- if (!_isFarmer)
-      BreadcrumbItem(context.translate('Farmers'), '/farmers'),
-
-
+       if (_isFarmer)   BreadcrumbItem(context.translate('Dashboard'), '/'),
+   
+      if (!_isFarmer) BreadcrumbItem(context.translate('Farmers'), '/farmers'),
     ];
   }
 
   Widget _buildContent(BuildContext context, bool isMobile) {
-
-
-
-
-
-
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -283,9 +273,82 @@ class FarmersProfileView extends StatefulWidget {
 
 class _FarmersProfileViewState
     extends _BaseFarmersProfileState<FarmersProfileView> {
+  void _acceptRegistration(BuildContext context) {
+    ModalDialog.show(
+      context: context,
+      title: context.translate('Accept Registration'),
+      showTitle: true,
+      showTitleDivider: true,
+      modalType: ModalType.medium,
+      onCancelTap: () => Navigator.of(context).pop(),
+      onSaveTap: () {
+        // Create updated farmer with Active status
+        final updatedFarmerData = Map<String, dynamic>.from(currentFarmer);
+        updatedFarmerData['accountStatus'] = 'Active';
+
+        final updatedFarmer = Farmer.fromJson(updatedFarmerData);
+
+        // Dispatch update event
+        context.read<FarmerBloc>().add(UpdateFarmer(updatedFarmer));
+        Navigator.of(context).pop();
+      },
+      child: Center(
+        child: Text(
+          context.translate(
+              'Are you sure you want to accept this farmer\'s registration?'),
+        ),
+      ),
+      footer: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 120,
+                child: ButtonWidget(
+                  btnText: context.translate('Cancel'),
+                  textColor: FlarelineColors.darkBlackText,
+                  onTap: () => Navigator.of(context).pop(),
+                ),
+              ),
+              const SizedBox(width: 20),
+              SizedBox(
+                width: 120,
+                child: ButtonWidget(
+                  btnText: context.translate('Accept'),
+                  onTap: () {
+                    // Create updated farmer with Active status
+                    final updatedFarmerData =
+                        Map<String, dynamic>.from(currentFarmer);
+                    updatedFarmerData['accountStatus'] = 'Active';
+
+                    final updatedFarmer = Farmer.fromJson(updatedFarmerData);
+
+                    // Dispatch update event
+                    context.read<FarmerBloc>().add(UpdateFarmer(updatedFarmer));
+                    Navigator.of(context).pop();
+                  },
+                  type: ButtonType.primary.type,
+                  // Optional: Add green color if ButtonWidget supports it
+                  // You might need to check the ButtonWidget implementation
+                  // and use appropriate parameters
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final displayFarmer = isEditing ? editedFarmer : currentFarmer;
+    final isPending =
+        displayFarmer['accountStatus']?.toString().toLowerCase() == 'pending';
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final _isFarmer = userProvider.isFarmer;
 
     return BlocListener<FarmerBloc, FarmerState>(
       listener: (context, state) {
@@ -313,6 +376,37 @@ class _FarmersProfileViewState
                   onCancel: cancelEditing,
                   onImageUpload: uploadAndUpdateImage,
                 ),
+
+                // Accept Registration Button (only shown when status is Pending)
+                if (isPending && !isEditing && !_isFarmer) ...[
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: () => _acceptRegistration(context),
+                        icon: const Icon(
+                          Icons.check_circle_outline,
+                          color: Colors.white, // Set icon color to white
+                        ),
+                        label: Text(
+                          context.translate('Accept Registration'),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+
                 const SizedBox(height: 24),
                 PersonalInfoCard(
                   farmer: displayFarmer,
@@ -321,6 +415,7 @@ class _FarmersProfileViewState
                   onFieldChanged: handleFieldChange,
                   barangayNames: barangayNames,
                   assocs: widget.assocs,
+                  isFarmer: _isFarmer,
                 ),
                 const SizedBox(height: 16),
                 HouseholdInfoCard(

@@ -25,12 +25,12 @@ class MapChartWidget extends StatefulWidget {
 }
 
 class _MapChartWidgetState extends State<MapChartWidget> {
-  bool _isMounted = false;
+  bool isMounted = false;
 
   @override
   void initState() {
     super.initState();
-    _isMounted = true;
+    isMounted = true;
 
     // Only load data if not already available
     final productState = context.read<ProductBloc>().state;
@@ -55,13 +55,13 @@ class _MapChartWidgetState extends State<MapChartWidget> {
 
   @override
   void dispose() {
-    _isMounted = false;
+    isMounted = false;
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+ 
 
     return MultiBlocListener(
       listeners: [

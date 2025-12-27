@@ -117,7 +117,8 @@ class _FarmersPerSectorWidgetState extends State<FarmersPerSectorWidget> {
 class DataTableWidget extends TableWidget<FarmersViewModel> {
   final Function(Map<String, dynamic>)? onFarmerSelected;
 
-  DataTableWidget({this.onFarmerSelected, Key? key}) : super(key: key) {
+  DataTableWidget({this.onFarmerSelected,
+   Key? key})  {
     print("DataTableWidget initialized");
   }
 

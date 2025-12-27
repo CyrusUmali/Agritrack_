@@ -353,9 +353,7 @@ Widget _announcementListItem(Announcement announcement) {
           ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
           : (isDark ? Colors.blue.shade300 : Colors.blue.shade700);
           
-      final recipientTextColor = announcement.recipient == 'everyone'
-          ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
-          : (isDark ? Colors.blue.shade300 : Colors.blue.shade700);
+ 
 
       return InkWell(
         onTap: () {

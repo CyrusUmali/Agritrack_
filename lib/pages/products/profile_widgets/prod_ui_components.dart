@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flareline/core/models/product_model.dart';
-import 'package:path/path.dart';
-import 'package:transparent_image/transparent_image.dart';
-import 'package:flareline_uikit/flareline_uikit.dart';
-import 'package:flareline/services/lanugage_extension.dart';
+import 'package:flareline/core/models/product_model.dart'; 
+import 'package:transparent_image/transparent_image.dart'; 
 
 import 'package:flareline_uikit/components/forms/outborder_text_form_field.dart';
 import 'package:flareline_uikit/core/theme/flareline_colors.dart';
@@ -575,7 +572,7 @@ class ProductHeaderUI {
         ),
         const SizedBox(width: 16),
         // Wrap button in container to control height
-        Container(
+        SizedBox(
           height: 48, // Match the sector container height
           child: FilledButton.icon(
             onPressed: () => toggleEditing(),

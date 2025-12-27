@@ -17,7 +17,7 @@ class ForgotPasswordProvider extends BaseViewModel {
   bool otpVerified = false;
   String? resetToken;
 
-  ForgotPasswordProvider(BuildContext context) : super(context);
+  ForgotPasswordProvider(super.context);
 
   Future<void> sendResetOTP(BuildContext context) async {
     final apiService = Provider.of<ApiService>(context, listen: false);

@@ -1,6 +1,8 @@
+import 'package:flareline_uikit/service/year_picker_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flareline_uikit/components/card/common_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
 import 'package:iconify_flutter_plus/icons/mdi.dart';
@@ -25,8 +27,33 @@ class _FarmKpiState extends State<FarmKpi> {
     _fetchFarmStatistics();
   }
 
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Listen for year changes and refresh data
+    final yearProvider =
+        Provider.of<YearPickerProvider>(context, listen: false);
+    yearProvider.addListener(_fetchFarmStatistics);
+  }
+
+
+
+   @override
+  void dispose() { 
+    // Clean up the listener
+    final yearProvider =
+        Provider.of<YearPickerProvider>(context, listen: false);
+    yearProvider.removeListener(_fetchFarmStatistics);
+    super.dispose();
+  }
+
+
   Future<void> _fetchFarmStatistics() async {
     final sectorService = RepositoryProvider.of<SectorService>(context);
+       final yearProvider =
+        Provider.of<YearPickerProvider>(context, listen: false);
+    final selectedYear = yearProvider.selectedYear;
 
     setState(() {
       _isLoading = true;
@@ -34,7 +61,7 @@ class _FarmKpiState extends State<FarmKpi> {
     });
 
     try {
-      final stats = await sectorService.fetchFarmStatistics();
+      final stats = await sectorService.fetchFarmStatistics(year: selectedYear);
       setState(() {
         _farmStats = stats;
         _isLoading = false;
@@ -307,22 +334,108 @@ class _FarmKpiState extends State<FarmKpi> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    value,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    style: TextStyle(
-                      fontSize: isDesktop ? 18 : 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
-                    ),
-                  ),
+                  // Tap to show full value on mobile, hover tooltip on desktop
+                  isDesktop
+                      ? Tooltip(
+                          message: value,
+                          textStyle: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.white,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black87,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          preferBelow: false,
+                          waitDuration: const Duration(milliseconds: 300),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              value,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ),
+                        )
+                      : GestureDetector(
+                          onTap: () {
+                            _showValueDialog(context, title, value);
+                          },
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              value,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ),
+                        ),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showValueDialog(BuildContext context, String title, String value) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(16),
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

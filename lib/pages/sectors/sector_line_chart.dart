@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flareline/core/models/yield_model.dart';
 import 'package:flareline/pages/sectors/components/chart_annotation_manager.dart';
 import 'package:flareline/pages/sectors/components/sector_products_selector.dart';
@@ -6,8 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flareline_uikit/components/card/common_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:flareline/pages/widget/network_error.dart';
-import 'package:syncfusion_flutter_charts/charts.dart' as chart;
+import 'package:flareline/pages/widget/network_error.dart'; 
 import 'components/sector_line_chart_widget.dart';
 import './components/sector_data_model.dart';
 
@@ -32,20 +33,39 @@ class _SectorLineChartState extends State<SectorLineChart> {
   final GlobalKey _chartKey = GlobalKey();
   late ChartAnnotationManager _annotationManager;
 
+  StreamSubscription? _yieldBlocSubscription;
+
   @override
   void initState() {
     super.initState();
     _annotationManager = ChartAnnotationManager(setState: setState);
-    _annotationManager.setContext(context); // Set the context first
+    
+    // Initialize with current data if available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeFromBloc();
+    });
+  }
 
+  void _initializeFromBloc() {
+    if (!mounted) return;
+    
     final yieldBloc = context.read<YieldBloc>();
+    
+    // Set initial state from current bloc state
     if (yieldBloc.state is YieldsLoaded) {
-      isLoading = false;
-      yieldData = (yieldBloc.state as YieldsLoaded).yields;
-      sectorData = buildSectorDataFromYields(yieldData);
+      setState(() {
+        isLoading = false;
+        yieldData = (yieldBloc.state as YieldsLoaded).yields;
+        sectorData = buildSectorDataFromYields(yieldData);
+      });
+      _annotationManager.setContext(context);
+      _annotationManager.loadAnnotations();
     }
 
-    yieldBloc.stream.listen((state) async {
+    // Set up stream listener
+    _yieldBlocSubscription = yieldBloc.stream.listen((state) {
+      if (!mounted) return;
+      
       if (state is YieldsLoaded) {
         setState(() {
           isLoading = false;
@@ -53,7 +73,13 @@ class _SectorLineChartState extends State<SectorLineChart> {
           yieldData = state.yields;
           sectorData = buildSectorDataFromYields(yieldData);
         });
-        await _annotationManager.loadAnnotations();
+        
+        // Ensure annotation manager has context
+        if (!_annotationManager.isContextSet()) {
+          _annotationManager.setContext(context);
+        }
+        
+        _annotationManager.loadAnnotations();
       } else if (state is YieldsLoading) {
         setState(() {
           isLoading = true;
@@ -64,10 +90,15 @@ class _SectorLineChartState extends State<SectorLineChart> {
           isLoading = false;
           hasError = true;
           errorMessage = state.message;
-          //  error: state.message,
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _yieldBlocSubscription?.cancel();
+    super.dispose();
   }
 
   void _retryLoading() {
@@ -78,42 +109,15 @@ class _SectorLineChartState extends State<SectorLineChart> {
     context.read<YieldBloc>().add(LoadYields());
   }
 
-  void _printYieldData() {
-    if (yieldData.isEmpty) {
-      print('No yield data available');
-      return;
-    }
-
-    print('\n===== YIELD DATA (${yieldData.length} records) =====');
-
-    for (var i = 0; i < yieldData.length; i++) {
-      final yield = yieldData[i];
-      print('\nRecord #${i + 1}:');
-      print('  ID: ${yield.id}');
-      print('  Farmer: ${yield.farmerName} (ID: ${yield.farmerId})');
-      print('  Product: ${yield.productName} (ID: ${yield.productId})');
-      print('  Sector: ${yield.sector} (ID: ${yield.sectorId})');
-      print('  Barangay: ${yield.barangay}');
-      print('  Volume: ${yield.volume}');
-      print('  Area (ha): ${yield.hectare}');
-      print('  Status: ${yield.status}');
-      print('  Created At: ${yield.createdAt}');
-      print('  Farm ID: ${yield.farmId}');
-      print('----------------------------------');
-    }
-
-    print('===== END OF YIELD DATA =====\n');
-  }
-
   Widget _buildLoadingContent() {
     return CommonCard(
       child: SizedBox(
-        height: 500, // Adjust height as needed
+        height: 500,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
+              SizedBox(
                 width: 40,
                 height: 40,
                 child: CircularProgressIndicator(
@@ -151,10 +155,8 @@ class _SectorLineChartState extends State<SectorLineChart> {
             return Theme(
               data: Theme.of(context).copyWith(
                 colorScheme: ColorScheme.light(
-                  onPrimary: Colors.white, // Selected year text color
-                  primary: Theme.of(context)
-                      .colorScheme
-                      .primary, // Selected year background color
+                  onPrimary: Colors.white,
+                  primary: Theme.of(context).colorScheme.primary,
                 ),
               ),
               child: AlertDialog(
@@ -166,9 +168,7 @@ class _SectorLineChartState extends State<SectorLineChart> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        'From Year:',
-                      ),
+                      const Text('From Year:'),
                       SizedBox(
                         height: 150,
                         child: YearPicker(
@@ -186,9 +186,7 @@ class _SectorLineChartState extends State<SectorLineChart> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      const Text(
-                        'To Year:',
-                      ),
+                      const Text('To Year:'),
                       SizedBox(
                         height: 150,
                         child: YearPicker(
@@ -234,8 +232,14 @@ class _SectorLineChartState extends State<SectorLineChart> {
 
   void _handleChartTap(TapDownDetails details) {
     final filteredData = _getFilteredData();
-    _annotationManager.handleChartTap(details, _chartKey, selectedFromYear,
-        selectedToYear, filteredData, context);
+    _annotationManager.handleChartTap(
+      details,
+      _chartKey,
+      selectedFromYear,
+      selectedToYear,
+      filteredData,
+      context,
+    );
   }
 
   @override
@@ -366,12 +370,11 @@ class _SectorLineChartState extends State<SectorLineChart> {
 
 List<SectorData> _getFilteredData() {
   if (selectedSector == 'All') {
-    // Define fixed colors for each sector
     final Map<String, Color> sectorColors = {
       'Rice': Colors.green,
       'Corn': Colors.yellow,
       'Fishery': Colors.blue,
-      'Livestock': Colors.deepOrange, 
+      'Livestock': Colors.deepOrange,
       'Organic': Colors.grey,
       'HVC': Colors.purple,
       'Unknown': Colors.black,
@@ -379,51 +382,55 @@ List<SectorData> _getFilteredData() {
 
     final Map<String, List<Map<String, dynamic>>> sectorGroupedData = {};
 
+    // Generate all years in the selected range
+    final List<int> allYears = [];
+    for (int year = selectedFromYear; year <= selectedToYear; year++) {
+      allYears.add(year);
+    }
+
     sectorData.forEach((sectorKey, sectorItems) {
+      // Initialize with all years, setting y to 0
+      sectorGroupedData[sectorKey] = allYears
+          .map((year) => {
+                'x': year.toString(),
+                'y': 0.0,
+              })
+          .toList();
+
       for (final item in sectorItems) {
         for (final point in item.data) {
-          final year = point['x'];
+          final year = int.parse(point['x']);
           final value = point['y'].toDouble();
 
-          final yearInt = int.parse(year);
-          if (yearInt >= selectedFromYear && yearInt <= selectedToYear) {
-            if (!sectorGroupedData.containsKey(sectorKey)) {
-              sectorGroupedData[sectorKey] = [];
-            }
-
-            final existingIndex = sectorGroupedData[sectorKey]!
-                .indexWhere((e) => e['x'] == year);
-
-            if (existingIndex >= 0) {
-              sectorGroupedData[sectorKey]![existingIndex]['y'] += value;
-            } else {
-              sectorGroupedData[sectorKey]!.add({
-                'x': year,
-                'y': value,
-              });
+          if (year >= selectedFromYear && year <= selectedToYear) {
+            final yearIndex = year - selectedFromYear;
+            if (yearIndex >= 0 && yearIndex < sectorGroupedData[sectorKey]!.length) {
+              sectorGroupedData[sectorKey]![yearIndex]['y'] += value;
             }
           }
         }
       }
-
-      // Sort the years for each sector
-      if (sectorGroupedData.containsKey(sectorKey)) {
-        sectorGroupedData[sectorKey]!
-            .sort((a, b) => int.parse(a['x']).compareTo(int.parse(b['x'])));
-      }
     });
 
-    return sectorGroupedData.entries
+    final filtered = sectorGroupedData.entries
+        .where((entry) {
+          // Check if sector has any non-zero data
+          final hasData = entry.value.any((point) => point['y'] > 0);
+          return hasData;
+        })
         .map((entry) {
           return SectorData(
             name: entry.key,
-            color: sectorColors[entry.key] ?? Colors.grey, // Use fixed sector color
+            color: sectorColors[entry.key] ?? Colors.grey,
             data: entry.value,
             annotations: null,
           );
         })
-        .where((sector) => sector.data.isNotEmpty)
         .toList();
+
+ 
+
+    return filtered;
   } else {
     if (!_sectorProductSelections.containsKey(selectedSector)) {
       final sectorProducts = sectorData[selectedSector] ?? [];
@@ -433,17 +440,33 @@ List<SectorData> _getFilteredData() {
 
     final currentSelections = _sectorProductSelections[selectedSector] ?? [];
 
-    return (sectorData[selectedSector] ?? [])
+    // Generate all years in the selected range
+    final List<int> allYears = [];
+    for (int year = selectedFromYear; year <= selectedToYear; year++) {
+      allYears.add(year);
+    }
+
+    final filtered = (sectorData[selectedSector] ?? [])
         .where((sector) =>
             currentSelections.isEmpty ||
             currentSelections.contains(sector.name))
         .map((sector) {
-          final filteredSeriesData = sector.data.where((point) {
-            final year = int.parse(point['x']);
-            return year >= selectedFromYear && year <= selectedToYear;
-          }).toList()
-            ..sort((a, b) =>
-                int.parse(a['x']).compareTo(int.parse(b['x']))); // Sort here
+          // Create a map for quick lookups
+          final dataMap = <String, double>{};
+          for (final point in sector.data) {
+            final year = point['x'] as String;
+            final value = point['y'].toDouble();
+            dataMap[year] = value;
+          }
+
+          // Build data with all years, filling missing years with 0
+          final filteredSeriesData = allYears.map((year) {
+            final yearStr = year.toString();
+            return {
+              'x': yearStr,
+              'y': dataMap[yearStr] ?? 0.0,
+            };
+          }).toList();
 
           return SectorData(
             name: sector.name,
@@ -452,10 +475,20 @@ List<SectorData> _getFilteredData() {
             annotations: sector.annotations,
           );
         })
-        .where((sector) => sector.data.isNotEmpty)
+        .where((sector) {
+          // Filter out products that have no data in the selected range
+          final hasData = sector.data.any((point) => point['y'] > 0);
+          return hasData;
+        })
         .toList();
+
+ 
+
+    return filtered;
   }
 }
+
+
 
   Widget _buildSelectProductsButton() {
     return InkWell(
@@ -481,7 +514,7 @@ List<SectorData> _getFilteredData() {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Select Products'),
+            const Text('Select Products'),
             const SizedBox(width: 8),
             const Icon(Icons.arrow_drop_down, size: 20),
           ],

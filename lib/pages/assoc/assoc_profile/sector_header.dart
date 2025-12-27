@@ -18,7 +18,7 @@ class AssociationHeader extends StatelessWidget {
     final coverHeight = isMobile ? 160.0 : 240.0;
 
     // Get the image URL from sector data, default to null if not available
-    final imgUrl = association.imageUrl as String?;
+    final imgUrl = association.imageUrl;
 
  
 

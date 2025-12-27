@@ -10,6 +10,9 @@ class SectorService {
 
 
 
+// sector_service.dart
+
+
 Future<Map<String, dynamic>> getUnreadNotificationsCount(int farmerId) async {
   try {
     final response = await _apiService.get(
@@ -392,7 +395,7 @@ Future<Map<String, dynamic>> fetchSentMessages({
       throw Exception('Network error: ${e.message}');
     }
   }
-  throw Exception('Unexpected error occurred while fetching sent messages.');
+   
 }
 
 

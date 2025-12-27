@@ -7,7 +7,7 @@ import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 class LinkUserModal extends StatefulWidget {
   final Function(UserData) onUserLinked;
 
-  const LinkUserModal({Key? key, required this.onUserLinked}) : super(key: key);
+  const LinkUserModal({super.key, required this.onUserLinked});
 
   static Future<void> show({
     required BuildContext context,
@@ -84,13 +84,13 @@ class _LinkUserModalContent extends StatefulWidget {
   final List<Farmer> farmers;
 
   const _LinkUserModalContent({
-    Key? key,
+    super.key,
     required this.onLoadingStateChanged,
     required this.onUserLinked,
     required this.role,
     this.googleEmail,
     this.farmers = const [],
-  }) : super(key: key);
+  });
 
   @override
   State<_LinkUserModalContent> createState() => _LinkUserModalContentState();
@@ -102,7 +102,7 @@ class _LinkUserModalContentState extends State<_LinkUserModalContent> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController farmerSearchController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _isSubmitting = false;
+  bool isSubmitting = false;
   bool _obscurePassword = true;
   Farmer? selectedFarmer;
 
@@ -132,31 +132,29 @@ class _LinkUserModalContentState extends State<_LinkUserModalContent> {
     });
 
     if (!_formKey.currentState!.validate()) {
-      // Validation failed, don't proceed
-      print('Validation failed! Detailed errors:');
-
+    
       // Check each field individually
       final nameError = _validateName(nameController.text);
-      if (nameError != null) print('Name error: $nameError');
+      if (nameError != null)  ;
 
       final emailError = _validateEmail(emailController.text);
-      if (emailError != null) print('Email error: $emailError');
+      if (emailError != null) ;
 
       if (widget.googleEmail == null) {
         final passwordError = _validatePassword(passwordController.text);
-        if (passwordError != null) print('Password error: $passwordError');
+        if (passwordError != null)  ;
       }
 
       if (widget.farmers.isNotEmpty) {
         final farmerError = _validateFarmer(farmerSearchController.text);
-        if (farmerError != null) print('Farmer error: $farmerError');
+        if (farmerError != null) ;
       }
 
       return;
     }
 
     setState(() {
-      _isSubmitting = true;
+      isSubmitting = true;
       widget.onLoadingStateChanged(true);
     });
 
@@ -184,7 +182,7 @@ class _LinkUserModalContentState extends State<_LinkUserModalContent> {
     } finally {
       if (mounted) {
         setState(() {
-          _isSubmitting = false;
+          isSubmitting = false;
           widget.onLoadingStateChanged(false);
         });
       }
@@ -588,12 +586,12 @@ class _LinkUserModalFooter extends StatelessWidget {
   final String submitText;
 
   const _LinkUserModalFooter({
-    Key? key,
     required this.onSubmit,
     required this.onCancel,
     this.isLoading = false,
     this.submitText = 'Add User',
-  }) : super(key: key);
+  });
+
 
   @override
   Widget build(BuildContext context) {

@@ -29,8 +29,7 @@ class ToolBarWidget extends StatelessWidget {
   }
 
   Widget _toolsBarWidget(BuildContext context) {
-    final sidebarProvider =
-        Provider.of<SidebarProvider>(context, listen: false);
+     
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
 
     return Container(
@@ -65,7 +64,7 @@ class ToolBarWidget extends StatelessWidget {
                             Border.all(color: Colors.grey.shade200, width: 1),
                         color: Colors.transparent,
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.menu,
                       ),
                     ),
@@ -178,7 +177,7 @@ class YearPickerWidget extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircleAvatar(
+            const CircleAvatar(
               radius: 15,
               backgroundColor: Colors.white,
               child: Icon(
@@ -196,7 +195,7 @@ class YearPickerWidget extends StatelessWidget {
                   ),
             ),
             const SizedBox(width: 4),
-            Icon(
+            const Icon(
               Icons.arrow_drop_down,
               size: 18,
               color: FlarelineColors.primary,
@@ -224,8 +223,7 @@ class YearPickerWidget extends StatelessWidget {
             height: 400,
             child: YearPicker(
               firstDate: DateTime(currentYear - 20),
-              lastDate: DateTime(currentYear + 10),
-              initialDate: DateTime(yearProvider.selectedYear),
+              lastDate: DateTime(currentYear + 10), 
               selectedDate: DateTime(yearProvider.selectedYear),
               onChanged: (DateTime dateTime) {
                 yearProvider.setYear(dateTime.year);

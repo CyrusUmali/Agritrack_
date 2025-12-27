@@ -126,7 +126,7 @@ class _SectorBarChartState extends State<SectorBarChart> {
                           ),
                   ),
                   const SizedBox(height: 16),
-                  Container(
+                  SizedBox(
                     height: 300,
                     child: const Center(
                       child: Column(

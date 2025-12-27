@@ -1,10 +1,8 @@
-import 'package:flareline/pages/users/DAProfile/profile_header.dart';
+ 
 import 'package:flareline/pages/users/DAProfile/profile_info_card.dart';
 import 'package:flareline/pages/users/DAProfile/stats_card.dart';
 import 'package:flutter/material.dart';
-import 'package:flareline/pages/layout.dart';
-import 'package:flareline/providers/user_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:flareline/pages/layout.dart'; 
 import 'package:responsive_builder/responsive_builder.dart';
 
 class DAOfficerProfile extends LayoutWidget {

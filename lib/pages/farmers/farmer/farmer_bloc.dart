@@ -57,8 +57,7 @@ class FarmerBloc extends Bloc<FarmerEvent, FarmerState> {
 
       emit(FarmerLoaded(updatedFarmer));
     } catch (e) {
-      print('error her');
-      print('Error updating farmer: $e');
+      
       emit(FarmersError(e.toString()));
       // On error, try to reload the current farmer if we have an ID
       // Or fall back to the list view
@@ -182,7 +181,7 @@ class FarmerBloc extends Bloc<FarmerEvent, FarmerState> {
       // Sector filter
       final matchesSector = _sectorFilter == "All" ||
           _sectorFilter.isEmpty ||
-          (farmer.sector != null && farmer.sector == _sectorFilter);
+          (farmer.sector == _sectorFilter);
 
       if (!matchesSector) {
         return false;
@@ -218,7 +217,7 @@ class FarmerBloc extends Bloc<FarmerEvent, FarmerState> {
           (farmer.email?.toLowerCase().contains(_searchQuery) ?? false) ||
           (farmer.phone?.toLowerCase().contains(_searchQuery) ?? false) ||
           (farmer.barangay?.toLowerCase().contains(_searchQuery) ?? false) ||
-          (farmer.sector?.toLowerCase().contains(_searchQuery) ?? false) ||
+          (farmer.sector.toLowerCase().contains(_searchQuery)) ||
           (farmer.association?.toLowerCase().contains(_searchQuery) ?? false);
 
       return matchesSearch;
@@ -242,10 +241,10 @@ class FarmerBloc extends Bloc<FarmerEvent, FarmerState> {
         int compareResult;
         switch (_sortColumn) {
           case 'Name':
-            compareResult = (a.name ?? '').compareTo(b.name ?? '');
+            compareResult = (a.name).compareTo(b.name);
             break;
           case 'Sector':
-            compareResult = (a.sector ?? '').compareTo(b.sector ?? '');
+            compareResult = (a.sector).compareTo(b.sector);
             break;
           case 'Barangay':
             compareResult = (a.barangay ?? '').compareTo(b.barangay ?? '');

@@ -4,18 +4,15 @@ import 'package:flareline_uikit/components/modal/modal_dialog.dart';
 import 'package:flareline_uikit/components/buttons/button_widget.dart';
 import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io' if (dart.library.html) 'dart:html' as html;
-import 'package:http/http.dart' as http;
-import 'package:path/path.dart' as path;
+import 'package:http/http.dart' as http; 
 import 'dart:convert';
  
-import 'package:flareline/pages/test/map_widget/stored_polygons.dart';
+import 'package:flareline/pages/map/map_widget/stored_polygons.dart';
 
 class AddFarmerModal extends StatefulWidget {
   final Function(FarmerData) onFarmerAdded;
 
-  const AddFarmerModal({Key? key, required this.onFarmerAdded})
-      : super(key: key);
+  const AddFarmerModal({super.key, required this.onFarmerAdded});
 
   static Future<void> show({
     required BuildContext context,
@@ -84,10 +81,10 @@ class _AddFarmerModalContent extends StatefulWidget {
   final Function(FarmerData) onFarmerAdded;
 
   const _AddFarmerModalContent({
-    Key? key,
+    super.key,
     required this.onLoadingStateChanged,
     required this.onFarmerAdded,
-  }) : super(key: key);
+  });
 
   @override
   State<_AddFarmerModalContent> createState() => _AddFarmerModalContentState();
@@ -100,11 +97,10 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController barangayController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  String selectedSector = 'HVC';
-  html.File? _selectedImage;
+  String selectedSector = 'HVC'; 
   String? _imageUrl;
   bool _isUploading = false;
-  bool _isSubmitting = false;
+  bool isSubmitting = false;
 
   // Track which fields have been validated
   bool _nameValidated = false;
@@ -207,13 +203,13 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
     }
 
     setState(() {
-      _isSubmitting = true;
+      isSubmitting = true;
       widget.onLoadingStateChanged(true);
     });
 
     if (_isUploading) {
       setState(() {
-        _isSubmitting = false;
+        isSubmitting = false;
         widget.onLoadingStateChanged(false);
       });
       throw Exception('Please wait for image to upload');
@@ -243,7 +239,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
     } finally {
       if (mounted) {
         setState(() {
-          _isSubmitting = false;
+          isSubmitting = false;
           widget.onLoadingStateChanged(false);
         });
       }
@@ -699,11 +695,10 @@ class _AddFarmerModalFooter extends StatelessWidget {
   final bool isLoading;
 
   const _AddFarmerModalFooter({
-    Key? key,
     required this.onSubmit,
     required this.onCancel,
     this.isLoading = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

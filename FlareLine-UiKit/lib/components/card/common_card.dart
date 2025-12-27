@@ -10,7 +10,8 @@ class CommonCard extends StatelessWidget {
   final double? height;
   final String? title;
   final Color? color;
-  final double borderRadius; // New parameter for border radius
+  final double borderRadius;
+  final bool showShadow; // New parameter
 
   const CommonCard({
     super.key,
@@ -21,7 +22,8 @@ class CommonCard extends StatelessWidget {
     this.height,
     this.title,
     this.color,
-    this.borderRadius = 8.0, // Default value (adjust as needed)
+    this.borderRadius = 8.0,
+    this.showShadow = true, // Default value
   });
 
   @override
@@ -46,18 +48,19 @@ class CommonCard extends StatelessWidget {
             color: Theme.of(context).cardTheme.surfaceTintColor ??
                 Colors.transparent,
           ),
-          borderRadius:
-              BorderRadius.circular(borderRadius), // Apply border radius here
+          borderRadius: BorderRadius.circular(borderRadius),
         ),
-        shadows: [
-          BoxShadow(
-            color:
-                Theme.of(context).cardTheme.shadowColor ?? Colors.transparent,
-            blurRadius: 13,
-            offset: const Offset(0, 8),
-            spreadRadius: -3,
-          ),
-        ],
+        shadows: showShadow // Conditional shadow
+            ? [
+                BoxShadow(
+                  color: Theme.of(context).cardTheme.shadowColor ?? 
+                      Colors.transparent,
+                  blurRadius: 13,
+                  offset: const Offset(0, 8),
+                  spreadRadius: -3,
+                ),
+              ]
+            : [], // Empty list when no shadow
       ),
       child:
           title != null ? _titleWidget(title ?? '', childWidget) : childWidget,

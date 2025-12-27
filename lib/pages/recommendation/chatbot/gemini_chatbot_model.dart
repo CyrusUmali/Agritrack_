@@ -146,7 +146,6 @@ Provide practical, actionable advice tailored to the user's specific needs. Alwa
         onDone: _handleStreamDone,
       );
     } catch (e) {
-      print('Error in getBotResponse: $e');
       _addErrorMessage('Failed to get response: $e');
     }
   }
@@ -170,7 +169,6 @@ Provide practical, actionable advice tailored to the user's specific needs. Alwa
   }
 
   void _handleStreamError(error) {
-    print('Stream error: $error');
     _isTyping = false;
     _addErrorMessage('Failed to get streaming response. Please try again.');
     notifyListeners();

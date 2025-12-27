@@ -30,7 +30,7 @@ class AddYieldModal extends StatefulWidget {
     List<String> imageUrls,
   ) onYieldAdded;
 
-  const AddYieldModal({Key? key, required this.onYieldAdded}) : super(key: key);
+  const AddYieldModal({super.key, required this.onYieldAdded});
 
   static Future<void> show({
     required BuildContext context,
@@ -111,14 +111,14 @@ class _AddYieldModalContent extends StatefulWidget {
   final UserProvider userProvider;
 
   const _AddYieldModalContent({
-    Key? key,
+    super.key,
     required this.onLoadingStateChanged,
     required this.onYieldAdded,
     required this.products,
     required this.farmers,
     required this.farms,
     required this.userProvider,
-  }) : super(key: key);
+  });
 
   @override
   State<_AddYieldModalContent> createState() => _AddYieldModalContentState();
@@ -136,7 +136,7 @@ class _AddYieldModalContentState extends State<_AddYieldModalContent> {
   Farmer? selectedFarmer;
   Farm? selectedFarm;
   List<XFile> selectedImages = [];
-  bool _isSubmitting = false;
+  bool isSubmitting = false;
 
   bool _cropTypeValidated = false;
   bool _farmerValidated = false;
@@ -427,7 +427,7 @@ class _AddYieldModalContentState extends State<_AddYieldModalContent> {
     }
 
     setState(() {
-      _isSubmitting = true;
+      isSubmitting = true;
       widget.onLoadingStateChanged(true);
     });
 
@@ -470,7 +470,7 @@ class _AddYieldModalContentState extends State<_AddYieldModalContent> {
     } finally {
       if (mounted) {
         setState(() {
-          _isSubmitting = false;
+          isSubmitting = false;
           widget.onLoadingStateChanged(false);
         });
       }
@@ -962,11 +962,10 @@ class _AddYieldModalFooter extends StatelessWidget {
   final bool isLoading;
 
   const _AddYieldModalFooter({
-    Key? key,
     required this.onSubmit,
     required this.onCancel,
     this.isLoading = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -8,7 +8,6 @@ import 'package:flareline/pages/products/product/product_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io' if (dart.library.html) 'dart:html' as html;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
@@ -35,10 +34,8 @@ class _ProductHeaderState extends State<ProductHeader>
   bool _isEditing = false;
   bool _isLoading = false;
   late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-
-  // Cloudinary related state
-  html.File? _selectedImage;
+  late Animation<double> fadeAnimation;
+ 
   String? _newImageUrl;
   bool _isUploading = false;
 
@@ -58,7 +55,7 @@ class _ProductHeaderState extends State<ProductHeader>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
   }
@@ -195,7 +192,7 @@ class _ProductHeaderState extends State<ProductHeader>
 
     context.read<ProductBloc>().add(
           EditProduct(
-            id: widget.item.id!,
+            id: widget.item.id,
             name: _nameController.text.trim(),
             description: _descriptionController.text.trim(),
             category: _selectedSector,

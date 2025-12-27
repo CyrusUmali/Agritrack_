@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flareline/providers/user_provider.dart';
-import 'package:provider/provider.dart';
-
+import 'package:flutter/material.dart'; 
 class ProfileHeader extends StatelessWidget {
   final Map<String, dynamic> user;
   final bool isMobile;
@@ -9,9 +6,7 @@ class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key, required this.user, this.isMobile = false});
 
   @override
-  Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-    final isCurrentUser = userProvider.user?.id == user['id'];
+  Widget build(BuildContext context) { 
 
     return Card(
       elevation: 1,

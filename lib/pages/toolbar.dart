@@ -1,5 +1,4 @@
-library flareline_uikit;
-
+ 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flareline/core/theme/global_colors.dart';
 import 'package:flareline/pages/announcement/announcements_page.dart';  
@@ -12,12 +11,9 @@ import 'package:flareline/providers/user_provider.dart';
 import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 import 'package:flareline_uikit/service/sidebar_provider.dart';
 import 'package:flareline_uikit/service/year_picker_provider.dart';
-import 'package:flareline_uikit/service/theme_provider.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flareline_uikit/service/theme_provider.dart'; 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart'; 
-import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
-import 'package:iconify_flutter_plus/icons/mdi.dart';
+import 'package:flutter_svg/flutter_svg.dart';  
 import 'package:provider/provider.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 
@@ -41,13 +37,11 @@ class ToolBarWidget extends StatelessWidget {
   }
 
   Widget _toolsBarWidget(BuildContext context) {
-    final sidebarProvider =
-        Provider.of<SidebarProvider>(context, listen: false);
+    Provider.of<SidebarProvider>(context, listen: false);
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
 
 
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.user; 
     final farmerId = userProvider.farmer?.id;
        final isFarmer = userProvider.isFarmer;
 
@@ -225,13 +219,8 @@ if (isFarmer)
 
     // Define which routes should show the year picker
     const routesWithYearPicker = {
-      '/',
-      '/users',
-      '/yields',
-      '/farms',
-      '/usersPage',
-      '/assocs',
-      '/farmers',
+      '/', 
+      '/yields',   
       '/sectors',
       // Add other routes that need year filtering
     };

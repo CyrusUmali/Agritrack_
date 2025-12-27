@@ -196,13 +196,13 @@ class _FarmsExportButtonWidgetState extends State<FarmsExportButtonWidget> {
       // Farm ID - Column 0 (Center aligned)
       sheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
-        ..value = IntCellValue(farm.id ?? 0)
+        ..value = IntCellValue(farm.id)
         ..cellStyle = centerDataStyle;
 
       // Farm Name - Column 1 (Left aligned)
       sheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow))
-        ..value = TextCellValue(farm.name ?? '-')
+        ..value = TextCellValue(farm.name)
         ..cellStyle = textDataStyle;
 
       // Owner Name - Column 2 (Left aligned)
@@ -288,10 +288,6 @@ class _FarmsExportButtonWidgetState extends State<FarmsExportButtonWidget> {
     return (volume / 1000) / area;
   }
 
-  String _formatDate(DateTime? date) {
-    if (date == null) return 'N/A';
-    return DateFormat('yyyy-MM-dd').format(date);
-  }
 
   Future<void> _saveExcelFile(List<int> bytes) async {
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
@@ -382,7 +378,7 @@ class _FarmsExportButtonWidgetState extends State<FarmsExportButtonWidget> {
 
   void _showAndroidSaveSuccess(
       BuildContext context, String filename, String path) {
-    final shortPath = path.split('/Download/').last;
+ 
     ToastHelper.showSuccessToast(
       'File saved to Downloads!\n$filename',
       context,

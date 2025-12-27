@@ -1,9 +1,6 @@
-import 'dart:async';
-import 'dart:io';
-
+import 'dart:async'; 
 import 'package:dio/dio.dart';
-import 'package:flareline/core/models/user_model.dart';
-import 'package:flareline/services/api_service.dart';
+import 'package:flareline/core/models/user_model.dart'; 
 import 'package:flareline/repositories/base_repository.dart'; // Import the base repository
 import 'package:firebase_auth/firebase_auth.dart';
 

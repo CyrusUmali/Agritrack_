@@ -97,8 +97,8 @@ class SectorDataTableWidget extends TableWidget<SectorsViewModel> {
  SectorDataTableWidget({
     this.onSectorSelected, 
     required this.selectedYear, // Make it required
-    Key? key
-  }) : super(key: key);
+     super.key,
+  });
 
   @override
   SectorsViewModel viewModelBuilder(BuildContext context) {
@@ -107,7 +107,7 @@ class SectorDataTableWidget extends TableWidget<SectorsViewModel> {
       onSectorSelected,
       (id) async {
         // Implement delete functionality if needed
-        final sectorService = RepositoryProvider.of<SectorService>(context);
+        RepositoryProvider.of<SectorService>(context);
         try {
           // Call API to delete sector
           // await sectorService.deleteSector(id);
@@ -153,7 +153,7 @@ class SectorDataTableWidget extends TableWidget<SectorsViewModel> {
   @override
   Widget actionWidgetsBuilder(BuildContext context,
       TableDataRowsTableDataRows columnData, SectorsViewModel viewModel) {
-    final sector = viewModel.sectors.firstWhere(
+    viewModel.sectors.firstWhere(
       (s) => s['id'].toString() == columnData.id,
       orElse: () => {},
     );
@@ -292,16 +292,14 @@ class SectorsViewModel extends BaseTableProvider {
         row.add(sectorNameCell);
 
         var landAreaCell = TableDataRowsTableDataRows()
-          ..text = (sector['stats']?['totalLandArea']?.toString() ?? '0') +
-              ' hectare'
+          ..text = '${sector['stats']?['totalLandArea']?.toString() ?? '0'} hectare'
           ..dataType = CellDataType.TEXT.type
           ..columnName = 'Land Area'
           ..id = sector['id'].toString();
         row.add(landAreaCell);
 
          var areaHarvestedCell = TableDataRowsTableDataRows()
-          ..text = (sector['stats']?['totalAreaHarvested']?.toString() ?? '0') +
-              ' hectare'
+          ..text = '${sector['stats']?['totalAreaHarvested']?.toString() ?? '0'} hectare'
           ..dataType = CellDataType.TEXT.type
           ..columnName = 'Area Harvested'
           ..id = sector['id'].toString();
@@ -323,7 +321,7 @@ class SectorsViewModel extends BaseTableProvider {
 
         var yieldVolumeCell = TableDataRowsTableDataRows()
           ..text =
-              (sector['stats']?['totalYieldVolume']?.toString() ?? '0') + ' kg'
+              '${sector['stats']?['totalYieldVolume']?.toString() ?? '0'} kg'
           ..dataType = CellDataType.TEXT.type
           ..columnName = 'Yield Volume'
           ..id = sector['id'].toString();
@@ -332,7 +330,7 @@ class SectorsViewModel extends BaseTableProvider {
        
 
         var productionCell = TableDataRowsTableDataRows()
-          ..text = (sector['stats']?['metricTons']?.toString() ?? '0') + ' mt'
+          ..text = '${sector['stats']?['metricTons']?.toString() ?? '0'} mt'
           ..dataType = CellDataType.TEXT.type
           ..columnName = 'Production'
           ..id = sector['id'].toString();
@@ -355,7 +353,6 @@ class SectorsViewModel extends BaseTableProvider {
       tableDataEntity = tableData;
     } catch (e) {
       // Handle error
-      print('Error loading sectors: $e');
       // You might want to show an error message to the user
     }
   }

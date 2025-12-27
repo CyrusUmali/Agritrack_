@@ -122,7 +122,7 @@ class YieldImageHandler {
           ),
         const SizedBox(height: 8),
         Text(
-          'Uploaded Images (${totalImages}/5)',
+          'Uploaded Images ($totalImages/5)',
           style: TextStyle(
             fontSize: isMobile ? 12 : 14,
             fontWeight: FontWeight.w500,

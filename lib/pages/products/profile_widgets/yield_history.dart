@@ -341,11 +341,7 @@ class YieldHistoryState extends State<YieldHistory> {
         'year': ''
       },
     );
-
-    final monthlyVolume =
-        selectedYield['monthlyVolume'] as List<dynamic>? ?? List.filled(12, 0);
-    final monthlyArea =
-        selectedYield['monthlyArea'] as List<dynamic>? ?? List.filled(12, 0);
+ 
     final monthlyYieldPerHectare =
         selectedYield['monthlyYieldPerHectare'] as List<dynamic>? ??
             List.filled(12, 0);

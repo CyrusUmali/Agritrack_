@@ -53,7 +53,7 @@ class _FarmsTableState extends State<FarmsTable> {
 
       switch (_sortType) {
         case FarmSortType.name:
-          comparison = (a.name ?? '').compareTo(b.name ?? '');
+          comparison = (a.name).compareTo(b.name);
           break;
         case FarmSortType.location:
           comparison = (a.barangay ?? '').compareTo(b.barangay ?? '');
@@ -112,19 +112,8 @@ class _FarmsTableState extends State<FarmsTable> {
     });
   }
 
-  String _formatVolume(int? volume) {
-    if (volume == null || volume == 0) return 'N/A';
-    if (volume >= 1000) {
-      return '${(volume / 1000).toStringAsFixed(1)} t';
-    }
-    return '$volume kg';
-  }
 
-  String _formatYieldPerHectare(Farm farm) {
-    final yieldValue = _calculateYieldPerHectare(farm);
-    if (yieldValue == 0) return 'N/A';
-    return '${yieldValue.toStringAsFixed(2)} t/ha';
-  }
+ 
 
 
 
@@ -276,8 +265,8 @@ class FarmsDataTableWidget extends TableWidget<FarmsTableViewModel> {
     required this.sortType,
     required this.sortAscending,
     required this.onSort,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
 
  
@@ -362,9 +351,8 @@ Widget headerBuilder(
 
   // For sortable headers, wrap with InkWell
   return InkWell(
-  onTap: () {
-  print('Tapped on $headerName header, sortType: $headerSortType');
-  onSort(headerSortType!);
+  onTap: () { 
+  onSort(headerSortType);
 },
     child: headerContent,
   );
@@ -381,7 +369,7 @@ Widget headerBuilder(
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => FarmProfile(farmId: farm.id ?? 0),
+        builder: (context) => FarmProfile(farmId: farm.id),
       ),
     );
   }
@@ -407,7 +395,7 @@ Widget headerBuilder(
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => FarmProfile(farmId: farm.id ?? 0),
+            builder: (context) => FarmProfile(farmId: farm.id),
           ),
         );
       },
@@ -495,10 +483,10 @@ class FarmsTableViewModel extends BaseTableProvider {
 
       // Name
       var nameCell = TableDataRowsTableDataRows()
-        ..text = farm.name ?? 'Unknown'
+        ..text = farm.name
         ..dataType = CellDataType.TEXT.type
         ..columnName = 'Name'
-        ..id = farm.id?.toString() ?? '';
+        ..id = farm.id.toString();
       row.add(nameCell);
 
       // Location
@@ -506,7 +494,7 @@ class FarmsTableViewModel extends BaseTableProvider {
         ..text = farm.barangay ?? 'Unknown location'
         ..dataType = CellDataType.TEXT.type
         ..columnName = 'Location'
-        ..id = farm.id?.toString() ?? '';
+        ..id = farm.id.toString();
       row.add(locationCell);
 
       // Area
@@ -514,7 +502,7 @@ class FarmsTableViewModel extends BaseTableProvider {
         ..text = farm.hectare?.toStringAsFixed(1) ?? 'N/A'
         ..dataType = CellDataType.TEXT.type
         ..columnName = 'Area (ha)'
-        ..id = farm.id?.toString() ?? '';
+        ..id = farm.id.toString();
       row.add(areaCell);
 
       // Volume (only for non-farmers)
@@ -523,7 +511,7 @@ class FarmsTableViewModel extends BaseTableProvider {
           ..text = _formatVolume(farm.volume)
           ..dataType = CellDataType.TEXT.type
           ..columnName = 'Volume'
-          ..id = farm.id?.toString() ?? '';
+          ..id = farm.id.toString();
         row.add(volumeCell);
 
         // Yield/Ha (only for non-farmers)
@@ -531,7 +519,7 @@ class FarmsTableViewModel extends BaseTableProvider {
           ..text = _formatYieldPerHectare(farm)
           ..dataType = CellDataType.TEXT.type
           ..columnName = 'Yield/Ha'
-          ..id = farm.id?.toString() ?? '';
+          ..id = farm.id.toString();
         row.add(yieldCell);
       }
 
@@ -540,7 +528,7 @@ class FarmsTableViewModel extends BaseTableProvider {
         ..text = 'Active' // You might want to get this from farm data
         ..dataType = CellDataType.TEXT.type
         ..columnName = 'Status'
-        ..id = farm.id?.toString() ?? '';
+        ..id = farm.id.toString();
       row.add(statusCell);
 
       // Action
@@ -548,7 +536,7 @@ class FarmsTableViewModel extends BaseTableProvider {
         ..text = ""
         ..dataType = CellDataType.ACTION.type
         ..columnName = 'Action'
-        ..id = farm.id?.toString() ?? '';
+        ..id = farm.id.toString();
       row.add(actionCell);
 
       rows.add(row);
@@ -571,8 +559,8 @@ class MobileFarmsListWidget extends StatefulWidget {
     required this.farms,
     required this.isFarmer,
     this.itemsPerPage = 10,
-    Key? key,
-  }) : super(key: key);
+      super.key,
+  });
 
   @override
   State<MobileFarmsListWidget> createState() => _MobileFarmsListWidgetState();
@@ -668,7 +656,7 @@ class _MobileFarmsListWidgetState extends State<MobileFarmsListWidget> {
                     child: Icon(Icons.agriculture, color: Colors.green),
                   ),
                   title: Text(
-                    farm.name ?? 'Unknown',
+                    farm.name,
                     style: TextStyle(fontWeight: FontWeight.w500),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -721,7 +709,7 @@ class _MobileFarmsListWidgetState extends State<MobileFarmsListWidget> {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => FarmProfile(farmId: farm.id ?? 0),
+                      builder: (context) => FarmProfile(farmId: farm.id),
                     ),
                   ),
                 );

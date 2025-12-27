@@ -1,8 +1,7 @@
 import 'dart:async';
 
 import 'package:flareline/core/models/farmer_model.dart';
-import 'package:flareline/core/theme/global_colors.dart';
-import 'package:flareline/pages/assoc/assoc_profile.dart';
+import 'package:flareline/core/theme/global_colors.dart'; 
 import 'package:flareline/pages/farmers/add_farmer_modal_2.dart';
 import 'package:flareline/pages/farmers/farmer/farmer_bloc.dart';
 import 'package:flareline/pages/toast/toast_helper.dart';
@@ -331,7 +330,6 @@ if (screenHeight < 400) {
                 ),
                 onPressed: () async {
                   // Show loading indicator while ensuring data is fresh
-                  final Completer<void> completer = Completer();
 
                   // Refresh the farmer list
                   context.read<FarmerBloc>().add(LoadFarmers());
@@ -535,7 +533,6 @@ if (screenHeight < 400) {
               ),
               onPressed: () async {
                 // Show loading indicator while ensuring data is fresh
-                final Completer<void> completer = Completer();
 
                 // Refresh the farmer list
                 context.read<FarmerBloc>().add(LoadFarmers());
@@ -643,8 +640,8 @@ class DataTableWidget extends TableWidget<UsersViewModel> {
 
   DataTableWidget({
     required this.users,
-    Key? key,
-  }) : super(key: key);
+     super.key,
+  });
 
   @override
   UsersViewModel viewModelBuilder(BuildContext context) {

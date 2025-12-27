@@ -8,43 +8,23 @@ import 'package:flareline/pages/auth/forgot_password/forgot_password.dart'
 import 'package:flareline/pages/auth/not_found.dart';
 import 'package:flareline/pages/auth/sign_in/sign_in_page.dart';
 import 'package:flareline/pages/farms/farms_page.dart';
-import 'package:flareline/pages/modal/modal_page.dart' deferred as modal;
-import 'package:flareline/pages/table/contacts_page.dart' deferred as contacts;
-import 'package:flareline/pages/toast/toast_page.dart' deferred as toast;
-import 'package:flareline/pages/tools/tools_page.dart' deferred as tools;
 import 'package:flareline/services/roleguard.dart';
 import 'package:flareline/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flareline/pages/alerts/alert_page.dart' deferred as alert;
-import 'package:flareline/pages/button/button_page.dart' deferred as button;
-import 'package:flareline/pages/form/form_elements_page.dart'
-    deferred as formElements;
 
 import 'package:flareline/pages/contactus/contact_us.dart'
     deferred as contactUs;
-
-import 'package:flareline/pages/form/form_layout_page.dart'
-    deferred as formLayout;
 import 'package:flareline/pages/auth/sign_in/sign_in_page.dart'
     deferred as signIn;
 import 'package:flareline/pages/auth/sign_up/sign_up_page.dart'
     deferred as signUp;
-import 'package:flareline/pages/calendar/calendar_page.dart'
-    deferred as calendar;
-import 'package:flareline/pages/chart/chart_page.dart' deferred as chart;
 import 'package:flareline/pages/dashboard/dashboard_page.dart';
-import 'package:flareline/pages/inbox/index.dart' deferred as inbox;
-import 'package:flareline/pages/invoice/invoice_page.dart' deferred as invoice;
-import 'package:flareline/pages/profile/profile_page.dart' deferred as profile;
 import 'package:flareline/pages/resetpwd/reset_pwd_page.dart'
     deferred as resetPwd;
 import 'package:flareline/pages/setting/settings_page.dart'
     deferred as settings;
-import 'package:flareline/pages/table/tables_page.dart' deferred as tables;
-import 'package:flareline/pages/table/advance_table_page.dart'
-    deferred as advanceTable;
 
-import 'package:flareline/pages/test/Map.dart'
+import 'package:flareline/pages/map/Map.dart'
     deferred as mapPage; // Import your new page
 
 import 'package:flareline/pages/farms/farms_page.dart'
@@ -74,36 +54,13 @@ import 'package:flareline/pages/yields/yields_page.dart' deferred as yieldsPage;
 typedef PathWidgetBuilder = Widget Function(BuildContext, String?);
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
+// ignore: non_constant_identifier_names
 final List<Map<String, Object>> MAIN_PAGES = [
   {'routerPath': '/', 'widget': const Dashboard()},
-  
   {
-    'routerPath': '/calendar',
-    'widget':
-        DeferredWidget(calendar.loadLibrary, () => calendar.CalendarPage())
-  },
-  {
-    'routerPath': '/profile',
-    'widget': DeferredWidget(profile.loadLibrary, () => profile.ProfilePage())
-  },
-  {
-    'routerPath': '/formElements',
-    'widget': DeferredWidget(
-        formElements.loadLibrary, () => formElements.FormElementsPage()),
-  },
-
-
-{
     'routerPath': '/contactus',
-    'widget': DeferredWidget(
-        contactUs.loadLibrary, () => contactUs.ContactUsPage())
-  },
-
-
-  {
-    'routerPath': '/formLayout',
-    'widget': DeferredWidget(
-        formLayout.loadLibrary, () => formLayout.FormLayoutPage())
+    'widget':
+        DeferredWidget(contactUs.loadLibrary, () => contactUs.ContactUsPage())
   },
   {
     'routerPath': '/signIn',
@@ -119,58 +76,9 @@ final List<Map<String, Object>> MAIN_PAGES = [
         forgotPwd.loadLibrary, () => forgotPwd.ForgotPasswordWidget()),
   },
   {
-    'routerPath': '/invoice',
-    'widget': DeferredWidget(invoice.loadLibrary, () => invoice.InvoicePage())
-  },
-  {
-    'routerPath': '/inbox',
-    'widget': DeferredWidget(inbox.loadLibrary, () => inbox.InboxWidget())
-  },
-  {
-    'routerPath': '/tables',
-    'widget': DeferredWidget(tables.loadLibrary, () => tables.TablesPage())
-  },
-  {
-    'routerPath': '/advancetable',
-    'widget': DeferredWidget(
-        advanceTable.loadLibrary, () => advanceTable.AdvanceTablePage())
-  },
-  {
-    'routerPath': '/settings',
-    'widget':
-        DeferredWidget(settings.loadLibrary, () => settings.SettingsPage())
-  },
-  {
-    'routerPath': '/basicChart',
-    'widget': DeferredWidget(chart.loadLibrary, () => chart.ChartPage())
-  },
-  {
-    'routerPath': '/buttons',
-    'widget': DeferredWidget(button.loadLibrary, () => button.ButtonPage())
-  },
-  {
-    'routerPath': '/alerts',
-    'widget': DeferredWidget(alert.loadLibrary, () => alert.AlertPage())
-  },
-  {
-    'routerPath': '/contacts',
-    'widget':
-        DeferredWidget(contacts.loadLibrary, () => contacts.ContactsPage())
-  },
-  {
-    'routerPath': '/tools',
-    'widget': DeferredWidget(tools.loadLibrary, () => tools.ToolsPage())
-  },
-  {
-    'routerPath': '/toast',
-    'widget': DeferredWidget(toast.loadLibrary, () => toast.ToastPage())
-  },
-  {
     'routerPath': '/map',
-    'widget': DeferredWidget(
-        mapPage.loadLibrary,
-        () =>
-            mapPage.Map(routeObserver: routeObserver) // Pass observer here
+    'widget': DeferredWidget(mapPage.loadLibrary,
+        () => mapPage.Map(routeObserver: routeObserver) // Pass observer here
         ), // Add new page
   },
   {
@@ -203,21 +111,15 @@ final List<Map<String, Object>> MAIN_PAGES = [
     'widget': DeferredWidget(recommendationPage.loadLibrary,
         () => recommendationPage.RecommendationPage()), // Add new page
   },
-
   {
     'routerPath': '/chatbot',
     'widget': DeferredWidget(chatbotPage.loadLibrary,
         () => chatbotPage.ChatbotPage()), // Add new page
   },
-
   {
     'routerPath': '/reports',
     'widget': DeferredWidget(reportsPage.loadLibrary,
         () => reportsPage.ReportsPage()), // Add new page
-  },
-  {
-    'routerPath': '/modal',
-    'widget': DeferredWidget(modal.loadLibrary, () => modal.ModalPage())
   },
   {
     'routerPath': '/assocs',
@@ -241,8 +143,6 @@ class RouteConfiguration {
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     final path = settings.name!;
     final context = navigatorContext!;
-
-   
 
     // First handle public routes
     if (AuthGuard.isPublicRoute(path)) {

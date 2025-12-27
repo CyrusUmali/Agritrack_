@@ -14,12 +14,12 @@ import 'yield_image_handler.dart';
 
 class YieldProfileForm extends StatefulWidget {
   final Yield yieldData;
-  final Function(Yield)? onYieldUpdated; // Add this
+  final Function(Yield)? onYieldUpdated;
 
   const YieldProfileForm({
     super.key,
     required this.yieldData,
-    this.onYieldUpdated, // Add this
+    this.onYieldUpdated,
   });
 
   @override
@@ -32,7 +32,7 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
   late TextEditingController _volumeController;
   late TextEditingController _valueController;
   late TextEditingController _notesController;
-    bool _toastShown = false; // Add this
+  bool toastShown = false;
 
   DateTime? _selectedHarvestDate;
 
@@ -41,23 +41,18 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
   bool _isAccepting = false;
   bool _isRejecting = false;
 
-  // Add these variables to track the current
-  String? _currentOperation;
-
   @override
   void initState() {
-    
     super.initState();
-     _toastShown = false; // Initialize
+    toastShown = false;
     _imageHandler.existingImages = widget.yieldData.images
-            ?.where((img) => img != null)
+            .where((img) => img != null)
             .cast<String>()
-            .toList() ??
-        [];
+            .toList();
     _areaHarvestedController = TextEditingController(
         text: widget.yieldData.areaHarvested?.toStringAsFixed(3) ?? '0.00');
     _volumeController = TextEditingController(
-        text: widget.yieldData.volume?.toStringAsFixed(2) ?? '0.00');
+        text: widget.yieldData.volume.toStringAsFixed(2));
     _valueController = TextEditingController(
         text: widget.yieldData.value?.toStringAsFixed(2) ?? '0.00');
     _notesController =
@@ -107,28 +102,20 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
   }
 
   Future<void> _updateYield(String status) async {
-    // Prevent multiple simultaneous operations
     if (_isSaving || _isDeleting || _isAccepting || _isRejecting) {
-      // print('Operation already in progress, ignoring...');
       return;
     }
 
     try {
-      // Set the appropriate loading state and current operation
       setState(() {
         if (status == 'Accepted') {
           _isAccepting = true;
-          _currentOperation = 'accept';
         } else if (status == 'Rejected') {
           _isRejecting = true;
-          _currentOperation = 'reject';
         } else {
           _isSaving = true;
-          _currentOperation = 'save';
         }
       });
-
-      // print('Starting ${_currentOperation} operation...');
 
       final newImageUrls = await _imageHandler.uploadImagesToCloudinary();
       final allImages = [..._imageHandler.existingImages, ...newImageUrls];
@@ -145,7 +132,6 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
 
       context.read<YieldBloc>().add(UpdateYield(updatedYield));
     } catch (e) {
-      // print('Error updating yield: $e');
       _showToast('Error updating yield: ${e.toString()}', isError: true);
       _resetLoadingStates();
     }
@@ -156,7 +142,6 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
       _isSaving = false;
       _isAccepting = false;
       _isRejecting = false;
-      _currentOperation = null;
     });
   }
 
@@ -178,20 +163,16 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
     final harvestDate = _selectedHarvestDate != null
         ? DateFormat('dd/MM/yyyy').format(_selectedHarvestDate!)
         : widget.yieldData.harvestDate != null
-            ? DateFormat('dd/MM/yyyy').format(widget.yieldData.harvestDate!)
+            ? DateFormat('dd/MM/yyyy').format(widget.yieldData.harvestDate)
             : 'Not specified';
 
     return BlocListener<YieldBloc, YieldState>(
       listener: (context, state) {
-        // print('BlocListener triggered with state: ${state.runtimeType}');
-
         if (state is YieldUpdated) {
-           _toastShown = true;
-          // print('YieldUpdated received, resetting loading states');
+          toastShown = true;
           _resetLoadingStates();
           _showToast('Yield updated successfully', isError: false);
 
-          // Call the callback with the updated yield data
           if (widget.onYieldUpdated != null) {
             final updatedYield = widget.yieldData.copyWith(
               images: [..._imageHandler.existingImages],
@@ -200,40 +181,33 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
               value: double.tryParse(_valueController.text),
               notes: _notesController.text,
               harvestDate: _selectedHarvestDate,
-              status:
-                  state.yield.status, // Use the status from the updated yield
+              status: state.yield.status,
             );
             widget.onYieldUpdated!(updatedYield);
           }
 
-             Future.delayed(const Duration(seconds: 2), () {
-              if (mounted) {
-                setState(() {
-                  _toastShown = false;
-                });
-              }
-            });
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) {
+              setState(() {
+                toastShown = false;
+              });
+            }
+          });
         } else if (state is YieldsLoaded) {
           if (state.message?.contains('deleted') == true) {
-            // print('Yield deleted successfully');
             setState(() => _isDeleting = false);
             _showToast(state.message!, isError: false);
             Navigator.of(context).pushReplacementNamed('/yields');
           } else {
-            // Only reset loading states if this is not a delete operation
             if (!_isDeleting) {
-              // print(
-              //     'YieldsLoaded received, resetting non-delete loading states');
               setState(() {
                 _isSaving = false;
                 _isAccepting = false;
                 _isRejecting = false;
-                _currentOperation = null;
               });
             }
           }
         } else if (state is YieldsError) {
-          // print('YieldsError received: ${state.message}');
           _resetLoadingStates();
           setState(() => _isDeleting = false);
           _showToast(state.message, isError: true);
@@ -243,169 +217,324 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
         padding: const EdgeInsets.all(16.0),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            bool isMobile = constraints.maxWidth < 600;
-            double formWidth = isMobile ? double.infinity : 800;
-            double spacing = isMobile ? 12.0 : 16.0;
-
-            return Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: formWidth),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    buildSectionTitle(
-                        context.translate('Product Information'), context,
-                        icon: Icons.shopping_bag),
-                    buildResponsiveRow(
-                      children: [
-                        buildTextField(
-                          context.translate('Product Name'),
-                          widget.yieldData.productName ?? 'Not specified',
-                          isMobile,
-                          enabled: false,
-                        ),
-                        buildTextField(
-                          //  "Product Name",
-                          // context.translate('Product Sector').
-
-                          context.translate('Product Sector'),
-                          widget.yieldData.sector ?? 'Not specified',
-                          isMobile,
-                          enabled: false,
-                        ),
-                      ],
-                      spacing: spacing,
-                      isMobile: isMobile,
-                    ),
-                    SizedBox(height: spacing),
-                    buildSectionTitle(
-                        context.translate('Farm Information'), context,
-                        icon: Icons.agriculture),
-                    buildResponsiveRow(
-                      children: [
-                        buildTextField(
-                          context.translate('Farmer Name'),
-                          widget.yieldData.farmerName ?? 'Not specified',
-                          isMobile,
-                          enabled: false,
-                        ),
-                        buildTextField(
-                          context.translate('Location'),
-                          widget.yieldData.barangay ?? 'Not specified',
-                          isMobile,
-                          enabled: false,
-                        ),
-                      ],
-                      spacing: spacing,
-                      isMobile: isMobile,
-                    ),
-                    SizedBox(height: spacing),
-                    buildResponsiveRow(
-                      children: [
-                        buildTextField(
-                          context.translate('Farm Name'),
-                          widget.yieldData.farmName ?? 'Not specified',
-                          isMobile,
-                          enabled: false,
-                        ),
-                        buildEditableTextField(
-                          controller: _areaHarvestedController,
-                          label: context.translate('Area harvested (Ha)'),
-                          isMobile: isMobile,
-                          keyboardType:
-                              TextInputType.numberWithOptions(decimal: true),
-                          suffixText: 'ha',
-                        ),
-                      ],
-                      spacing: spacing,
-                      isMobile: isMobile,
-                    ),
-                    SizedBox(height: spacing),
-                    buildSectionTitle(
-                        context.translate('Yield Information'), context,
-                        icon: Icons.assessment),
-                    buildResponsiveRow(
-                      children: [
-                        buildEditableTextField(
-                          controller: _volumeController,
-                          label: context.translate('Yield Amount'),
-                          isMobile: isMobile,
-                          keyboardType:
-                              TextInputType.numberWithOptions(decimal: true),
-                          suffixText: 'kg',
-                        ),
-                        buildDatePickerField(
-                          context.translate('Harvest Date'),
-                          isMobile,
-                          value: harvestDate,
-                          enabled: true,
-                          onTap: () => _selectHarvestDate(context),
-                        ),
-                      ],
-                      spacing: spacing,
-                      isMobile: isMobile,
-                    ),
-                    SizedBox(height: spacing),
-                    buildResponsiveRow(
-                      children: [
-                        buildEditableTextField(
-                          controller: _valueController,
-                          label: context.translate('Value in (Php)'),
-                          isMobile: isMobile,
-                          keyboardType:
-                              TextInputType.numberWithOptions(decimal: true),
-                          prefixText: '\₱',
-                        ),
-                      ],
-                      spacing: spacing,
-                      isMobile: isMobile,
-                    ),
-                    SizedBox(height: spacing),
-                    buildSectionTitle(
-                        context.translate('Documentation'), context,
-                        icon: Icons.attach_file),
-                    _buildImageUploadSection(isMobile),
-                    SizedBox(height: spacing),
-                    buildSectionTitle(
-                        context.translate('Additional Information'), context,
-                        icon: Icons.note),
-                    buildEditableTextField(
-                      controller: _notesController,
-                      label: context.translate('Notes'),
-                      isMobile: isMobile,
-                      maxLines: 3,
-                    ),
-                    SizedBox(height: spacing * 1.5),
-                    YieldProfileActions(
-                      isMobile: isMobile,
-                      onAccept: () {
-                        _updateYield('Accepted');
-                      },
-                      onReject: () {
-                        _updateYield('Rejected');
-                      },
-                      onSave: () {
-                        _updateYield('');
-                      },
-                      onDelete: _deleteYield,
-                      isLoading: _isSaving,
-                      isDeleting: _isDeleting,
-                      isAccepting: _isAccepting,
-                      isRejecting: _isRejecting,
-                      yieldStatus: widget.yieldData.status,
-                    )
-                  ],
-                ),
-              ),
-            );
+            bool isMobile = constraints.maxWidth < 768;
+            
+            if (isMobile) {
+              // Mobile layout (single column)
+              return _buildMobileLayout(context, harvestDate);
+            } else {
+              // Desktop layout (two columns)
+              return _buildDesktopLayout(context, harvestDate);
+            }
           },
         ),
       ),
     );
   }
 
+  Widget _buildMobileLayout(BuildContext context, String harvestDate) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildSectionTitle(
+              context.translate('Product Information'), context,
+              icon: Icons.shopping_bag),
+          buildResponsiveRow(
+            children: [
+              buildTextField(
+                context.translate('Product Name'),
+                widget.yieldData.productName ?? 'Not specified',
+                true,
+                enabled: false,
+              ),
+              buildTextField(
+                context.translate('Product Sector'),
+                widget.yieldData.sector ?? 'Not specified',
+                true,
+                enabled: false,
+              ),
+            ],
+            spacing: 12.0,
+            isMobile: true,
+          ),
+          const SizedBox(height: 12),
+          buildSectionTitle(
+              context.translate('Farm Information'), context,
+              icon: Icons.agriculture),
+          buildResponsiveRow(
+            children: [
+              buildTextField(
+                context.translate('Farmer Name'),
+                widget.yieldData.farmerName ?? 'Not specified',
+                true,
+                enabled: false,
+              ),
+              buildTextField(
+                context.translate('Location'),
+                widget.yieldData.barangay ?? 'Not specified',
+                true,
+                enabled: false,
+              ),
+            ],
+            spacing: 12.0,
+            isMobile: true,
+          ),
+          const SizedBox(height: 12),
+          buildResponsiveRow(
+            children: [
+              buildTextField(
+                context.translate('Farm Name'),
+                widget.yieldData.farmName ?? 'Not specified',
+                true,
+                enabled: false,
+              ),
+              buildEditableTextField(
+                controller: _areaHarvestedController,
+                label: context.translate('Area harvested (Ha)'),
+                isMobile: true,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                suffixText: 'ha',
+              ),
+            ],
+            spacing: 12.0,
+            isMobile: true,
+          ),
+          const SizedBox(height: 12),
+          buildSectionTitle(
+              context.translate('Yield Information'), context,
+              icon: Icons.assessment),
+          buildResponsiveRow(
+            children: [
+              buildEditableTextField(
+                controller: _volumeController,
+                label: context.translate('Yield Amount'),
+                isMobile: true,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                suffixText: 'kg',
+              ),
+              buildDatePickerField(
+                context.translate('Harvest Date'),
+                true,
+                value: harvestDate,
+                enabled: true,
+                onTap: () => _selectHarvestDate(context),
+              ),
+            ],
+            spacing: 12.0,
+            isMobile: true,
+          ),
+          const SizedBox(height: 12),
+          buildResponsiveRow(
+            children: [
+              buildEditableTextField(
+                controller: _valueController,
+                label: context.translate('Value in (Php)'),
+                isMobile: true,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                prefixText: '\₱',
+              ),
+            ],
+            spacing: 12.0,
+            isMobile: true,
+          ),
+          const SizedBox(height: 12),
+          buildSectionTitle(
+              context.translate('Documentation'), context,
+              icon: Icons.attach_file),
+          _buildImageUploadSection(true),
+          const SizedBox(height: 12),
+          buildSectionTitle(
+              context.translate('Additional Information'), context,
+              icon: Icons.note),
+          buildEditableTextField(
+            controller: _notesController,
+            label: context.translate('Notes'),
+            isMobile: true,
+            maxLines: 3,
+          ),
+          const SizedBox(height: 20),
+          YieldProfileActions(
+            isMobile: true,
+            onAccept: () => _updateYield('Accepted'),
+            onReject: () => _updateYield('Rejected'),
+            onSave: () => _updateYield(''),
+            onDelete: _deleteYield,
+            isLoading: _isSaving,
+            isDeleting: _isDeleting,
+            isAccepting: _isAccepting,
+            isRejecting: _isRejecting,
+            yieldStatus: widget.yieldData.status,
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context, String harvestDate) {
+    return SingleChildScrollView(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Left Column: Product, Farm, and Yield Information
+          Expanded(
+            flex: 2,
+            child: Container(
+              padding: const EdgeInsets.only(right: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildSectionTitle(
+                      context.translate('Product Information'), context,
+                      icon: Icons.shopping_bag),
+                  buildResponsiveRow(
+                    children: [
+                      buildTextField(
+                        context.translate('Product Name'),
+                        widget.yieldData.productName ?? 'Not specified',
+                        false,
+                        enabled: false,
+                      ),
+                      buildTextField(
+                        context.translate('Product Sector'),
+                        widget.yieldData.sector ?? 'Not specified',
+                        false,
+                        enabled: false,
+                      ),
+                    ],
+                    spacing: 16.0,
+                    isMobile: false,
+                  ),
+                  const SizedBox(height: 16),
+                  buildSectionTitle(
+                      context.translate('Farm Information'), context,
+                      icon: Icons.agriculture),
+                  buildResponsiveRow(
+                    children: [
+                      buildTextField(
+                        context.translate('Farmer Name'),
+                        widget.yieldData.farmerName ?? 'Not specified',
+                        false,
+                        enabled: false,
+                      ),
+                      buildTextField(
+                        context.translate('Location'),
+                        widget.yieldData.barangay ?? 'Not specified',
+                        false,
+                        enabled: false,
+                      ),
+                    ],
+                    spacing: 16.0,
+                    isMobile: false,
+                  ),
+                  const SizedBox(height: 16),
+                  buildResponsiveRow(
+                    children: [
+                      buildTextField(
+                        context.translate('Farm Name'),
+                        widget.yieldData.farmName ?? 'Not specified',
+                        false,
+                        enabled: false,
+                      ),
+                      buildEditableTextField(
+                        controller: _areaHarvestedController,
+                        label: context.translate('Area harvested (Ha)'),
+                        isMobile: false,
+                        keyboardType:
+                            TextInputType.numberWithOptions(decimal: true),
+                        suffixText: 'ha',
+                      ),
+                    ],
+                    spacing: 16.0,
+                    isMobile: false,
+                  ),
+                  const SizedBox(height: 16),
+                  buildSectionTitle(
+                      context.translate('Yield Information'), context,
+                      icon: Icons.assessment),
+                  buildResponsiveRow(
+                    children: [
+                      buildEditableTextField(
+                        controller: _volumeController,
+                        label: context.translate('Yield Amount'),
+                        isMobile: false,
+                        keyboardType:
+                            TextInputType.numberWithOptions(decimal: true),
+                        suffixText: 'kg',
+                      ),
+                      buildDatePickerField(
+                        context.translate('Harvest Date'),
+                        false,
+                        value: harvestDate,
+                        enabled: true,
+                        onTap: () => _selectHarvestDate(context),
+                      ),
+                    ],
+                    spacing: 16.0,
+                    isMobile: false,
+                  ),
+                  const SizedBox(height: 16),
+                  buildResponsiveRow(
+                    children: [
+                      buildEditableTextField(
+                        controller: _valueController,
+                        label: context.translate('Value in (Php)'),
+                        isMobile: false,
+                        keyboardType:
+                            TextInputType.numberWithOptions(decimal: true),
+                        prefixText: '\₱',
+                      ),
+                    ],
+                    spacing: 16.0,
+                    isMobile: false,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Right Column: Documentation, Notes, and Actions
+          Expanded(
+            flex: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildSectionTitle(
+                    context.translate('Documentation'), context,
+                    icon: Icons.attach_file),
+                _buildImageUploadSection(false),
+                const SizedBox(height: 16),
+                buildSectionTitle(
+                    context.translate('Additional Information'), context,
+                    icon: Icons.note),
+                buildEditableTextField(
+                  controller: _notesController,
+                  label: context.translate('Notes'),
+                  isMobile: false,
+                  maxLines: 6, // More lines for desktop
+                ),
+                const SizedBox(height: 24),
+                YieldProfileActions(
+                  isMobile: false,
+                  onAccept: () => _updateYield('Accepted'),
+                  onReject: () => _updateYield('Rejected'),
+                  onSave: () => _updateYield(''),
+                  onDelete: _deleteYield,
+                  isLoading: _isSaving,
+                  isDeleting: _isDeleting,
+                  isAccepting: _isAccepting,
+                  isRejecting: _isRejecting,
+                  yieldStatus: widget.yieldData.status,
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _deleteYield() async {
-    // Prevent multiple simultaneous operations
     if (_isSaving || _isDeleting || _isAccepting || _isRejecting) {
       return;
     }
@@ -455,12 +584,16 @@ class _YieldProfileFormState extends State<YieldProfileForm> {
       try {
         setState(() {
           _isDeleting = true;
-          _currentOperation = 'delete';
         });
-        print('Starting delete operation...');
-        context.read<YieldBloc>().add(DeleteYield(widget.yieldData.id));
+       
+         context.read<YieldBloc>().add(DeleteYield(
+        id: widget.yieldData.id, 
+        farmerId: widget.yieldData.farmerId,
+        farmId: widget.yieldData.farmId
+      ));
+
+
       } catch (e) {
-        print('Error deleting yield: $e');
         setState(() => _isDeleting = false);
         _showToast('Error deleting yield: ${e.toString()}', isError: true);
       }
@@ -492,7 +625,14 @@ Widget buildEditableTextField({
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        border: const OutlineInputBorder(),
+                border: OutlineInputBorder(
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ),
+    enabledBorder: OutlineInputBorder( // Add this
+      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
+    
+    ), 
         prefixText: prefixText,
         suffixText: suffixText,
         contentPadding: EdgeInsets.symmetric(

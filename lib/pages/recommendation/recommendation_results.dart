@@ -1,5 +1,4 @@
-import 'package:flareline/pages/products/product_profile.dart';
-import 'package:flareline_uikit/core/theme/flareline_colors.dart';
+ 
 import 'package:flutter/material.dart';
 
 import 'package:flareline/services/lanugage_extension.dart';
@@ -61,8 +60,8 @@ class RecommendationResults extends StatelessWidget {
     dynamic recommendation,
     bool isSmallScreen,
     double padding,
-  ) {
-    final hasWarning = recommendation['warning'] == 'low_confidence';
+  ) { 
+    
     final confidence = recommendation['confidence'] as double;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -123,7 +122,7 @@ class RecommendationResults extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    if (hasWarning) _buildWarningBadge(context, isSmallScreen),
+                    // if (hasWarning) _buildWarningBadge(context, isSmallScreen),
                   ],
                 ),
 
@@ -196,6 +195,7 @@ class RecommendationResults extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _buildAlternativeCropsSection(
     BuildContext context,
@@ -324,8 +324,7 @@ class RecommendationResults extends StatelessWidget {
     dynamic recommendation,
     bool isSmallScreen,
     int index,
-  ) {
-    final hasWarning = recommendation['warning'] == 'low_confidence';
+  ) { 
     final confidence = recommendation['confidence'] as double;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -378,10 +377,10 @@ class RecommendationResults extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (hasWarning) ...[
-                      const SizedBox(width: 8),
-                      _buildCompactWarningBadge(context),
-                    ],
+                    // if (hasWarning) ...[
+                    //   const SizedBox(width: 8),
+                    //   _buildCompactWarningBadge(context),
+                    // ],
                   ],
                 ),
 
@@ -468,42 +467,7 @@ class RecommendationResults extends StatelessWidget {
     );
   }
 
-// Add this compact version of the warning badge
-  Widget _buildCompactWarningBadge(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color:
-            isDark ? Colors.orange[900]!.withOpacity(0.3) : Colors.orange[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isDark ? Colors.orange[700]! : Colors.orange[300]!,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.warning_amber_rounded,
-            size: 12,
-            color: isDark ? Colors.orange[300] : Colors.orange[700],
-          ),
-          const SizedBox(width: 2),
-          Text(
-            context.translate('Low'),
-            style: TextStyle(
-              color: isDark ? Colors.orange[300] : Colors.orange[700],
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+ 
  
  
   Widget _buildImageContainer(
@@ -624,7 +588,7 @@ class RecommendationResults extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              context.translate('Model Consensus'),
+              context.translate('Model Votes'),
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 color: isDark ? Colors.grey[300] : Colors.grey[700],
@@ -782,7 +746,7 @@ class RecommendationResults extends StatelessWidget {
                     const SizedBox(height: 12),
                     _buildInfoRow(
                       context,
-                      context.translate('Confidence Threshold'),
+                      context.translate('Voting Threshold'),
                       '${(predictionResult['confidence_threshold'] * 100).toStringAsFixed(0)}%',
                       Icons.speed,
                       isSmallScreen: isSmallScreen,
@@ -882,48 +846,68 @@ class RecommendationResults extends StatelessWidget {
     );
   }
 
-  Widget _buildWarningBadge(BuildContext context, bool isSmallScreen) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  // Widget _buildWarningBadge(BuildContext context, bool isSmallScreen) {
+  //   final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color:
-            isDark ? Colors.orange[900]!.withOpacity(0.3) : Colors.orange[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? Colors.orange[700]! : Colors.orange[300]!,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.warning_amber_rounded,
-            size: 14,
-            color: isDark ? Colors.orange[300] : Colors.orange[700],
-          ),
-          const SizedBox(width: 4),
-          Text(
-            context.translate('Low Confidence'),
-            style: TextStyle(
-              color: isDark ? Colors.orange[300] : Colors.orange[700],
-              fontSize: isSmallScreen ? 11 : 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+  //     decoration: BoxDecoration(
+  //       color:
+  //           isDark ? Colors.orange[900]!.withOpacity(0.3) : Colors.orange[50],
+  //       borderRadius: BorderRadius.circular(12),
+  //       border: Border.all(
+  //         color: isDark ? Colors.orange[700]! : Colors.orange[300]!,
+  //       ),
+  //     ),
+  //     child: Row(
+  //       mainAxisSize: MainAxisSize.min,
+  //       children: [
+  //         Icon(
+  //           Icons.warning_amber_rounded,
+  //           size: 14,
+  //           color: isDark ? Colors.orange[300] : Colors.orange[700],
+  //         ),
+  //         const SizedBox(width: 4),
+  //         Text(
+  //           context.translate('Low Confidence'),
+  //           style: TextStyle(
+  //             color: isDark ? Colors.orange[300] : Colors.orange[700],
+  //             fontSize: isSmallScreen ? 11 : 12,
+  //             fontWeight: FontWeight.w600,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Color _getConfidenceColor(double confidence, bool isDark) {
-    if (confidence >= 0.8) {
-      return isDark ? Colors.green[400]! : Colors.green[600]!;
-    }
-    if (confidence >= 0.6) {
-      return isDark ? Colors.orange[400]! : Colors.orange[600]!;
-    }
-    return isDark ? Colors.red[400]! : Colors.red[600]!;
+
+
+Color _getConfidenceColor(double confidence, bool isDark) {
+  // Linear interpolation between thresholds
+  if (confidence >= 0.6) {
+    return isDark ? Colors.green[400]! : Colors.green[700]!;
   }
+  if (confidence >= 0.3) {
+    // Interpolate between green and amber
+    double t = (confidence - 0.3) / 0.3; // 0.3-0.6 range
+    return Color.lerp(
+      isDark ? Colors.amber[400]! : Colors.amber[600]!,
+      isDark ? Colors.green[400]! : Colors.green[700]!,
+      t,
+    )!;
+  }
+  if (confidence >= 0.05) {
+    // Interpolate between orange and amber
+    double t = (confidence - 0.05) / 0.25; // 0.05-0.3 range
+    return Color.lerp(
+      isDark ? Colors.orange[400]! : Colors.orange[600]!,
+      isDark ? Colors.amber[400]! : Colors.amber[600]!,
+      t,
+    )!;
+  }
+  return isDark ? Colors.grey[600]! : Colors.grey[400]!;
+}
+
+
 }

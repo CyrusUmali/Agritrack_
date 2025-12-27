@@ -67,9 +67,9 @@ class _MapMiniViewState extends State<MapMiniView> {
                             interactiveFlags: InteractiveFlag.none,
                           ),
                           children: [
-                            TileLayer(
-                              urlTemplate:
-                                  "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+                            TileLayer( 
+                              urlTemplate:    
+                                  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
                               subdomains: const ['a', 'b', 'c'],
                               tileProvider: CancellableNetworkTileProvider(),
                               userAgentPackageName: 'com.example.app',

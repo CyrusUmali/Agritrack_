@@ -90,7 +90,7 @@ class AssociationRepository extends BaseRepository {
 
   // Helper method for association validation
   void _validateAssociationRequiredFields(Association association) {
-    if (association.name == null || association.name!.isEmpty) {
+    if (association.name.isEmpty) {
       throw Exception('Association name is required');
     }
   }

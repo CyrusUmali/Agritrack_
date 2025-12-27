@@ -34,7 +34,6 @@ void showSectorFilter(BuildContext context) {
   ).then((value) {
     if (value != null) {
       // Handle sector filter selection
-      print('Selected sector: $value');
     }
   });
 }

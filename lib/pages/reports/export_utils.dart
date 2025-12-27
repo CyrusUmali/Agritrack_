@@ -33,6 +33,8 @@ class YieldExportUtils {
     try {
       showLoadingDialog('...');
 
+       await Future.delayed(const Duration(milliseconds: 500));
+
       final excel = Excel.createExcel();
       final sheet = excel['Yield Report - $polygonName'];
 
@@ -43,8 +45,7 @@ class YieldExportUtils {
       final titleStyle = CellStyle(
         bold: true,
         fontFamily: getFontFamily(FontFamily.Arial),
-        fontSize: 16,
-        fontColorHex: ExcelColor.fromHexString('#3f51b5'),
+        fontSize: 16, 
       );
 
       final subtitleStyle = CellStyle(
@@ -57,9 +58,7 @@ class YieldExportUtils {
       final headerStyle = CellStyle(
         bold: true,
         fontFamily: getFontFamily(FontFamily.Arial),
-        fontSize: 10,
-        fontColorHex: ExcelColor.white,
-        backgroundColorHex: ExcelColor.fromHexString('#3f51b5'),
+        fontSize: 10, 
         horizontalAlign: HorizontalAlign.Center,
       );
 
@@ -213,6 +212,8 @@ class YieldExportUtils {
 
     try {
       showLoadingDialog('...');
+
+       await Future.delayed(const Duration(milliseconds: 500));
 
       // Load the image as Uint8List before creating PDF
       final ByteData imageData = await rootBundle.load('assets/DA_image.jpg');
@@ -513,12 +514,12 @@ class YieldExportUtils {
         // Enhanced header row
         pw.TableRow(
           decoration: pw.BoxDecoration(
-            gradient: pw.LinearGradient(
-              colors: [
-                PdfColor.fromHex('#3f51b5'),
-                PdfColor.fromHex('#303f9f')
-              ],
-            ),
+            // gradient: pw.LinearGradient(
+            //   colors: [
+            //     PdfColor.fromHex('#3f51b5'),
+            //     PdfColor.fromHex('#303f9f')
+            //   ],
+            // ),
           ),
           children: headers.map((header) {
             return pw.Container(
@@ -527,8 +528,7 @@ class YieldExportUtils {
               alignment: pw.Alignment.center,
               child: pw.Text(
                 header.toUpperCase(),
-                style: pw.TextStyle(
-                  color: PdfColors.white,
+                style: pw.TextStyle( 
                   fontWeight: pw.FontWeight.bold,
                   fontSize: 9,
                 ),
@@ -649,16 +649,16 @@ class YieldExportUtils {
     }
 
     final relevantYields = yields.where((yield) {
-      final yieldYear = yield.harvestDate?.year ?? DateTime.now().year;
+      final yieldYear = yield.harvestDate.year;
       return yield.productName == product && yieldYear == year;
     });
 
     for (final yield in relevantYields) {
-      final month = yield.harvestDate?.month ?? 1;
+      final month = yield.harvestDate.month;
       final monthName = monthNames[month - 1];
 
       monthlyData[monthName]!['volume'] =
-          (monthlyData[monthName]!['volume'] ?? 0) + (yield.volume ?? 0);
+          (monthlyData[monthName]!['volume'] ?? 0) + (yield.volume);
 
       if (yield.sectorId != 4) {
         // Exclude livestock
@@ -677,13 +677,13 @@ class YieldExportUtils {
     final yearGroups = <int, List<Yield>>{};
 
     for (final yield in yields.where((y) => y.productName == product)) {
-      final year = yield.harvestDate?.year ?? DateTime.now().year;
+      final year = yield.harvestDate.year;
       yearGroups.putIfAbsent(year, () => []).add(yield);
     }
 
     for (final entry in yearGroups.entries) {
       final totalVolume = entry.value
-          .fold<double>(0, (sum, yield) => sum + (yield.volume ?? 0));
+          .fold<double>(0, (sum, yield) => sum + (yield.volume));
       final totalAreaHarvested = entry.value
           .where((yield) => yield.sectorId != 4)
           .fold<double>(0, (sum, yield) => sum + (yield.areaHarvested ?? 0));
@@ -696,6 +696,9 @@ class YieldExportUtils {
 
     return yearlyData;
   }
+
+
+  
 
   static void _autoSizeColumns(Sheet sheet, List<String> headers) {
     for (int colIndex = 0; colIndex < headers.length; colIndex++) {

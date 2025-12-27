@@ -83,7 +83,6 @@ Future<void> _callMarkAsReadApi(BuildContext context, String notificationId) asy
     await sectorService.markNotificationAsRead(notificationIdInt);
      
   } catch (e) {
-    print('Failed to mark notification as read: $e');
     // Revert local state if API call fails
     final notificationIndex = widget.notificationsNotifier.value
         .indexWhere((n) => n.id == notificationId);
@@ -122,18 +121,15 @@ Future<void> _callMarkAsReadApi(BuildContext context, String notificationId) asy
   }
 
   void _initializeFilteredNotifications() {
-    print('Initializing filtered notifications with ${widget.notificationsNotifier.value.length} items');
     _filteredNotificationsNotifier.value = List.from(widget.notificationsNotifier.value);
   }
 
   void _onSearchChanged() {
     final query = _searchController.text.trim().toLowerCase();
-    print('Search query changed: "$query"');
     
     if (query.isEmpty) {
       _isSearching = false;
       _filteredNotificationsNotifier.value = List.from(widget.notificationsNotifier.value);
-      print('Search cleared, showing all ${_filteredNotificationsNotifier.value.length} notifications');
     } else {
       _isSearching = true;
       final filtered = widget.notificationsNotifier.value.where((notification) {
@@ -146,12 +142,10 @@ Future<void> _callMarkAsReadApi(BuildContext context, String notificationId) asy
       }).toList();
       
       _filteredNotificationsNotifier.value = filtered;
-      print('Search found ${filtered.length} notifications matching "$query"');
     }
   }
 
   void _clearSearch() {
-    print('Clearing search');
     _searchController.clear();
     _isSearching = false;
     setState(() {});
@@ -159,8 +153,7 @@ Future<void> _callMarkAsReadApi(BuildContext context, String notificationId) asy
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final theme = Theme.of(context); 
     
     return CommonCard(
       child: Column(
@@ -319,7 +312,7 @@ Future<void> _callMarkAsReadApi(BuildContext context, String notificationId) asy
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    final theme = Theme.of(context);
+ 
     return Padding(
       padding: const EdgeInsets.all(40.0),
       child: Column(
@@ -373,7 +366,7 @@ Future<void> _callMarkAsReadApi(BuildContext context, String notificationId) asy
   }
 
   Widget _statCard(String label, String value, IconData icon, Color color) {
-    final theme = Theme.of(context);
+ 
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -435,17 +428,7 @@ Widget _notificationListItem(Announcement notification, BuildContext context) {
           
       final borderColor = isSelected ? theme.colorScheme.primary : Colors.transparent;
       
-      final recipientBackgroundColor = notification.recipient == 'everyone'
-          ? (isDark ? Colors.green.withOpacity(0.2) : Colors.green.withOpacity(0.1))
-          : (isDark ? Colors.blue.withOpacity(0.2) : Colors.blue.withOpacity(0.1));
-          
-      final recipientIconColor = notification.recipient == 'everyone'
-          ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
-          : (isDark ? Colors.blue.shade300 : Colors.blue.shade700);
-          
-      final recipientTextColor = notification.recipient == 'everyone'
-          ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
-          : (isDark ? Colors.blue.shade300 : Colors.blue.shade700);
+ 
       
       return InkWell(
         onTap: () {

@@ -1,6 +1,5 @@
 import 'package:flareline/core/theme/global_colors.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/material.dart'; 
 import 'package:flareline/core/models/yield_model.dart';
 import 'package:flareline/pages/toast/toast_helper.dart';
 import 'package:file_saver/file_saver.dart';
@@ -100,6 +99,8 @@ class _ExportButtonWidgetState extends State<ExportButtonWidget> {
     }
   }
 
+
+
   Future<void> _generateExcelFile() async {
     final excel = Excel.createExcel();
     final sheet = excel['Yield Data'];
@@ -142,13 +143,7 @@ class _ExportButtonWidgetState extends State<ExportButtonWidget> {
       verticalAlign: VerticalAlign.Center,
     );
 
-    final numberDataStyle = CellStyle(
-      fontFamily: getFontFamily(FontFamily.Arial),
-      fontSize: 10,
-      fontColorHex: ExcelColor.fromHexString('#333333'),
-      horizontalAlign: HorizontalAlign.Center,
-      verticalAlign: VerticalAlign.Center,
-    );
+   
 
     final rightAlignDataStyle = CellStyle(
       fontFamily: getFontFamily(FontFamily.Arial),
@@ -208,72 +203,76 @@ class _ExportButtonWidgetState extends State<ExportButtonWidget> {
     }
     currentRow++;
 
-    // Add data rows with proper alignment for each column
-    for (final yieldData in widget.yields) {
-      // Product Name - Column 1 (Left aligned)
-      sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow))
-        ..value = TextCellValue(yieldData.productName ?? 'N/A')
-        ..cellStyle = textDataStyle;
 
-      // Sector - Column 2 (Center aligned)
-      sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow))
-        ..value = TextCellValue(yieldData.sector ?? 'Unknown')
-        ..cellStyle = centerDataStyle;
+  // Add data rows with proper alignment for each column
+for (final yieldData in widget.yields) {
+  // Product Name - Column 0 (Left aligned)
+  sheet.cell(
+      CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
+    ..value = TextCellValue(yieldData.productName ?? 'N/A')
+    ..cellStyle = textDataStyle;
 
-      // Barangay - Column 3 (Left aligned)
-      sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRow))
-        ..value = TextCellValue(yieldData.barangay ?? 'N/A')
-        ..cellStyle = textDataStyle;
+  // Sector - Column 1 (Center aligned)
+  sheet.cell(
+      CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow))
+    ..value = TextCellValue(yieldData.sector ?? 'Unknown')
+    ..cellStyle = centerDataStyle;
 
-      // Area Harvested (ha) - Column 4 (Right aligned - number)
-      sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow))
-        ..value = DoubleCellValue(yieldData.areaHarvested ?? 0)
-        ..cellStyle = rightAlignDataStyle;
+  // Barangay - Column 2 (Left aligned)
+  sheet.cell(
+      CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow))
+    ..value = TextCellValue(yieldData.barangay ?? 'N/A')
+    ..cellStyle = textDataStyle;
 
-      // Volume with Unit - Column 5 (Center aligned - combined value)
-      final volume = yieldData.volume ?? 0;
-      final unit = _getUnit(yieldData.sectorId);
-      sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: currentRow))
-        ..value = TextCellValue('$volume $unit')
-        ..cellStyle = centerDataStyle;
+  // Area Harvested (ha) - Column 3 (Right aligned - number)
+  sheet.cell(
+      CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRow))
+    ..value = DoubleCellValue(yieldData.areaHarvested ?? 0)
+    ..cellStyle = rightAlignDataStyle;
 
-      // Status - Column 6 (Center aligned)
-      sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: currentRow))
-        ..value = TextCellValue(yieldData.status ?? 'N/A')
-        ..cellStyle = centerDataStyle;
+  // Volume with Unit - Column 4 (Center aligned - combined value)
+  final volume = yieldData.volume
+  ;
+  final unit = _getUnit(yieldData.sectorId);
+  sheet.cell(
+      CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow))
+    ..value = TextCellValue('$volume $unit')
+    ..cellStyle = centerDataStyle;
 
-      // Harvest Date - Column 7 (Center aligned)
-      sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: currentRow))
-        ..value = TextCellValue(_formatDate(yieldData.harvestDate))
-        ..cellStyle = centerDataStyle;
+  // Status - Column 5 (Center aligned)
+  sheet.cell(
+      CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: currentRow))
+    ..value = TextCellValue(yieldData.status ?? 'N/A')
+    ..cellStyle = centerDataStyle;
 
-      // Date Reported - Column 8 (Center aligned)
-      sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: currentRow))
-        ..value = TextCellValue(_formatDate(yieldData.createdAt))
-        ..cellStyle = centerDataStyle;
+  // Harvest Date - Column 6 (Center aligned)
+  sheet.cell(
+      CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: currentRow))
+    ..value = TextCellValue(_formatDate(yieldData.harvestDate))
+    ..cellStyle = centerDataStyle;
 
-      // Farmer Name - Column 9 (Left aligned)
-      sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: currentRow))
-        ..value = TextCellValue(yieldData.farmerName ?? 'N/A')
-        ..cellStyle = textDataStyle;
+  // Date Reported - Column 7 (Center aligned)
+  sheet.cell(
+      CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: currentRow))
+    ..value = TextCellValue(_formatDate(yieldData.createdAt))
+    ..cellStyle = centerDataStyle;
 
-      // Farm Name - Column 10 (Left aligned)
-      sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 10, rowIndex: currentRow))
-        ..value = TextCellValue(yieldData.farmName ?? 'N/A')
-        ..cellStyle = textDataStyle;
+  // Farmer Name - Column 8 (Left aligned)
+  sheet.cell(
+      CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: currentRow))
+    ..value = TextCellValue(yieldData.farmerName ?? 'N/A')
+    ..cellStyle = textDataStyle;
 
-      currentRow++;
-    }
+  // Farm Name - Column 9 (Left aligned)
+  sheet.cell(
+      CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: currentRow))
+    ..value = TextCellValue(yieldData.farmName ?? 'N/A')
+    ..cellStyle = textDataStyle;
+
+  currentRow++;
+}
+
+
 
     // Auto-size columns with optimized widths (updated for combined column)
     _autoSizeColumns(sheet, headers.length);
@@ -288,35 +287,38 @@ class _ExportButtonWidgetState extends State<ExportButtonWidget> {
     await _saveExcelFile(bytes);
   }
 
-  void _autoSizeColumns(Sheet sheet, int columnCount) {
-    // Custom widths for each column based on content type (updated for combined column)
-    final columnWidths = [
-      8, // ID
-      20, // Product Name
-      12, // Sector
-      15, // Barangay
-      22, // Area Harvested (ha)
-      18, // Volume with Unit (combined column - wider)
-      10, // Status
-      12, // Harvest Date
-      12, // Date Reported
-      18, // Farmer Name
-      20, // Farm Name
-    ];
 
-    for (int colIndex = 0; colIndex < columnCount; colIndex++) {
-      try {
-        final width =
-            colIndex < columnWidths.length ? columnWidths[colIndex] : 15;
-        sheet.setColumnWidth(colIndex, width.toDouble());
-      } catch (e) {
-        debugPrint('Could not set column width: $e');
-      }
+
+
+void _autoSizeColumns(Sheet sheet, int columnCount) {
+  // Custom widths for each column based on content type
+  final columnWidths = [
+    20, // Product Name (Column 0)
+    12, // Sector (Column 1)
+    15, // Barangay (Column 2)
+    22, // Area Harvested (ha) (Column 3)
+    18, // Volume with Unit (Column 4)
+    10, // Status (Column 5)
+    12, // Harvest Date (Column 6)
+    12, // Date Reported (Column 7)
+    18, // Farmer Name (Column 8)
+    20, // Farm Name (Column 9)
+  ];
+
+  for (int colIndex = 0; colIndex < columnCount; colIndex++) {
+    try {
+      final width =
+          colIndex < columnWidths.length ? columnWidths[colIndex] : 15;
+      sheet.setColumnWidth(colIndex, width.toDouble());
+    } catch (e) {
+      debugPrint('Could not set column width: $e');
     }
   }
+}
+
 
   String _getUnit(int? sectorId) {
-    print(sectorId);
+     
     switch (sectorId) {
       case 1:
       case 2:

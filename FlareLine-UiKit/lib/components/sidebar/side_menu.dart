@@ -275,7 +275,6 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
     if (!context.mounted) return;
 
     final overlay = Overlay.of(context);
-    if (overlay == null) return;
 
     final renderBox = context.findRenderObject() as RenderBox?;
     if (renderBox == null || !renderBox.attached) return;

@@ -1,7 +1,5 @@
-import 'package:dio/dio.dart';
-import 'package:flareline/core/models/yield_model.dart';
-import 'package:flareline/services/api_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+ 
+import 'package:flareline/core/models/yield_model.dart'; 
 import 'package:flareline/repositories/base_repository.dart'; // Import the base repository
 
 class YieldRepository extends BaseRepository {
@@ -162,18 +160,7 @@ class YieldRepository extends BaseRepository {
 
   // Helper method for yield validation
   void _validateYieldRequiredFields(Yield yieldRecord) {
-    if (yieldRecord.farmerId == null) {
-      throw Exception('Farmer ID is required');
-    }
-    if (yieldRecord.productId == null) {
-      throw Exception('Product ID is required');
-    }
-    if (yieldRecord.harvestDate == null) {
-      throw Exception('Harvest date is required');
-    }
-    if (yieldRecord.volume == null) {
-      throw Exception('Volume is required');
-    }
+    
   }
 
   // Helper method to build yield data
@@ -181,7 +168,7 @@ class YieldRepository extends BaseRepository {
     return {
       'farmer_id': yieldRecord.farmerId,
       'product_id': yieldRecord.productId,
-      'harvest_date': yieldRecord.harvestDate!.toIso8601String(),
+      'harvest_date': yieldRecord.harvestDate.toIso8601String(),
       'status': yieldRecord.status,
       'area_harvested': yieldRecord.areaHarvested,
       'farm_id': yieldRecord.farmId,

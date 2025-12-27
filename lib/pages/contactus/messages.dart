@@ -816,7 +816,6 @@ Future<void> _sendReply(BuildContext context, Message originalMessage) async {
     return "${months[date.month - 1]} ${date.day}, ${date.year} at ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
   }
 
-  @override
   void dispose() {
     selectedTabNotifier.dispose();
     selectedMessageNotifier.dispose();

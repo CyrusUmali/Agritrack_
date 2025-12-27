@@ -53,9 +53,7 @@ abstract class TableWidget<S extends BaseTableProvider> extends BaseWidget<S> {
   }
 
 // Add this to your TableWidget class
-  void onSelectionChanged() {
-    // This will be called whenever selection changes
-    final selectedRows = getSelectedRows();
+  void onSelectionChanged() { 
     // Do something with the selected rows
   }
 
@@ -260,7 +258,7 @@ abstract class TableWidget<S extends BaseTableProvider> extends BaseWidget<S> {
           SizedBox(
             height: 60,
             child: SfDataPagerTheme(
-              data: SfDataPagerThemeData(
+              data: const SfDataPagerThemeData(
                 // selectedItemColor:
                 //     Colors.blue, // Background color of active page
                 selectedItemTextStyle: TextStyle(
@@ -534,7 +532,7 @@ Widget cellWidget(TableDataRowsTableDataRows columnData) {
       text = '${text.substring(0, 50)}...';
     }
     contentWidget = buildPaddedContent(
-      Container(
+      SizedBox(
         width: double.infinity,
         child: Text(text),
       ),

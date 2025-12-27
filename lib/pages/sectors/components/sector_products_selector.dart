@@ -4,8 +4,7 @@ import 'package:flareline_uikit/components/modal/modal_dialog.dart';
 import 'package:flareline_uikit/components/buttons/button_widget.dart';
 import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flareline/pages/yields/yield_bloc/yield_bloc.dart';
-import 'package:flareline/core/models/yield_model.dart';
+import 'package:flareline/pages/yields/yield_bloc/yield_bloc.dart'; 
 
 class SectorProductSelectionModal {
   // Store selections per sector

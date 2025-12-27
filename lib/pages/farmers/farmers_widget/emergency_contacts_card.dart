@@ -96,8 +96,7 @@ class _EmergencyContactsCardState extends State<EmergencyContactsCard> {
                 ),
               ],
             ),
-
-            const SizedBox(height: 12),
+ 
 
             // Relationship
             widget.isEditing

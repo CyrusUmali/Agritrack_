@@ -4,7 +4,7 @@ import 'package:flareline/core/theme/global_colors.dart';
 import 'package:flareline/pages/farmers/farmer/farmer_bloc.dart';
 import 'package:flareline/pages/farms/farm_bloc/farm_bloc.dart';
 import 'package:flareline/pages/products/product/product_bloc.dart';
-import 'package:flareline/pages/test/map_widget/pin_style.dart';
+import 'package:flareline/pages/map/map_widget/pin_style.dart';
 import 'package:flareline/pages/toast/toast_helper.dart';
 import 'package:flareline/pages/widget/network_error.dart';
 import 'package:flareline/pages/yields/add_yield_modal.dart';
@@ -25,7 +25,7 @@ import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 import 'package:toastification/toastification.dart';
 import 'package:flareline/pages/widget/combo_box.dart';
 
-import '../test/map_widget/stored_polygons.dart';
+import '../map/map_widget/stored_polygons.dart';
 
 class YieldsWidget extends StatefulWidget {
   const YieldsWidget({super.key});
@@ -39,7 +39,7 @@ class _YieldsWidgetState extends State<YieldsWidget> {
   String selectedBarangay = '';
   String selectedProduct = '';
   String selectedStatus = '';
-  String selectedYear = DateTime.now().year.toString();
+  String selectedYear = 'All';
 
   late List<String> barangayNames;
   String _barangayFilter = '';
@@ -85,26 +85,23 @@ class _YieldsWidgetState extends State<YieldsWidget> {
 
   Widget _channelsWeb(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final farmerId = userProvider.farmer?.id?.toString();
+    final farmerId = userProvider.farmer?.id.toString();
 
-  final screenHeight = MediaQuery.of(context).size.height;
-   
- double height;
- 
+    final screenHeight = MediaQuery.of(context).size.height;
 
-if (screenHeight < 400) {
-  height = screenHeight * 0.6;  
-} else if (screenHeight < 600) {
-  height = screenHeight * 0.50;  
-} else if (screenHeight < 800) {
-  height = screenHeight * 0.56;  
-} else if (screenHeight < 1500) {
-  height = screenHeight * 0.63;  
-}  else {
-  height = screenHeight * 0.3;  
-}
+    double height;
 
- 
+    if (screenHeight < 400) {
+      height = screenHeight * 0.6;
+    } else if (screenHeight < 600) {
+      height = screenHeight * 0.50;
+    } else if (screenHeight < 800) {
+      height = screenHeight * 0.56;
+    } else if (screenHeight < 1500) {
+      height = screenHeight * 0.63;
+    } else {
+      height = screenHeight * 0.3;
+    }
 
     return SizedBox(
       // height: 550,
@@ -160,24 +157,22 @@ if (screenHeight < 400) {
 
   Widget _channelMobile(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final farmerId = userProvider.farmer?.id?.toString();
+    final farmerId = userProvider.farmer?.id.toString();
 
+    final screenHeight = MediaQuery.of(context).size.height;
 
-      final screenHeight = MediaQuery.of(context).size.height;
-   
- double height;
- 
+    double height;
 
-if (screenHeight < 400) {
-  height = screenHeight * 0.6;  
+  if (screenHeight < 400) { 
+  height = screenHeight * 0.5;
 } else if (screenHeight < 600) {
-  height = screenHeight * 0.50;  
+  height = screenHeight * 0.60;
 } else if (screenHeight < 800) {
-  height = screenHeight * 0.56;  
-} else if (screenHeight < 1000) {
-  height = screenHeight * 0.63;  
-}  else {
-  height = screenHeight * 0.3;  
+  height = screenHeight * 0.72;
+} else if (screenHeight < 1500) {
+  height = screenHeight * 0.80;
+} else {
+  height = screenHeight * 0.8;
 }
 
     return Column(
@@ -187,6 +182,9 @@ if (screenHeight < 400) {
         SizedBox(
           // height: 700,
           height: height,
+
+
+          
           child: BlocBuilder<YieldBloc, YieldState>(
             builder: (context, state) {
               if (state is YieldsLoading) {
@@ -247,12 +245,13 @@ if (screenHeight < 400) {
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[500],
-            ),
+            ), 
           ),
         ],
       ),
     );
   }
+
 
   Widget _buildSearchBarMobile() {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -494,7 +493,6 @@ if (screenHeight < 400) {
                                   String notes,
                                   List<String> images,
                                 ) {
-                                 
                                   context.read<YieldBloc>().add(
                                         AddYield(
                                           farmerId: farmerId,
@@ -505,6 +503,8 @@ if (screenHeight < 400) {
                                           areaHarvested: areaHa,
                                           notes: notes,
                                           images: images,
+                                          isFarmerSpecific:
+                                              isFarmer ? true : false,
                                         ),
                                       );
                                 },
@@ -529,6 +529,8 @@ if (screenHeight < 400) {
       ),
     );
   }
+
+
 
   Widget _buildSearchBarDesktop() {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -760,7 +762,6 @@ if (screenHeight < 400) {
                                 String notes,
                                 List<String> images,
                               ) {
-                                
                                 context.read<YieldBloc>().add(
                                       AddYield(
                                         farmerId: farmerId,
@@ -769,6 +770,8 @@ if (screenHeight < 400) {
                                         harvestDate: date,
                                         farmId: farmId,
                                         volume: yieldAmount,
+                                        isFarmerSpecific:
+                                            isFarmer ? true : false,
                                         // Add other parameters if your AddYield event requires them
                                         // For example:
                                         // areaHa: areaHa,
@@ -859,15 +862,14 @@ class DataTableWidget extends TableWidget<YieldsViewModel> {
     );
   }
 
-
-
   @override
-  void onCellTap(BuildContext context, TableDataRowsTableDataRows columnData, YieldsViewModel viewModel) {
+  void onCellTap(BuildContext context, TableDataRowsTableDataRows columnData,
+      YieldsViewModel viewModel) {
     // Find the yield record that was clicked
     final yield = viewModel.state.yields.firstWhere(
       (p) => p.id.toString() == columnData.id,
     );
-    
+
     // Navigate to YieldProfile when any cell in the row is tapped
     Navigator.push(
       context,
@@ -876,7 +878,6 @@ class DataTableWidget extends TableWidget<YieldsViewModel> {
       ),
     );
   }
-
 
   @override
   Widget actionWidgetsBuilder(
@@ -887,7 +888,6 @@ class DataTableWidget extends TableWidget<YieldsViewModel> {
     final yield = viewModel.state.yields.firstWhere(
       (p) => p.id.toString() == columnData.id,
     );
-
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final isFarmer = userProvider.isFarmer;
 
@@ -899,18 +899,21 @@ class DataTableWidget extends TableWidget<YieldsViewModel> {
           onPressed: () {
             ModalDialog.show(
               context: context,
-              title: 'Delete Yield',
+              title: 'Delete Record',
               showTitle: true,
               showTitleDivider: true,
               modalType: ModalType.medium,
               onCancelTap: () => Navigator.of(context).pop(),
               onSaveTap: () {
-                context.read<YieldBloc>().add(DeleteYield(yield.id));
+                context.read<YieldBloc>().add(DeleteYield(
+                    id: yield.id,
+                    isFarmerSpecific: isFarmer ? true : false,
+                    farmId: yield.farmId,
+                    farmerId: yield.farmerId));
                 Navigator.of(context).pop();
               },
               child: Center(
-                child:
-                    Text('Are you sure you want to delete this yield record?'),
+                child: Text('Are you sure you want to delete this record?'),
               ),
               footer: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -933,9 +936,13 @@ class DataTableWidget extends TableWidget<YieldsViewModel> {
                         child: ButtonWidget(
                           btnText: 'Delete',
                           onTap: () {
-                            context
-                                .read<YieldBloc>()
-                                .add(DeleteYield(yield.id));
+                            context.read<YieldBloc>().add(
+                                  DeleteYield(
+                                      id: yield.id,
+                                      isFarmerSpecific: isFarmer ? true : false,
+                                      farmId: yield.farmId,
+                                      farmerId: yield.farmerId),
+                                );
                             Navigator.of(context).pop();
                           },
                           type: ButtonType.primary.type,
@@ -1171,11 +1178,6 @@ class YieldsViewModel extends BaseTableProvider {
   }
 }
 
-
-
-
-
-
 class MobileYieldListWidget extends StatefulWidget {
   final YieldsLoaded state;
   final int itemsPerPage;
@@ -1226,21 +1228,18 @@ class _MobileYieldListWidgetState extends State<MobileYieldListWidget> {
     switch (sectorId) {
       case 1:
         return 'Rice';
-      case 2: 
+      case 2:
         return 'Corn';
       case 3:
         return 'HVC';
-       case 4:
+      case 4:
         return 'Livestock';
-      case 5: 
+      case 5:
         return 'Fishery';
       case 6:
         return 'Organic';
       default:
         return 'Other';
-
-
- 
     }
   }
 
@@ -1250,9 +1249,10 @@ class _MobileYieldListWidgetState extends State<MobileYieldListWidget> {
     final pinStyle = parsePinStyle(sectorString);
     final sectorColor = getPinColor(pinStyle);
     final sectorIcon = getPinIcon(pinStyle);
-    
+
     // Check if yield has a product image
-    final hasImage = yield.productImage != null && yield.productImage!.isNotEmpty;
+    final hasImage =
+        yield.productImage != null && yield.productImage!.isNotEmpty;
 
     return Stack(
       children: [
@@ -1286,11 +1286,12 @@ class _MobileYieldListWidgetState extends State<MobileYieldListWidget> {
                       return Center(
                         child: CircularProgressIndicator(
                           value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / 
-                                loadingProgress.expectedTotalBytes!
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
                               : null,
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(sectorColor),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(sectorColor),
                         ),
                       );
                     },
@@ -1308,6 +1309,7 @@ class _MobileYieldListWidgetState extends State<MobileYieldListWidget> {
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final isFarmer = userProvider.isFarmer;
+    final theme = Theme.of(context);
 
     if (widget.state.yields.isEmpty) {
       return CommonCard(
@@ -1319,195 +1321,296 @@ class _MobileYieldListWidgetState extends State<MobileYieldListWidget> {
       );
     }
 
-    return CommonCard(
-      margin: EdgeInsets.all(0),
-      padding: EdgeInsets.zero,
-      child: Column(
-        children: [
-          // List content
-          Expanded(
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: currentPageData.length,
-              itemBuilder: (context, index) {
-                final yield = currentPageData[index];
-                final sectorString = _getSectorString(yield.sectorId);
-                final pinStyle = parsePinStyle(sectorString);
+    return Column(
+      children: [
+        // List content
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.all(0),
+            physics: const AlwaysScrollableScrollPhysics(),
+            itemCount: currentPageData.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final yield = currentPageData[index];
+              final statusColor = _getStatusColor(yield.status ?? 'N/A');
 
-                return ListTile(
-                  leading: _buildYieldPreview(yield),
-                  title: Text(
-                    isFarmer
-                        ? yield.productName ?? 'N/A'
-                        : '${yield.farmerName}  • ${yield.productName}',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    '${_getYieldWithUnit(yield.volume, yield.sectorId)} • ${_formatDate(yield.createdAt)}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                    ),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 12,
-                        height: 12,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(yield.status ?? 'N/A'),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.chevron_right),
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                YieldProfile(yieldData: yield),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+              return CommonCard(
+                margin: EdgeInsets.zero,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => YieldProfile(yieldData: yield),
                     ),
                   ),
-                );
-              },
-            ),
-          ),
+                  onLongPress:  
+                      () {
+                          // Show delete confirmation on long press
 
-          // Pagination controls
-          if (totalPages > 1)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: Colors.grey.shade300,
-                    width: 0.5,
-                  ),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Previous button
-                  IconButton(
-                    onPressed: currentPage > 0 ? _previousPage : null,
-                    icon: Icon(
-                      Icons.chevron_left,
-                      color:
-                          currentPage > 0 ? GlobalColors.primary : Colors.grey,
-                    ),
-                  ),
-
-                  // Page indicators
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Show page numbers (limited to 5 visible pages)
-                        ...List.generate(
-                          totalPages.clamp(0, 5),
-                          (index) {
-                            int pageIndex;
-                            if (totalPages <= 5) {
-                              pageIndex = index;
-                            } else {
-                              // Smart pagination: show current page in center
-                              int start =
-                                  (currentPage - 2).clamp(0, totalPages - 5);
-                              pageIndex = start + index;
-                            }
-
-                            return GestureDetector(
-                              onTap: () => _goToPage(pageIndex),
-                              child: Container(
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 4),
-                                width: 32,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: currentPage == pageIndex
-                                      ? GlobalColors.primary
-                                      : Colors.transparent,
-                                  border: Border.all(
-                                    color: currentPage == pageIndex
-                                        ? GlobalColors.primary
-                                        : Colors.grey.shade400,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '${pageIndex + 1}',
-                                    style: TextStyle(
-                                      color: currentPage == pageIndex
-                                          ? Colors.white
-                                          : null,
-                                      fontSize: 12,
-                                      fontWeight: currentPage == pageIndex
-                                          ? FontWeight.w600
-                                          : FontWeight.normal,
+                          ModalDialog.show(
+                            context: context,
+                            title: 'Delete Record',
+                            showTitle: true,
+                            showTitleDivider: true,
+                            modalType: ModalType.medium,
+                            onCancelTap: () => Navigator.of(context).pop(),
+                            onSaveTap: () {
+                              context.read<YieldBloc>().add(DeleteYield(
+                                  id: yield.id,
+                                  isFarmerSpecific: isFarmer ? true : false,
+                                  farmId: yield.farmId,
+                                  farmerId: yield.farmerId));
+                              Navigator.of(context).pop();
+                            },
+                            child: Center(
+                              child: Text(
+                                  'Are you sure you want to delete this record?'),
+                            ),
+                            footer: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20.0, vertical: 10.0),
+                              child: Center(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(
+                                      width: 120,
+                                      child: ButtonWidget(
+                                        btnText: 'Cancel',
+                                        textColor:
+                                            FlarelineColors.darkBlackText,
+                                        onTap: () =>
+                                            Navigator.of(context).pop(),
+                                      ),
                                     ),
-                                  ),
+                                    const SizedBox(width: 20),
+                                    SizedBox(
+                                      width: 120,
+                                      child: ButtonWidget(
+                                        btnText: 'Delete',
+                                        onTap: () {
+                                          context.read<YieldBloc>().add(
+                                                DeleteYield(
+                                                    id: yield.id,
+                                                    isFarmerSpecific:
+                                                        isFarmer ? true : false,
+                                                    farmId: yield.farmId,
+                                                    farmerId: yield.farmerId),
+                                              );
+                                          Navigator.of(context).pop();
+                                        },
+                                        type: ButtonType.primary.type,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            );
-                          },
+                            ),
+                          );
+                        }
+                       ,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        // Leading icon/avatar
+                        _buildYieldPreview(yield),
+
+                        const SizedBox(width: 16),
+
+                        // Yield info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Product name only
+                              Text(
+                                isFarmer
+                                    ? yield.productName ?? 'N/A'
+                                    : '${yield.farmerName} • ${yield.productName}',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+
+                              const SizedBox(height: 4),
+
+                              // Volume and date
+                              Text(
+                                '${_getYieldWithUnit(yield.volume, yield.sectorId)} • ${_formatDate(yield.createdAt)}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
 
-                        // Show ellipsis if there are more pages
-                        if (totalPages > 5)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Text(
-                              '...',
-                              style: TextStyle(color: Colors.grey),
+                        // Status and chevron in same row
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    margin: const EdgeInsets.only(right: 4),
+                                    decoration: BoxDecoration(
+                                      color: statusColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.chevron_right,
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.3),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
+                ),
+              );
+            },
+          ),
+        ),
 
-                  // Next button
-                  IconButton(
-                    onPressed: currentPage < totalPages - 1 ? _nextPage : null,
-                    icon: Icon(
-                      Icons.chevron_right,
-                      color: currentPage < totalPages - 1
-                          ? GlobalColors.primary
-                          : Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-          // Page info
-          if (totalPages > 1)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                'Page ${currentPage + 1} of $totalPages • ${widget.state.yields.length} total items',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
+        // Pagination controls
+        if (totalPages > 1)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Colors.grey.shade300,
+                  width: 0.5,
                 ),
               ),
             ),
-        ],
-      ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Previous button
+                IconButton(
+                  onPressed: currentPage > 0 ? _previousPage : null,
+                  icon: Icon(
+                    Icons.chevron_left,
+                    color: currentPage > 0 ? GlobalColors.primary : Colors.grey,
+                  ),
+                ),
+
+                // Page indicators
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Show page numbers (limited to 5 visible pages)
+                      ...List.generate(
+                        totalPages.clamp(0, 5),
+                        (index) {
+                          int pageIndex;
+                          if (totalPages <= 5) {
+                            pageIndex = index;
+                          } else {
+                            // Smart pagination: show current page in center
+                            int start =
+                                (currentPage - 2).clamp(0, totalPages - 5);
+                            pageIndex = start + index;
+                          }
+
+                          return GestureDetector(
+                            onTap: () => _goToPage(pageIndex),
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: currentPage == pageIndex
+                                    ? GlobalColors.primary
+                                    : Colors.transparent,
+                                border: Border.all(
+                                  color: currentPage == pageIndex
+                                      ? GlobalColors.primary
+                                      : Colors.grey.shade400,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${pageIndex + 1}',
+                                  style: TextStyle(
+                                    color: currentPage == pageIndex
+                                        ? Colors.white
+                                        : null,
+                                    fontSize: 12,
+                                    fontWeight: currentPage == pageIndex
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+                      // Show ellipsis if there are more pages
+                      if (totalPages > 5)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Text(
+                            '...',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+
+                // Next button
+                IconButton(
+                  onPressed: currentPage < totalPages - 1 ? _nextPage : null,
+                  icon: Icon(
+                    Icons.chevron_right,
+                    color: currentPage < totalPages - 1
+                        ? GlobalColors.primary
+                        : Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+        // Page info
+        if (totalPages > 1)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              'Page ${currentPage + 1} of $totalPages • ${widget.state.yields.length} total items',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ),
+      ],
     );
   }
 

@@ -77,15 +77,13 @@ class _CropRequirementsWidgetState extends State<CropRequirementsWidget> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        print(data); // Debug print
+        // Debug print
         if (data['status'] == 'success') {
-          print('success');
           setState(() {
             cropRequirements = data['data'];
             filteredCropRequirements = data['data'];
           });
         } else {
-          print('fail');
           throw Exception(data['message'] ?? 'Unknown error occurred');
         }
       } else {

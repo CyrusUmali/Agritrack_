@@ -18,7 +18,7 @@ import 'package:flareline_uikit/components/buttons/button_widget.dart';
 import 'package:flareline_uikit/core/theme/flareline_colors.dart';
 import 'package:toastification/toastification.dart';
 
-import 'package:flareline/pages/test/map_widget/stored_polygons.dart';
+import 'package:flareline/pages/map/map_widget/stored_polygons.dart';
 
 class FarmersPerSectorWidget extends StatefulWidget {
   const FarmersPerSectorWidget({super.key});
@@ -729,7 +729,7 @@ class DataTableWidget extends TableWidget<FarmersViewModel> {
                   onTap: () {
                     context
                         .read<FarmerBloc>()
-                        .add(DeleteFarmer(farmer.id as int));
+                        .add(DeleteFarmer(farmer.id));
                     Navigator.of(context).pop();
                   },
                   type: ButtonType.primary.type,
@@ -817,7 +817,7 @@ class FarmersViewModel extends BaseTableProvider {
       row.add(farmerNameCell);
 
       var sectorCell = TableDataRowsTableDataRows()
-        ..text = farmer.sector ?? 'Not specified'
+        ..text = farmer.sector
         ..dataType = CellDataType.TEXT.type
         ..columnName = 'Sector'
         ..id = farmer.id.toString();

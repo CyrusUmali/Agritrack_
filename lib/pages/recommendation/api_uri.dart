@@ -7,16 +7,11 @@ class ApiConstants {
   
  
     static const String baseUrl = 'https://aicrop.onrender.com/api/v1';
-  // static const String baseUrl = 'http://localhost:8000/api/v1';e
+  // static const String baseUrl = 'http://localhost:8000/api/v1';
 
   // static const String baseUrl = 'http://127.0.0.1:8000/api/v1';
-
-
-
-  // Auth endpoints
-  static const String loginEndpoint = '$backendUrl/login';
-  static const String registerEndpoint = '$backendUrl/register';
-  static const String verifyEndpoint = '$backendUrl/verify';
+ 
+ 
   
   // Chatbot endpoints
   static const String chatbotInitEndpoint = '$backendUrl/chatbot/init';
