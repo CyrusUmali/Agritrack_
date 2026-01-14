@@ -216,14 +216,18 @@ class _SuitabilityInputsState extends State<SuitabilityInputs> {
       children: [
         _buildSlider(context, 'Soil Ph', 'soil_ph', 0, 10),
         const SizedBox(height: 16),
+      _buildSlider(context, 'Humidity (%)', 'humidity', 0, 99),
+        const SizedBox(height: 16),
+
         _buildSlider(context, 'Soil Fertility us/cm', 'fertility_ec', 0, 3000),
+        const SizedBox(height: 16),
+         _buildSlider(context, 'Soil Temp (°C)', 'soil_temp', -10, 50),
         const SizedBox(height: 16),
         _buildSlider(context, 'Soil Moisture (%)', 'soil_moisture', 0, 99),
         const SizedBox(height: 16),
-        _buildSlider(context, 'Soil Temp (°C)', 'soil_temp', -10, 50),
-        const SizedBox(height: 16),
-        _buildSlider(context, 'Humidity (%)', 'humidity', 0, 99),
-        const SizedBox(height: 16),
+       
+       
+        
         _buildSlider(context, 'Sunlight (lux)', 'sunlight', 0, 100000),
       ],
     );

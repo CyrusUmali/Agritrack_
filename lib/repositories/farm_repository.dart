@@ -21,26 +21,33 @@ class FarmRepository extends BaseRepository {
     }
   }
 
-  Future<List<Farm>> getFarmsByProductId(int productId) async {
-    try {
-      checkAuthentication(); // Use inherited method
 
-      final response =
-          await apiService.get('/farms/farms/by-product/$productId');
- 
-
-      if (response.data == null || response.data['farms'] == null) {
-        throw Exception('Invalid farm data format');
-      }
-
-      final farmsData = response.data['farms'] as List;
- 
-      return farmsData.map((json) => Farm.fromJson2(json)).toList();
-    } catch (e) {
-      handleError(e,
-          operation: 'load farms by product'); // Use inherited method
+Future<List<Farm>> getFarmsByProductId(int productId, {int? year}) async {
+  try {
+    checkAuthentication(); // Use inherited method
+   
+    // Build query parameters
+    final Map<String, dynamic> queryParams = {};
+    if (year != null) {
+      queryParams['year'] = year; // Add year as query parameter
     }
+
+    final response = await apiService.get(
+      '/farms/farms/by-product/$productId',
+      queryParameters: queryParams, // Pass query parameters
+    );
+
+    if (response.data == null || response.data['farms'] == null) {
+      throw Exception('Invalid farm data format');
+    }
+
+    final farmsData = response.data['farms'] as List;
+    return farmsData.map((json) => Farm.fromJson2(json)).toList();
+  } catch (e) {
+    handleError(e, operation: 'load farms by product');
   }
+}
+
 
   Future<Farm> updateFarm(Farm farm) async {
     try {

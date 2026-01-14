@@ -76,10 +76,21 @@ class SuitabilityResults extends StatelessWidget {
               SizedBox(height: isSmallScreen ? 20 : 28),
               SuggestionsCard(
                 suggestions: suggestions,
+  //                suggestions: [
+  //   "Demo: Drink 8 glasses of water daily",
+  //   "Demo: Sleep 7-8 hours nightly", 
+  //   "Demo: Exercise 30 minutes daily",
+  //   "Demo: Eat 5 servings of fruits/veg",
+  //   "Demo: Reduce processed foods",
+  // ],
                 deficientParamsCount: deficientParams.length,
                 isSmallScreen: isSmallScreen,
                 padding: padding,
                 onGetSuggestions: onGetSuggestions,
+      //            onGetSuggestions: () {
+      // print("Get suggestions clicked - Demo Mode");
+      // You can update state with more dummy suggestions
+    // },
                 isLoadingSuggestions: isLoadingSuggestions,
               ),
             ],

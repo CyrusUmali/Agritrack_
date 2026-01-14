@@ -86,55 +86,67 @@ class Farm extends Equatable {
     );
   }
 
-  factory Farm.fromJson2(Map<String, dynamic> json) {
-    List<LatLng>? parseVertices(dynamic verticesData) {
-      if (verticesData == null) return null;
-      if (verticesData is List) {
-        return verticesData
-            .where((point) =>
-                point is Map && point['lat'] != null && point['lng'] != null)
-            .map((point) => LatLng(
-                  (point['lat'] as num).toDouble(),
-                  (point['lng'] as num).toDouble(),
-                ))
-            .toList();
-      }
-      return null;
-    }
 
-    List<String>? parseProducts(dynamic productsData) {
-      if (productsData == null) return null;
-      if (productsData is List) {
-        return productsData
-            .whereType<String>() // Only keep String items
-            .toList();
-      }
-      return null;
+factory Farm.fromJson2(Map<String, dynamic> json) {
+  List<LatLng>? parseVertices(dynamic verticesData) {
+    if (verticesData == null) return null;
+    if (verticesData is List) {
+      return verticesData
+          .where((point) =>
+              point is Map && point['lat'] != null && point['lng'] != null)
+          .map((point) => LatLng(
+                (point['lat'] as num).toDouble(),
+                (point['lng'] as num).toDouble(),
+              ))
+          .toList();
     }
-
-    return Farm(
-      id: json['id'] as int? ?? 0,
-      farmerId: json['farmerId'] as int? ?? 0,
-      volume: (json['yield'] as Map<String, dynamic>?)?['volume'] as int? ??
-          0, // Fixed this li
-      name: json['name'] as String? ?? 'Unknown Farm',
-      owner: json['owner'] as String?,
-      description: json['description'] as String?,
-      sector: json['sector'] as String?,
-      status: json['status'] as String? ?? '--',
-      sectorId: json['sectorId'] as int? ?? 0,
-      barangay: json['parentBarangay'] as String?,
-      products: parseProducts(json['products']), // Parse products
-      hectare: (json['area'] as num?)?.toDouble(),
-      vertices: parseVertices(json['vertices']),
-      createdAt: json['createdAt'] != null
-          ? DateTime.tryParse(json['createdAt'])
-          : null,
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.tryParse(json['updatedAt'])
-          : null,
-    );
+    return null;
   }
+
+  // Parse products - handle the product object from backend
+  List<String>? parseProducts(dynamic productData) {
+    if (productData == null) return null;
+    
+    // If productData is a Map with name (from your backend)
+    if (productData is Map && productData['name'] != null) {
+      return [productData['name'].toString()];
+    }
+    
+    // If productData is already a List
+    if (productData is List) {
+      return productData
+          .where((item) => item is Map && item['name'] != null)
+          .map((item) => item['name'].toString())
+          .toList();
+    }
+    
+    return null;
+  }
+
+  return Farm(
+    id: json['id'] as int? ?? 0,
+    farmerId: json['farmerId'] as int? ?? 0,
+    volume: (json['yield'] as Map<String, dynamic>?)?['volume'] as int? ?? 0,
+    name: json['name'] as String? ?? 'Unknown Farm',
+    owner: json['owner'] as String?, // This matches your backend's 'owner'
+    description: json['description'] as String?,
+    sector: json['sector'] as String?, // This matches your backend's 'sector'
+    status: json['status'] as String? ?? '--',
+    sectorId: json['sectorId'] as int? ?? 0,
+    barangay: json['parentBarangay'] as String?,
+    products: parseProducts(json['product']), // Note: singular 'product'
+    hectare: (json['area'] as num?)?.toDouble(),
+    vertices: parseVertices(json['vertices']),
+    createdAt: json['createdAt'] != null
+        ? DateTime.tryParse(json['createdAt'])
+        : null,
+    updatedAt: json['updatedAt'] != null
+        ? DateTime.tryParse(json['updatedAt'])
+        : null,
+  );
+}
+
+
 
   Map<String, dynamic> toJson() {
     return {

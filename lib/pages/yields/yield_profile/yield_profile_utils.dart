@@ -84,24 +84,23 @@ Widget buildTextField(
   );
 }
 
+
 Widget buildDatePickerField(String label, bool isMobile,
     {String? value,
     bool enabled = true,
-    required Future<void> Function() onTap}) {
+    required VoidCallback onTap}) { // Changed to VoidCallback
   return TextField(
     enabled: enabled,
     controller: TextEditingController(text: value),
     decoration: InputDecoration(
       labelText: label,
       hintText: 'DD/MM/YYYY',
-              border: OutlineInputBorder(
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ),
-    enabledBorder: OutlineInputBorder( // Add this
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ), 
+      border: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+      ),
       contentPadding: EdgeInsets.symmetric(
         vertical: isMobile ? 14 : 16,
         horizontal: 12,
@@ -110,14 +109,13 @@ Widget buildDatePickerField(String label, bool isMobile,
       floatingLabelBehavior: FloatingLabelBehavior.always,
       fillColor: enabled ? null : Colors.grey.shade100,
     ),
-    readOnly: true,
-    onTap: enabled
-        ? () {
-            // Show date picker
-          }
-        : null,
+    readOnly: true, // This is important!
+    onTap: enabled ? onTap : null, // Call the provided onTap function
   );
 }
+
+
+
 
 Widget buildNotesField(String value, bool isMobile, {bool enabled = true}) {
   return TextField(

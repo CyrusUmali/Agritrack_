@@ -368,7 +368,7 @@ Widget _buildReporterSummary(BuildContext context) {
               ),
               const SizedBox(width: 8),
               Text(
-                'AI Weather Report',
+                'Weather Report',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -439,7 +439,7 @@ Widget _buildReporterSummary(BuildContext context) {
               ),
               const SizedBox(width: 8),
               Text(
-                'AI Weather Report',
+                'Weather Report',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -519,7 +519,7 @@ Widget _buildReporterSummary(BuildContext context) {
               ),
               const SizedBox(width: 8),
               Text(
-                'AI Weather Report',
+                'Weather Report',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -533,7 +533,7 @@ Widget _buildReporterSummary(BuildContext context) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Get an AI-powered weather analysis based on current conditions.',
+                'Get weather analysis based on current conditions.',
                 style: TextStyle(
                   fontSize: 13,
                   color: theme.colorScheme.onSurface.withOpacity(0.7),

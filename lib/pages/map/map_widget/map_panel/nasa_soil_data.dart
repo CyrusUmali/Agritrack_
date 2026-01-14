@@ -4,9 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart';
-
-// Import the ModalDialog if available
-// import 'package:your_package/modal_dialog.dart';
+ 
 
 // NASA POWER Soil Data Model
 class NasaSoilData {
@@ -167,9 +165,12 @@ Future<void> _fetchSoilData() async {
 
   try {
     // Get date range (last 7 days)
-    final endDate = DateTime.now();
+    final endDate = DateTime.now().subtract(const Duration(days: 7));
     final startDate = endDate.subtract(const Duration(days: 7));
     final dateFormat = DateFormat('yyyyMMdd');
+    // final endDate = DateTime.now();
+    // final startDate = endDate.subtract(const Duration(days: 7));
+    // final dateFormat = DateFormat('yyyyMMdd');
     
     final url = Uri.parse(
       'https://power.larc.nasa.gov/api/temporal/daily/point?'

@@ -148,8 +148,7 @@ class _CropRequirementsWidgetState extends State<CropRequirementsWidget> {
         final cropName = filteredCropRequirements!.keys.elementAt(index);
         final cropData = filteredCropRequirements![cropName];
         final requirements = cropData['requirements'];
-        final imageUrl = cropData['image_url'];
-        final prediction = cropData['prediction'];
+        final imageUrl = cropData['image_url']; 
 
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
@@ -187,15 +186,7 @@ class _CropRequirementsWidgetState extends State<CropRequirementsWidget> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Prediction Score: $prediction',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                      
                         ],
                       ),
                     ),

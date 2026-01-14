@@ -372,10 +372,18 @@ static Future<void> _showSmallScreenModal({
 
   await WoltModalSheet.show(
     context: context,
+    // Add these performance optimizations
+    useSafeArea: true,
+    enableDrag: true,
+    
     pageListBuilder: (modalContext) => [
       WoltModalSheetPage(
         hasSabGradient: false,
         isTopBarLayerAlwaysVisible: true,
+        
+        // Add this to prevent rebuilds when keyboard appears
+        resizeToAvoidBottomInset: false,
+        
         trailingNavBarWidget: Container(
           color: Theme.of(context).cardTheme.color,
           padding: const EdgeInsets.all(16),
@@ -389,6 +397,7 @@ static Future<void> _showSmallScreenModal({
             ],
           ),
         ),
+        
         child: BlocProvider(
           create: (context) => YieldBloc(
             yieldRepository: context.read<YieldBloc>().yieldRepository,
@@ -396,7 +405,6 @@ static Future<void> _showSmallScreenModal({
           child: BlocListener<YieldBloc, YieldState>(
             listener: (context, state) {
               if (state is YieldsLoaded && state.message != null) {
-                // Show toast for success message
                 toastification.show(
                   context: context,
                   type: ToastificationType.success,
@@ -407,68 +415,82 @@ static Future<void> _showSmallScreenModal({
                   autoCloseDuration: const Duration(seconds: 3),
                 );
               } else if (state is YieldsError) {
-                // Show error toast
                 ToastHelper.showErrorToast(state.message, context, maxLines: 3);
               }
             },
-            child: Container(
-              color: Theme.of(context).cardTheme.color,
-              child: ModalContentWithToggle(
-                polygon: polygon,
-                products: products,
-                farmers: farmers,
-                onUpdateCenter: onUpdateCenter,
-                onUpdatePinStyle: onUpdatePinStyle,
-                onUpdateStatus: onUpdateStatus,
-                onUpdateColor: onUpdateColor,
-                onUpdateProducts: onUpdateProducts,
-                onUpdateFarmName: onUpdateFarmName,
-                onUpdateFarmOwner: onUpdateFarmOwner,
-                onUpdateBarangay: onUpdateBarangay,
-                onUpdateLake: onUpdateLake,
-                onDeletePolygon: onDeletePolygon,
-                selectedYear: selectedYear,
-                theme: theme,
-                onSave: () {},
-                isLargeScreen: false,
+            
+            // Wrap content in RepaintBoundary to isolate repaints
+            child: RepaintBoundary(
+              child: Container(
+                color: Theme.of(context).cardTheme.color,
+                // Remove extra padding that might cause layout shifts
+                child: ModalContentWithToggle(
+                  polygon: polygon,
+                  products: products,
+                  farmers: farmers,
+                  onUpdateCenter: onUpdateCenter,
+                  onUpdatePinStyle: onUpdatePinStyle,
+                  onUpdateStatus: onUpdateStatus,
+                  onUpdateColor: onUpdateColor,
+                  onUpdateProducts: onUpdateProducts,
+                  onUpdateFarmName: onUpdateFarmName,
+                  onUpdateFarmOwner: onUpdateFarmOwner,
+                  onUpdateBarangay: onUpdateBarangay,
+                  onUpdateLake: onUpdateLake,
+                  onDeletePolygon: onDeletePolygon,
+                  selectedYear: selectedYear,
+                  theme: theme,
+                  onSave: () {},
+                  isLargeScreen: false,
+                ),
               ),
             ),
           ),
         ),
+        
         stickyActionBar: (isFarmer == true &&
                 polygon.farmerId.toString() != farmerId.toString())
             ? null
-            : Container(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, -2),
-                    )
-                  ],
+            : Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(modalContext).viewInsets.bottom,
                 ),
-                padding: const EdgeInsets.all(16),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: FlarelineColors.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    minimumSize: const Size(double.infinity, 48),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, -2),
+                      )
+                    ],
                   ),
-                  onPressed: () {
-                    onSave();
-                    Navigator.of(modalContext).pop();
-                  },
-                  child: Text(
-                    context.translate('Save Changes'),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  padding: const EdgeInsets.all(16),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: FlarelineColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      minimumSize: const Size(double.infinity, 48),
+                    ),
+                    onPressed: () {
+                      // Dismiss keyboard before saving
+                      FocusScope.of(modalContext).unfocus();
+                      Future.delayed(const Duration(milliseconds: 100), () {
+                        onSave();
+                        Navigator.of(modalContext).pop();
+                      });
+                    },
+                    child: Text(
+                      context.translate('Save Changes'),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -476,7 +498,11 @@ static Future<void> _showSmallScreenModal({
       )
     ],
     modalTypeBuilder: (context) => const WoltBottomSheetType(),
-    onModalDismissedWithBarrierTap: () => Navigator.of(context).pop(),
+    onModalDismissedWithBarrierTap: () {
+      // Dismiss keyboard when tapping outside
+      FocusScope.of(context).unfocus();
+      Navigator.of(context).pop();
+    },
   );
 }
 
@@ -865,47 +891,58 @@ class _LargeScreenModalWrapperState extends State<_LargeScreenModalWrapper> {
   State<ModalContentWithToggle> createState() => _ModalContentWithToggleState();
 }
 
+
+
+
+
+
+
 class _ModalContentWithToggleState extends State<ModalContentWithToggle> {
   @override
   void initState() {
     super.initState();
-    // Listen to the ValueNotifier for yield updates
     YieldUpdateNotifier.farmIdNotifier.addListener(_handleYieldUpdate);
   }
 
   @override
   void dispose() {
-    // Remove listener when widget is disposed
     YieldUpdateNotifier.farmIdNotifier.removeListener(_handleYieldUpdate);
     super.dispose();
   }
 
   void _handleYieldUpdate() {
-    // When farmIdNotifier changes, check if it's for this farm
     final updatedFarmId = YieldUpdateNotifier.farmIdNotifier.value;
     if (updatedFarmId == widget.polygon.id && PolygonModal.contentType == ContentType.recentRecord) {
-      // Reload yields for this farm
       context.read<YieldBloc>().add(GetYieldByFarmId(widget.polygon.id!));
-      // Reset the notifier
       YieldUpdateNotifier.reset();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // For large screens, just show the content
     if (widget.isLargeScreen) {
       return _buildContent();
     }
     
-    // For mobile, use SingleChildScrollView with proper structure
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildMobileContentTypeToggle(),
-          _buildContent(),
-        ],
+    // Optimize mobile layout with better keyboard handling
+    return GestureDetector(
+      onTap: () {
+        // Dismiss keyboard when tapping outside text fields
+        FocusScope.of(context).unfocus();
+      },
+      child: SingleChildScrollView(
+        // Add physics for better scrolling
+        physics: const ClampingScrollPhysics(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildMobileContentTypeToggle(),
+            // Wrap content in RepaintBoundary
+            RepaintBoundary(
+              child: _buildContent(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -916,30 +953,31 @@ class _ModalContentWithToggleState extends State<ModalContentWithToggle> {
     final isFarmer = userProvider.isFarmer;
     final farmerId = userProvider.farmer?.id;
     
-    // Only show toggle if user is not a farmer or owns the farm
     final shouldShowToggle = !isFarmer ||
         (isFarmer && widget.polygon.farmerId == farmerId);
     
     if (!shouldShowToggle) return const SizedBox.shrink();
     
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: theme.dividerColor,
-            width: 1,
+    return RepaintBoundary(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: theme.dividerColor,
+              width: 1,
+            ),
           ),
         ),
-      ),
-      child: Center(
-        child: _buildContentTypeToggle(theme),
+        child: Center(
+          child: _buildContentTypeToggle(theme),
+        ),
       ),
     );
   }
 
 
-
+  
 Widget _buildContentTypeToggle(ThemeData theme) {
   return Container(
     decoration: BoxDecoration(
@@ -971,6 +1009,7 @@ Widget _buildContentTypeToggle(ThemeData theme) {
     ),
   );
 }
+
 
 Widget _buildContentTypeSegment({
   required IconData icon,
@@ -1016,8 +1055,6 @@ Widget _buildContentTypeSegment({
   );
 }
 
-
- 
   Widget _buildContent() {
     switch (PolygonModal.contentType) {
       case ContentType.modalContent:
@@ -1044,9 +1081,9 @@ Widget _buildContentTypeSegment({
         return BlocBuilder<YieldBloc, YieldState>(
           builder: (context, yieldState) {
             if (yieldState is YieldsLoading) {
-              return SizedBox(
-                height: 200, // Provide a fixed height for loading
-                child: const Center(child: CircularProgressIndicator()),
+              return const SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
               );
             }
             
@@ -1064,21 +1101,20 @@ Widget _buildContentTypeSegment({
                 padding: const EdgeInsets.all(16.0),
                 child: RecentRecord(
                   yields: yieldState.yields,
+                  farmArea: widget.polygon.area,
                   farmId: widget.polygon.id!,
                   farmerId: widget.polygon.farmerId ?? 0,
                 ),
               );
             }
             
-            return SizedBox(
+            return const SizedBox(
               height: 200,
-              child: const Center(child: Text('No yield data available')),
+              child: Center(child: Text('No yield data available')),
             );
           },
         );
     }
   }
-
-
-
 }
+

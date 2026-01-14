@@ -8,15 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_map_dragmarker/flutter_map_dragmarker.dart';
 
 
-
-
-// File: map_layers.dart - Optimized version with fixed-size markers
-import 'polygon_manager.dart';
-import 'package:flareline/pages/map/map_widget/pin_style.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:flutter_map_dragmarker/flutter_map_dragmarker.dart';
+ 
 
 class MapLayersHelper {
   // Define maximum area limits for each pin style in HECTARES
@@ -261,62 +253,57 @@ class MapLayersHelper {
     );
   }
 
-  /// Simplified polygon layer with zoom-based optimization
-  static PolygonLayer createOptimizedBarangayLayer(
-    List<PolygonData> barangays, {
-    required double currentZoom,
-  }) {
-    // Don't render at very low zoom
-    if (currentZoom < 12) {
-      return PolygonLayer(polygons: const []);
-    }
 
-    // Simplify polygons at lower zoom levels
-    final shouldSimplify = currentZoom < 14;
-    
-    return PolygonLayer(
-      polygons: barangays.map((barangay) {
-        final vertices = shouldSimplify 
-            ? _simplifyPolygon(barangay.vertices, tolerance: 0.001)
-            : barangay.vertices;
+static PolygonLayer createOptimizedBarangayLayer(
+  List<PolygonData> barangays, {
+  required double currentZoom,
+}) {
+  // Always render barangay polygons at any zoom level
 
-        return Polygon(
-          points: vertices,
-          color: const Color.fromARGB(255, 255, 255, 0).withOpacity(0.1),
-          borderStrokeWidth: currentZoom < 13 ? 0.5 : 1.0,
-          borderColor: const Color.fromARGB(255, 223, 212, 1),
-          isFilled: true,
-        );
-      }).toList(),
-    );
-  }
+     // Don't render at very low zoom
+    // if (currentZoom < 12) {
+    //   return PolygonLayer(polygons: const []);
+    // }
+  return PolygonLayer(
+    polygons: barangays.map((barangay) {
+      return Polygon(
+        points: barangay.vertices, // Use original vertices, no simplification
+        color: const Color.fromARGB(255, 255, 255, 0).withOpacity(
+          // Adjust opacity for better visibility when zoomed out
+          currentZoom < 13 ? 0.05 : 0.1
+        ),
+        borderStrokeWidth: currentZoom < 13 ? 0.5 : 1.0,
+        borderColor: const Color.fromARGB(255, 223, 212, 1),
+        isFilled: true,
+      );
+    }).toList(),
+  );
+}
 
-  static PolygonLayer createOptimizedLakeLayer(
-    List<PolygonData> lakes, {
-    required double currentZoom,
-  }) {
-    if (currentZoom < 12) {
-      return PolygonLayer(polygons: const []);
-    }
+static PolygonLayer createOptimizedLakeLayer(
+  List<PolygonData> lakes, {
+  required double currentZoom,
+}) {
 
-    final shouldSimplify = currentZoom < 14;
-    
-    return PolygonLayer(
-      polygons: lakes.map((lake) {
-        final vertices = shouldSimplify 
-            ? _simplifyPolygon(lake.vertices, tolerance: 0.001)
-            : lake.vertices;
+ // Don't render at very low zoom
+    // if (currentZoom < 12) {
+    //   return PolygonLayer(polygons: const []);
+    // }
 
-        return Polygon(
-          points: vertices,
-          color: const Color.fromARGB(255, 59, 107, 145).withOpacity(0.15),
-          borderStrokeWidth: currentZoom < 13 ? 0.5 : 1.0,
-          borderColor: const Color.fromARGB(255, 59, 107, 145),
-          isFilled: true,
-        );
-      }).toList(),
-    );
-  }
+  return PolygonLayer(
+    polygons: lakes.map((lake) {
+      return Polygon(
+        points: lake.vertices, // Use original vertices
+        color: const Color.fromARGB(255, 59, 107, 145).withOpacity(
+          currentZoom < 13 ? 0.1 : 0.15
+        ),
+        borderStrokeWidth: currentZoom < 13 ? 0.5 : 1.0,
+        borderColor: const Color.fromARGB(255, 59, 107, 145),
+        isFilled: true,
+      );
+    }).toList(),
+  );
+}
 
   static List<LatLng> _simplifyPolygon(List<LatLng> points, {required double tolerance}) {
     if (points.length <= 3) return points;

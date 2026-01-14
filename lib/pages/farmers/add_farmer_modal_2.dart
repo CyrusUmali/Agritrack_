@@ -114,6 +114,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController barangayController = TextEditingController();
+    final TextEditingController sectorController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String selectedSector = 'HVC'; 
   String? _imageUrl;
@@ -126,6 +127,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
   bool _passwordValidated = false;
   bool _phoneValidated = false;
   bool _barangayValidated = false;
+    bool _sectorValidated = false;
 
   final List<String> sectors = [
     'Rice',
@@ -137,6 +139,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
   ];
 
   final GlobalKey barangayFieldKey = GlobalKey();
+    final GlobalKey sectorFieldKey = GlobalKey();
 
   @override
   void initState() {
@@ -147,7 +150,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
     if (widget.email != null) {
       emailController.text = widget.email!;
     }
-
+ sectorController.text = selectedSector; 
     widget.onLoadingStateChanged(false);
   }
 
@@ -222,7 +225,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
         _passwordValidated = true;
       }
       _phoneValidated = true;
-      _barangayValidated = true;
+      _barangayValidated = true;_sectorValidated = true;
     });
 
     if (!_formKey.currentState!.validate()) {
@@ -253,7 +256,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
             : null,
         phone: phoneController.text.trim(),
         barangay: barangayController.text.trim(),
-        sector: selectedSector,
+        sector: sectorController.text.trim(), 
         imageUrl: _imageUrl,
       );
 
@@ -284,6 +287,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
     passwordController.dispose();
     phoneController.dispose();
     barangayController.dispose();
+    sectorController.dispose();
     super.dispose();
   }
 
@@ -353,15 +357,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
               controller: nameController,
               decoration: InputDecoration(
                 labelText: 'Full Name *',
-                
-               border: OutlineInputBorder(
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ),
-    enabledBorder: OutlineInputBorder( // Add this
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ), 
+                border: const OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(
                   vertical: screenWidth < 600 ? 10.0 : 16.0,
                   horizontal: 10.0,
@@ -408,14 +404,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
                   widget.authMethod == 'google', // Lock email for Google auth
               decoration: InputDecoration(
                 labelText: 'Email *',
-        border: OutlineInputBorder(
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ),
-    enabledBorder: OutlineInputBorder( // Add this
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ), 
+                border: const OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(
                   vertical: screenWidth < 600 ? 10.0 : 16.0,
                   horizontal: 10.0,
@@ -472,14 +461,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: 'Password *',
-                      border: OutlineInputBorder(
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ),
-    enabledBorder: OutlineInputBorder( // Add this
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ), 
+                      border: const OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(
                         vertical: screenWidth < 600 ? 10.0 : 16.0,
                         horizontal: 10.0,
@@ -529,14 +511,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
               controller: phoneController,
               decoration: InputDecoration(
                 labelText: 'Phone Number',
-                border: OutlineInputBorder(
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ),
-    enabledBorder: OutlineInputBorder( // Add this
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ), 
+                border: const OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(
                   vertical: screenWidth < 600 ? 10.0 : 16.0,
                   horizontal: 10.0,
@@ -610,14 +585,7 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
                     focusNode: focusNode,
                     decoration: InputDecoration(
                       labelText: 'Barangay *',
-                     border: OutlineInputBorder(
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ),
-    enabledBorder: OutlineInputBorder( // Add this
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ), 
+                      border: const OutlineInputBorder(),
                       suffixIcon: const Icon(Icons.arrow_drop_down),
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 12),
@@ -663,44 +631,91 @@ class _AddFarmerModalContentState extends State<_AddFarmerModalContent> {
             ),
             SizedBox(height: screenWidth < 600 ? 8.0 : 16.0),
 
-            // Sector Dropdown
-            DropdownButtonFormField<String>(
-              value: selectedSector,
-              decoration: InputDecoration(
-                labelText: 'Sector *',
-            border: OutlineInputBorder(
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ),
-    enabledBorder: OutlineInputBorder( // Add this
-      borderSide: BorderSide(color:  Colors.grey.shade300, width: 1),
-    
-    ), 
-                contentPadding: EdgeInsets.symmetric(
-                  vertical: screenWidth < 600 ? 10.0 : 16.0,
-                  horizontal: 10.0,
-                ),
-              ),
-              items: sectors.map((String sector) {
-                return DropdownMenuItem<String>(
-                  value: sector,
-                  child: Text(sector),
-                );
-              }).toList(),
-              onChanged: (String? value) {
-                if (value != null) {
-                  setState(() {
-                    selectedSector = value;
-                  });
-                }
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please select a sector';
-                }
-                return null;
-              },
+           
+
+
+           SizedBox(
+  height: fieldHeight,
+  child: Autocomplete<String>(
+    optionsBuilder: (TextEditingValue textEditingValue) {
+      if (textEditingValue.text.isEmpty) {
+        return sectors;
+      }
+      return sectors.where((String option) {
+        return option
+            .toLowerCase()
+            .contains(textEditingValue.text.toLowerCase());
+      });
+    },
+    onSelected: (String value) {
+      setState(() {
+        selectedSector = value;
+      });
+      sectorController.text = value;
+    },
+    optionsViewBuilder: (context, onSelected, options) {
+      return _buildOptionsView(
+          context, onSelected, options, sectorFieldKey);
+    },
+    fieldViewBuilder: (BuildContext context,
+        TextEditingController textEditingController,
+        FocusNode focusNode,
+        VoidCallback onFieldSubmitted) {
+      return TextFormField(
+        controller: textEditingController,
+        focusNode: focusNode,
+        decoration: InputDecoration(
+          labelText: 'Sector *',
+          border: const OutlineInputBorder(),
+          suffixIcon: const Icon(Icons.arrow_drop_down),
+          contentPadding: const EdgeInsets.symmetric(
+              vertical: 12, horizontal: 12),
+          errorStyle: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w100,
+            color: Colors.redAccent,
+          ),
+          errorBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Colors.red.shade400,
+              width: 1.5,
             ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Colors.red.shade400,
+              width: 1.5,
+            ),
+          ),
+        ),
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Please select a sector';
+          }
+          if (!sectors.contains(value.trim())) {
+            return 'Please select a valid sector';
+          }
+          return null;
+        },
+        onChanged: (value) {
+          sectorController.text = value;
+          setState(() {
+            selectedSector = value;
+          });
+          if (_sectorValidated) {
+            _formKey.currentState!.validate();
+          }
+        },
+        autovalidateMode: _sectorValidated
+            ? AutovalidateMode.onUserInteraction
+            : AutovalidateMode.disabled,
+      );
+    },
+  ),
+),
+           
+
+           
             SizedBox(height: screenWidth < 600 ? 16.0 : 24.0),
 
             // Image Upload Section

@@ -1,6 +1,5 @@
 import 'package:flareline/breaktab.dart';
-import 'package:flareline/pages/dashboard/map/map_chart_widget.dart';
-import 'package:flareline/core/models/farms_model.dart';
+import 'package:flareline/pages/dashboard/map/map_chart_widget.dart'; 
 import 'package:flareline/core/models/product_model.dart';
 import 'package:flareline/core/models/yield_model.dart';
 import 'package:flareline/pages/yields/yield_bloc/yield_bloc.dart';
@@ -38,44 +37,89 @@ class ProductProfile extends LayoutWidget {
     @override
   EdgeInsetsGeometry? get customPadding => const EdgeInsets.symmetric(horizontal: 8, vertical: 0) ;
 
-  @override
-  Widget contentDesktopWidget(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => YieldBloc(
-            yieldRepository: RepositoryProvider.of<YieldRepository>(context),
-          )..add(LoadYieldsByProduct(product.id)),
-        ),
-        BlocProvider(
-          create: (context) => FarmBloc(
-            farmRepository: RepositoryProvider.of<FarmRepository>(context),
-          )..add(GetFarmsByProduct(product.id)),
-        ),
-      ],
-      child: _ProductProfileContent(product: product, isMobile: false),
-    );
-  }
 
-  @override
-  Widget contentMobileWidget(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => YieldBloc(
-            yieldRepository: RepositoryProvider.of<YieldRepository>(context),
-          )..add(LoadYieldsByProduct(product.id)),
+
+
+
+
+@override
+Widget contentDesktopWidget(BuildContext context) {
+  return MultiBlocProvider(
+    providers: [
+      BlocProvider(
+        create: (context) => YieldBloc(
+          yieldRepository: RepositoryProvider.of<YieldRepository>(context),
+        )..add(LoadYieldsByProduct(product.id)),
+      ),
+      BlocProvider(
+        create: (context) => FarmBloc(
+          farmRepository: RepositoryProvider.of<FarmRepository>(context),
         ),
-        BlocProvider(
-          create: (context) => FarmBloc(
-            farmRepository: RepositoryProvider.of<FarmRepository>(context),
-          )..add(GetFarmsByProduct(product.id)),
-        ),
-      ],
-      child: _ProductProfileContent(product: product, isMobile: true),
-    );
-  }
+      ),
+    ],
+    child: Consumer<YearPickerProvider>(
+      builder: (context, yearProvider, child) {
+        // Initialize with the current selected year
+        final farmBloc = context.read<FarmBloc>();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          farmBloc.add(GetFarmsByProduct(product.id, year: yearProvider.selectedYear));
+        });
+        
+        return BlocListener<FarmBloc, FarmState>(
+          listenWhen: (previous, current) => previous != current,
+          listener: (context, state) {
+            print('FarmBloc State Changed: ${state.runtimeType}');
+            if (state is FarmsLoaded) {
+              print('Farms loaded: ${state.farms.length} farms');
+            }
+          },
+          child: _ProductProfileContent(
+            product: product, 
+            isMobile: false
+          ),
+        );
+      },
+    ),
+  );
 }
+
+@override
+Widget contentMobileWidget(BuildContext context) {
+  return MultiBlocProvider(
+    providers: [
+      BlocProvider(
+        create: (context) => YieldBloc(
+          yieldRepository: RepositoryProvider.of<YieldRepository>(context),
+        )..add(LoadYieldsByProduct(product.id)),
+      ),
+      BlocProvider(
+        create: (context) => FarmBloc(
+          farmRepository: RepositoryProvider.of<FarmRepository>(context),
+        ),
+      ),
+    ],
+    child: Consumer<YearPickerProvider>(
+      builder: (context, yearProvider, child) {
+        // Initialize with the current selected year
+        final farmBloc = context.read<FarmBloc>();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          farmBloc.add(GetFarmsByProduct(product.id, year: yearProvider.selectedYear));
+        });
+        
+        return _ProductProfileContent(
+          product: product, 
+          isMobile: true
+        );
+      },
+    ),
+  );
+}
+
+
+
+
+}
+
 
 class _ProductProfileContent extends StatefulWidget {
   final Product product;
@@ -92,8 +136,9 @@ class _ProductProfileContentState extends State<_ProductProfileContent> {
   Map<String, dynamic> transformedYieldData = {
     'name': '',
     'yields': [],
-  };
-  List<Farm> _farms = [];
+  }; 
+
+
   int _selectedViewIndex =
       0; // 0 for yield history, 1 for farms table, 2 for map
 
@@ -277,31 +322,54 @@ class _ProductProfileContentState extends State<_ProductProfileContent> {
                   return const SizedBox();
                 },
               ),
-            ] else if (_selectedViewIndex == 1) ...[
-              BlocConsumer<FarmBloc, FarmState>(
-                listener: (context, state) {
-                  if (state is FarmsLoaded) {
-                    setState(() {
-                      _farms = state.farms
-                          .where((farm) => farm.volume != 0)
-                          .toList();
-                    });
-                  }
-                },
-                builder: (context, state) {
-                  if (state is FarmsLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is FarmsLoaded) {
-                    // print('_farms');
-                    // print(_farms[0]);
-                    return FarmsTable(farms: _farms);
-                  } else if (state is FarmsError) {
-                    return Center(
-                        child: Text('Error loading farms: ${state.message}'));
-                  }
-                  return const SizedBox();
-                },
-              ),
+            ] 
+            
+            else if (_selectedViewIndex == 1) ...[
+           
+       BlocBuilder<FarmBloc, FarmState>(
+  builder: (context, state) {
+    if (state is FarmsLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (state is FarmsLoaded) {
+      // Filter farms where volume > 0
+      final filteredFarms = state.farms.where((farm) => farm.volume != null && farm.volume! > 0).toList();
+      
+      // print('Displaying ${filteredFarms.length} farms (filtered from ${state.farms.length}) in table');
+      
+      // // Optionally show a message if all farms are filtered out
+      // if (filteredFarms.isEmpty) {
+      //   return Center(
+      //     child: Column(
+      //       mainAxisAlignment: MainAxisAlignment.center,
+      //       children: [
+      //         const Icon(Icons.info_outline, size: 48, color: Colors.grey),
+      //         const SizedBox(height: 16),
+      //         Text(
+      //           'No farms with recorded yield for selected period',
+      //           style: Theme.of(context).textTheme.bodyLarge,
+      //         ),
+      //         const SizedBox(height: 8),
+      //         Text(
+      //           'Try selecting a different year',
+      //           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+      //             color: Colors.grey,
+      //           ),
+      //         ),
+      //       ],
+      //     ),
+      //   );
+      // }
+      
+      return FarmsTable(farms: filteredFarms);
+    } else if (state is FarmsError) {
+      return Center(
+        child: Text('Error loading farms: ${state.message}'),
+      );
+    }
+    return const SizedBox();
+  },
+),
+            
             ] else if (_selectedViewIndex == 2
                 // && !widget.isMobile
 

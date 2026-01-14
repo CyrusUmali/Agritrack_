@@ -100,6 +100,7 @@ class SectorDataTableWidget extends TableWidget<SectorsViewModel> {
      super.key,
   });
 
+
   @override
   SectorsViewModel viewModelBuilder(BuildContext context) {
     return SectorsViewModel(
@@ -109,9 +110,7 @@ class SectorDataTableWidget extends TableWidget<SectorsViewModel> {
         // Implement delete functionality if needed
         RepositoryProvider.of<SectorService>(context);
         try {
-          // Call API to delete sector
-          // await sectorService.deleteSector(id);
-          // Then reload data
+         
           _viewModel.loadData(context);
         } catch (e) {
           ToastHelper.showErrorToast(
@@ -235,6 +234,7 @@ class SectorsViewModel extends BaseTableProvider {
   final int selectedYear;
   List<Map<String, dynamic>> sectors = [];
 
+
   @override
   String get TAG => 'SectorsViewModel';
  SectorsViewModel(
@@ -243,6 +243,25 @@ class SectorsViewModel extends BaseTableProvider {
     this.onSectorDeleted,
     this.selectedYear, 
   );
+
+
+
+    String _getYieldWithUnit(double? volume, int? sectorId) {
+    if (volume == null) return 'N/A';
+
+    switch (sectorId) {
+      case 1:
+      case 2:
+      case 3:
+      case 5:
+      case 6:
+        return '${volume.toStringAsFixed(volume % 1 == 0 ? 0 : 1)} kg';
+      case 4:
+        return '${volume.toInt()} heads';
+      default:
+        return volume.toString();
+    }
+  }
 
 
 
@@ -320,8 +339,10 @@ class SectorsViewModel extends BaseTableProvider {
         row.add(farmsCell);
 
         var yieldVolumeCell = TableDataRowsTableDataRows()
-          ..text =
-              '${sector['stats']?['totalYieldVolume']?.toString() ?? '0'} kg'
+           ..text = _getYieldWithUnit(
+          sector['stats']?['totalYieldVolume']?.toDouble(),
+          sector['id']?.toInt(),
+        )
           ..dataType = CellDataType.TEXT.type
           ..columnName = 'Yield Volume'
           ..id = sector['id'].toString();

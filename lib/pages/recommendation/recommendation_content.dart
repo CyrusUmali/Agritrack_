@@ -1,9 +1,9 @@
-import 'package:flareline/pages/recommendation/ai_models_info_widget.dart'; 
+import 'package:flareline/pages/recommendation/ai_models_info_widget.dart';
 import 'package:flareline/pages/recommendation/requirement_page.dart';
 import 'package:flareline/pages/recommendation/suitability/suitability_page.dart';
-import 'package:flareline/providers/user_provider.dart';
+import 'package:flareline/providers/user_provider.dart'; 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart'; 
 import 'recommendation_inputs.dart';
 import 'recommendation_results.dart';
 import 'recommendation_model.dart';
@@ -19,6 +19,13 @@ class RecommendationContent extends StatefulWidget {
 class RecommendationContentState extends State<RecommendationContent> {
   final RecommendationModel model = RecommendationModel();
   final GlobalKey _navigationMenuKey = GlobalKey();
+
+  @override
+  void dispose() {
+    model.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isMobile = MediaQuery.of(context).size.width < 600;
@@ -41,15 +48,16 @@ class RecommendationContentState extends State<RecommendationContent> {
                 // Responsive Header
                 _buildResponsiveHeader(isMobile, isTablet),
 
-                // const SizedBox(height: 24),
-
-                // // Model selection card
-                // _buildModelSelectionCard(),
-
                 const SizedBox(height: 24),
 
                 // Input parameters card
                 _buildInputParametersCard(isMobile),
+
+                // Error Message Display
+                if (model.hasError && model.errorMessage != null) ...[
+                  const SizedBox(height: 16),
+                  _buildErrorCard(),
+                ],
 
                 // Results
                 if (model.predictionResult != null &&
@@ -67,9 +75,71 @@ class RecommendationContentState extends State<RecommendationContent> {
     );
   }
 
+  Widget _buildErrorCard() {
+    return Card(
+      color: Colors.red.shade50,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.red.shade200, width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: Colors.red.shade700,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.translate('Error'),
+                    style: TextStyle(
+                      color: Colors.red.shade700,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    model.errorMessage!,
+                    style: TextStyle(
+                      color: Colors.red.shade900,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.close, color: Colors.red.shade700),
+              onPressed: () {
+                setState(() {
+                  model.clearError();
+                });
+              },
+              tooltip: context.translate('Dismiss'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+
+
+
   Widget _buildResponsiveHeader(bool isMobile, bool isTablet) {
-    // Navigation function
-    void _navigateToRequirements() {
+
+
+
+ void _navigateToRequirements() {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -89,7 +159,6 @@ class RecommendationContentState extends State<RecommendationContent> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Title Text on left
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -98,7 +167,6 @@ class RecommendationContentState extends State<RecommendationContent> {
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       fontSize: 32,
-                      // color: const Color.fromARGB(255, 1, 1, 1),
                     ),
               ),
               const SizedBox(height: 4),
@@ -109,73 +177,52 @@ class RecommendationContentState extends State<RecommendationContent> {
                   icon: Transform(
                     alignment: Alignment.center,
                     transform: Matrix4.identity()
-                      ..scale(-1.0, 1.0), // Flip horizontally (mirror effect)
+                      ..scale(-1.0, 1.0),
                     child: const Icon(
                       Icons.keyboard_return,
                       size: 22,
                       color: Colors.grey,
                     ),
                   ),
-                  onPressed: () {
-                    // _showNavigationMenu();
-
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //       builder: (context) => const SuitabilityPage()),
-                    // );
-
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            const SuitabilityPage(),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          return child;
-                        },
-                        transitionDuration: Duration.zero,
-                      ),
-                    );
-                  },
-                  splashRadius: 16, // Smaller splash effect
-                  padding: EdgeInsets.zero, // Remove extra padding
+                  onPressed: () => _navigateToSuitability(),
+                  splashRadius: 16,
+                  padding: EdgeInsets.zero,
                 ),
               )
             ],
           ),
 
-          // Row(
-          //   children: [
-          //     // AI Models Info Button (Question Mark)
-          //     Tooltip(
-          //       message: context.translate('Learn about AI Models'),
-          //       child: InkWell(
-          //         onTap: _showAiModelsInfo,
-          //         borderRadius: BorderRadius.circular(50),
-          //         hoverColor: Colors.grey.withOpacity(0.1),
-          //         child: Container(
-          //           width: 50,
-          //           height: 50,
-          //           padding: const EdgeInsets.all(8),
-          //           decoration: BoxDecoration(
-          //             shape: BoxShape.circle,
-          //             border: Border.all(
-          //               color: Colors.grey[500]!,
-          //               width: 2,
-          //             ),
-          //             color: Theme.of(context).cardTheme.color,
-          //           ),
-          //           child: Icon(
-          //             Icons.lightbulb_outline,
-          //             size: 24,
-          //             // color: Colors.grey[700],
-          //           ),
-          //         ),
-          //       ),
-          //     ),
-          //     const SizedBox(width: 12),
-          //  if (!isFarmer)
+          Row(
+            children: [
+              // AI Models Info Button (Question Mark)
+              Tooltip(
+                message: context.translate('Learn about the Model'),
+                child: InkWell(
+                  onTap: _showAiModelsInfo,
+                  borderRadius: BorderRadius.circular(50),
+                  hoverColor: Colors.grey.withOpacity(0.1),
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.grey[500]!,
+                        width: 2,
+                      ),
+                      color: Colors.white,
+                    ),
+                    child: Icon(
+                      Icons.lightbulb_outline,
+                      size: 24,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+          //  if (isFarmer)
           //     // Requirements Button
           //     Tooltip(
           //       message: context.translate('View Requirements'),
@@ -203,10 +250,11 @@ class RecommendationContentState extends State<RecommendationContent> {
           //         ),
           //       ),
           //     ),
-          //   ],
-          // ),
         
         
+        
+            ],
+          ),
         ],
       );
     }
@@ -229,7 +277,6 @@ class RecommendationContentState extends State<RecommendationContent> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Flipped Return Icon
                 Tooltip(
                   message: context.translate('Crop Suitability'),
                   child: IconButton(
@@ -243,81 +290,76 @@ class RecommendationContentState extends State<RecommendationContent> {
                         color: Colors.grey,
                       ),
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const SuitabilityPage()),
-                      );
-                    },
+                    onPressed: () => _navigateToSuitability(),
                     splashRadius: 16,
                     padding: EdgeInsets.zero,
                   ),
                 ),
 
                 // Right side buttons for mobile
-                // Row(
-                //   children: [
-                //     // AI Models Info Button (Question Mark)
-                //     Tooltip(
-                //       message: context.translate('Learn about AI Models'),
-                //       child: InkWell(
-                //         onTap: _showAiModelsInfo,
-                //         borderRadius: BorderRadius.circular(50),
-                //         child: Container(
-                //           width: 25,
-                //           height: 25,
-                //           padding: const EdgeInsets.all(0),
-                //           decoration: BoxDecoration(
-                //             shape: BoxShape.circle,
-                //             border: Border.all(
-                //               color: Colors.grey[500]!,
-                //               width: 1,
-                //             ),
-                //             color: Theme.of(context).cardTheme.color,
-                //           ),
-                //           child: Icon(
-                //             Icons.lightbulb_outline,
-                //             size: 15,
-                //             // color: Colors.grey[700],
-                //           ),
-                //         ),
-                //       ),
-                //     ),
+                Row(
+                  children: [
+                    // AI Models Info Button (Question Mark)
+                    Tooltip(
+                      message: context.translate('Learn about the Model'),
+                      child: InkWell(
+                        onTap: _showAiModelsInfo,
+                        borderRadius: BorderRadius.circular(50),
+                        child: Container(
+                          width: 25,
+                          height: 25,
+                          padding: const EdgeInsets.all(0),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.grey[500]!,
+                              width: 1,
+                            ),
+                            color: Colors.white,
+                          ),
+                          child: Icon(
+                            Icons.lightbulb_outline,
+                            size: 15,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                    ),
 
-                //     const SizedBox(width: 8),
+                    const SizedBox(width: 8),
 
-                //   if (!isFarmer)
-                //     // Requirements Button
-                //     Tooltip(
-                //       message: context.translate('View Requirements'),
-                //       child: InkWell(
-                //         onTap: _navigateToRequirements,
-                //         borderRadius: BorderRadius.circular(50),
-                //         child: Container(
-                //           width: 25,
-                //           height: 25,
-                //           padding: const EdgeInsets.all(0),
-                //           decoration: BoxDecoration(
-                //             shape: BoxShape.circle,
-                //             border: Border.all(
-                //               color: Colors.grey[500]!,
-                //               width: 1,
-                //             ),
-                //             color: Colors.white,
-                //           ),
-                //           child: Icon(
-                //             Icons.menu_book_outlined,
-                //             size: 15,
-                //             color: Colors.grey[700],
-                //           ),
-                //         ),
-                //       ),
-                //     ),
-                //   ],
-                // ),
-            
-            
+                  // if (isFarmer)
+                  //   // Requirements Button
+                  //   Tooltip(
+                  //     message: context.translate('View Requirements'),
+                  //     child: InkWell(
+                  //       onTap: _navigateToRequirements,
+                  //       borderRadius: BorderRadius.circular(50),
+                  //       child: Container(
+                  //         width: 25,
+                  //         height: 25,
+                  //         padding: const EdgeInsets.all(0),
+                  //         decoration: BoxDecoration(
+                  //           shape: BoxShape.circle,
+                  //           border: Border.all(
+                  //             color: Colors.grey[500]!,
+                  //             width: 1,
+                  //           ),
+                  //           color: Colors.white,
+                  //         ),
+                  //         child: Icon(
+                  //           Icons.menu_book_outlined,
+                  //           size: 15,
+                  //           color: Colors.grey[700],
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                 
+                 
+                 
+                  ],
+                ),
               ],
             ),
           ],
@@ -326,76 +368,90 @@ class RecommendationContentState extends State<RecommendationContent> {
     );
   }
 
-  Widget _buildModelSelectionCard() {
+  void _navigateToSuitability() {
+    try {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const SuitabilityPage(),
+          transitionsBuilder:
+              (context, animation, secondaryAnimation, child) {
+            return child;
+          },
+          transitionDuration: Duration.zero,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Navigation error: $e');
+   
+    }
+  }
+
+  Widget _buildInputParametersCard(bool isMobile) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              context.translate('Select Model'),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 20,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: model.selectedModel,
-              items: model.models.keys.map((String modelName) {
-                return DropdownMenuItem<String>(
-                  value: modelName,
-                  child: Text(
-                    modelName,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface,
+            Center(
+              child: Text(
+                context.translate('Enter Environmental Parameters'),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      fontSize: isMobile ? 20 : 24,
                     ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            RecommendationInputs(
+              model: model,
+              isMobile: isMobile,
+              onChanged: () => setState(() {}),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: model.isLoading ? null : () => _handlePrediction(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.blue.shade300,
+                  disabledForegroundColor: Colors.white70,
+                  elevation: 0,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  model.selectedModel = newValue!;
-                  model.modelAccuracy =
-                      'Accuracy: ${(model.models[newValue]!['accuracy']! * 100).toStringAsFixed(2)}%';
-                });
-              },
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).colorScheme.onSurface,
+                  shadowColor: Colors.transparent,
+                  surfaceTintColor: Colors.transparent,
+                  textStyle: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    letterSpacing: 0.1,
+                  ),
+                  minimumSize: const Size(64, 48),
+                ),
+                child: model.isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        context.translate('Predict'),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
               ),
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                      color: Theme.of(context).cardTheme.surfaceTintColor ??
-                          Colors.grey[300]!),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                      color: Theme.of(context).cardTheme.surfaceTintColor ??
-                          Colors.grey[300]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blue, width: 0.5),
-                ),
-                filled: true,
-                fillColor:
-                    Theme.of(context).cardTheme.color, // Background color here
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 0,
-                ),
-              ),
-              dropdownColor: Theme.of(context).cardTheme.color,
-              borderRadius: BorderRadius.circular(12),
-              elevation: 2,
-              icon: Icon(Icons.arrow_drop_down, color: Colors.grey[700]),
-              iconSize: 24,
             ),
           ],
         ),
@@ -403,80 +459,30 @@ class RecommendationContentState extends State<RecommendationContent> {
     );
   }
 
-  Widget _buildInputParametersCard(bool isMobile) {
-    return Card(
-        child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          Center(
-            child: Text(
-              context.translate('Enter Environmental Parameters'),
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: isMobile ? 20 : 24,
-                  ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          RecommendationInputs(
-            model: model,
-            isMobile: isMobile,
-            onChanged: () => setState(() {}), // Add this callback
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () async {
-                setState(() {
-                  model.isLoading =
-                      true; // Manually set loading state before prediction
-                });
+  Future<void> _handlePrediction() async {
+    // Clear previous errors
+    model.clearError();
 
-                await model.predictCrop();
+    try {
+      // Show loading state immediately
+      setState(() {});
 
-                setState(() {});
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                shadowColor: Colors.transparent,
-                surfaceTintColor: Colors.transparent,
-                textStyle: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  letterSpacing: 0.1,
-                ),
-                minimumSize: const Size(64, 48),
-              ),
-              child: model.isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : Text(
-                      context.translate('Predict'),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-            ),
-          ),
-        ],
-      ),
-    ));
+      // Perform prediction with context for error toasts
+      await model.predictCrop(context: context);
+
+      // Update UI with results
+      setState(() {});
+
+  
+    } catch (e) {
+      // This catch block handles any errors not caught by the model
+      debugPrint('Unexpected error in _handlePrediction: $e');
+       
+    } finally {
+      // Ensure UI is updated even if there's an error
+      if (mounted) {
+        setState(() {});
+      }
+    }
   }
 }

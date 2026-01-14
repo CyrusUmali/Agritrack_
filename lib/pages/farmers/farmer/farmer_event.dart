@@ -44,16 +44,18 @@ class FilterFarmers extends FarmerEvent {
   final String? association;
   final String? sector;
   final String? barangay;
+   final String? status;
 
   const FilterFarmers({
     this.association,
     this.name,
     this.sector,
     this.barangay,
+    this.status,
   });
 
   @override
-  List<Object?> get props => [association, name, sector, barangay];
+  List<Object?> get props => [association, name, sector, barangay , status];
 }
 
 class SearchFarmers extends FarmerEvent {

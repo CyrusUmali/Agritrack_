@@ -31,11 +31,13 @@ import 'package:flareline/pages/widget/combo_box.dart';
     final ModalLayout modalLayout;
     final int? farmId;
     final int? farmerId;
+    final double ? farmArea; // New parameter for farm area
 
     const RecentRecord(
         {super.key,
         this.modalLayout = ModalLayout.centerDialog,
         this.farmId,
+        this.farmArea,
         this.farmerId,
         required this.yields}); // Update constructor
 
@@ -183,8 +185,7 @@ if (state is YieldsLoaded) {
               _applyFilters(); // Re-apply filters to the new data
             });
           }
-          else{
- print('deqweqwweqe');
+          else{ 
 
           }
         });
@@ -501,7 +502,7 @@ Widget _channelMobile(BuildContext context) {
                                       products: (productState).products,
                                       farmerId: widget.farmerId!,
                                       farmId: widget.farmId!,
-                                      farmArea: 5.0, // Optional: pass farm area
+                                      farmArea: widget.farmArea, // Optional: pass farm area
                                       farmerSpecific: true,
                                       onYieldAdded: (
                                         int cropTypeId,
@@ -709,7 +710,7 @@ Widget _channelMobile(BuildContext context) {
                                 products: (productState).products,
                                 farmerId: widget.farmerId!,
                                 farmId: widget.farmId!,
-                                farmArea: 5.0, // Optional: pass farm area
+                                farmArea: widget.farmArea, // Optional: pass farm area
                                 farmerSpecific: true,
                                 onYieldAdded: (
                                   int cropTypeId,
@@ -981,24 +982,29 @@ Widget _channelMobile(BuildContext context) {
     }
   }
 
-  class YieldsViewModel extends BaseTableProvider {
+  class YieldsViewModel extends BaseTableProvider { 
     final List<Yield> yields;
 
-  // Add this helper method to your YieldsViewModel class
-    String _getYieldWithUnit(double? volume, int? sectorId) {
-      if (volume == null) return 'N/A';
+  
 
-      // Assuming sectorId 1 is for crops measured in kg, and others might be heads, etc.
-      switch (sectorId) {
-        case 1: // Crop sector (kg)
-          return '${volume.toStringAsFixed(volume % 1 == 0 ? 0 : 1)} kg';
-        case 2: // Livestock sector (heads)
-          return '${volume.toInt()} heads';
-        // Add more cases for other sectors as needed
-        default:
-          return volume.toString();
-      }
+
+
+     String _getYieldWithUnit(double? volume, int? sectorId) {
+    if (volume == null) return 'N/A';
+
+    switch (sectorId) {
+      case 1:
+      case 2:
+      case 3:
+      case 5:
+      case 6:
+        return '${volume.toStringAsFixed(volume % 1 == 0 ? 0 : 1)} kg';
+      case 4:
+        return '${volume.toInt()} heads';
+      default:
+        return volume.toString();
     }
+  }
 
     String _formatDate(dynamic dateInput) {
       if (dateInput == null) return 'N/A';

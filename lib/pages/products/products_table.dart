@@ -303,6 +303,7 @@ class DataTableWidget extends TableWidget<ProductsViewModel> {
       context,
       MaterialPageRoute(
         builder: (context) => ProductProfile(product: product),
+         settings: const RouteSettings(name: '/product-profile'), // Add this
       ),
     );
   }
@@ -387,6 +388,7 @@ class DataTableWidget extends TableWidget<ProductsViewModel> {
               context,
               MaterialPageRoute(
                 builder: (context) => ProductProfile(product: product),
+                 settings: const RouteSettings(name: '/product-profile'), // Add this
               ),
             );
           },

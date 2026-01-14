@@ -222,6 +222,8 @@ if (isFarmer)
       '/', 
       '/yields',   
       '/sectors',
+      '/products',
+       '/product-profile',
       // Add other routes that need year filtering
     };
 

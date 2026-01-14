@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flareline/core/models/farmer_model.dart';
 import 'package:flareline/providers/user_provider.dart';
 import 'package:flutter/material.dart';
@@ -42,7 +44,7 @@ class FarmInfoCardComponents {
                     border: UnderlineInputBorder(),
                     hintText: 'Enter Farm Name',
                   ),
-                  onChanged: onNameChanged,
+                  onChanged: _debounce(onNameChanged, milliseconds: 500),
                 ),
               ],
             ),
@@ -51,6 +53,19 @@ class FarmInfoCardComponents {
       ),
     );
   }
+
+
+  static Function(String) _debounce(Function(String) func, {int milliseconds = 500}) {
+  Timer? timer;
+  return (String value) {
+    if (timer != null) {
+      timer!.cancel();
+    }
+    timer = Timer(Duration(milliseconds: milliseconds), () {
+      func(value);
+    });
+  };
+}
 
   static Widget buildEditableFarmOwnerRow({
     required BuildContext context,

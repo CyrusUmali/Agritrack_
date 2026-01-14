@@ -173,8 +173,8 @@ class _SectorLineChartState extends State<SectorLineChart> {
                         height: 150,
                         child: YearPicker(
                           selectedDate: DateTime(tempFromYear),
-                          firstDate: DateTime(2018),
-                          lastDate: DateTime(2025),
+                          firstDate: DateTime(2015),
+                          lastDate: DateTime(2026),
                           onChanged: (DateTime dateTime) {
                             setState(() {
                               tempFromYear = dateTime.year;

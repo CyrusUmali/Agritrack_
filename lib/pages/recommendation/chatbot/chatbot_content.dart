@@ -1,8 +1,8 @@
 import 'dart:ui';
-import 'dart:math' as math;
 import 'dart:convert';
 import 'dart:async';
-import 'package:flareline/core/models/yield_model.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:flareline/pages/recommendation/chatbot/reset_button.dart';
 import 'package:flareline/pages/yields/yield_bloc/yield_bloc.dart';
 import 'package:flareline/providers/user_provider.dart';
 import 'package:flareline_uikit/core/theme/flareline_colors.dart';
@@ -12,10 +12,12 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:provider/provider.dart';
 import 'chatbot_model.dart';
 import 'package:flutter/services.dart';
 
+import 'dart:math' as math;
 class ChatbotWidget extends StatefulWidget {
   const ChatbotWidget({super.key});
 
@@ -36,6 +38,12 @@ class ChatbotContentState extends State<ChatbotWidget>
   bool _isLoadingYields = false;
   bool _hasLoadedYields = false;
 
+
+   late FlutterTts _flutterTts;
+  bool _isSpeaking = false;
+  String? _currentSpeakingMessageId;
+ bool _hasTagalogVoice = false;
+  String? _selectedVoice;
   // Carousel auto-scroll variables
   late ScrollController _carouselScrollController;
   bool _isUserInteracting = false;
@@ -306,7 +314,9 @@ Pakianalyze ang data na ito at magbigay ng detalyadong sagot sa Tagalog.''';
     super.initState();
     _chatbotModel = ChatbotModel();
     _chatbotModel.addListener(_onChatbotModelChanged);
-
+if (!kIsWeb) {
+      _initializeTts();
+    }
     // Initialize AnimationController for dots
     _dotAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1400),
@@ -363,8 +373,96 @@ Pakianalyze ang data na ito at magbigay ng detalyadong sagot sa Tagalog.''';
     _dotAnimationController.dispose();
     _stopAutoScroll();
     _carouselScrollController.dispose();
+ if (!kIsWeb && _flutterTts != null) {
+      _flutterTts!.stop();
+    }
     super.dispose();
   }
+
+
+
+
+ Future<void> _initializeTts() async {
+    if (kIsWeb) return; // Skip on web
+    
+    try {
+      _flutterTts = FlutterTts();
+      
+      await _flutterTts!.setLanguage("fil-PH");
+      await _flutterTts!.setSpeechRate(0.5);
+      await _flutterTts!.setVolume(1.0);
+      await _flutterTts!.setPitch(1.0);
+      
+      _flutterTts!.setStartHandler(() {
+        if (mounted) {
+          setState(() {
+            _isSpeaking = true;
+          });
+        }
+      });
+      
+      _flutterTts!.setCompletionHandler(() {
+        if (mounted) {
+          setState(() {
+            _isSpeaking = false;
+            _currentSpeakingMessageId = null;
+          });
+        }
+      });
+      
+      _flutterTts!.setErrorHandler((msg) {
+        if (kDebugMode) {
+          print('TTS Error: $msg');
+        }
+        if (mounted) {
+          setState(() {
+            _isSpeaking = false;
+            _currentSpeakingMessageId = null;
+          });
+        }
+      });
+      
+      if (kDebugMode) {
+        final languages = await _flutterTts!.getLanguages;
+        print('Available TTS languages: $languages');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Failed to initialize TTS: $e');
+      }
+    }
+  }
+  
+  Future<void> _speak(String text, String messageId) async {
+    if (kIsWeb || _flutterTts == null) return; // Skip on web
+    
+    if (_isSpeaking && _currentSpeakingMessageId == messageId) {
+      await _flutterTts!.stop();
+      setState(() {
+        _isSpeaking = false;
+        _currentSpeakingMessageId = null;
+      });
+    } else {
+      await _flutterTts!.stop();
+      setState(() {
+        _currentSpeakingMessageId = messageId;
+      });
+      await _flutterTts!.speak(text);
+    }
+  }
+  
+  Future<void> _stopSpeaking() async {
+    if (kIsWeb || _flutterTts == null) return; // Skip on web
+    
+    await _flutterTts!.stop();
+    setState(() {
+      _isSpeaking = false;
+      _currentSpeakingMessageId = null;
+    });
+  }
+
+
+
 
   void _onChatbotModelChanged() {
     if (_chatbotModel.messages.length > 1 && !_conversationStarted) {
@@ -845,10 +943,16 @@ Pakianalyze ang data na ito at magbigay ng detalyadong sagot sa Tagalog.''';
 
 
 
+
+
+
+// Replace the _buildChatInterfaceCard method with this fixed version:
+
 Widget _buildChatInterfaceCard(bool isMobile, bool isDarkMode) {
   return Consumer<ChatbotModel>(
     builder: (context, model, child) {
       final bool isTyping = model.isTyping;
+      final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
       
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (isTyping && !_dotAnimationController.isAnimating) {
@@ -860,20 +964,24 @@ Widget _buildChatInterfaceCard(bool isMobile, bool isDarkMode) {
 
       return Stack(
         children: [
-          Card(
-            color: isDarkMode ? FlarelineColors.darkerBackground : Colors.white,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, isMobile ? 8 : 16),
+          SizedBox(
+            width: double.infinity,
+            height: double.infinity,
+            child: Card(
+              color: isDarkMode ? FlarelineColors.darkerBackground : Colors.white,
+              margin: EdgeInsets.zero,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.max,
                 children: [
                   if (model.messages.length > 1)
                     const SizedBox(height: 50),
 
                   Expanded(
                     child: model.messages.length <= 1
-                        ? _buildQuickTopicsEmptyState(isMobile, isDarkMode)
+                        ? Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: _buildQuickTopicsEmptyState(isMobile, isDarkMode),
+                          )
                         : Chat(
                             messages: model.messages,
                             onSendPressed: (p) {},
@@ -881,77 +989,114 @@ Widget _buildChatInterfaceCard(bool isMobile, bool isDarkMode) {
                             showUserAvatars: true,
                             showUserNames: true,
                             usePreviewData: false,
-                            // KEY FIX: Add keyboard behavior configuration
-                            customBottomWidget: Column(
-                              children: [
-                                // Dynamic suggestions when conversation has started
-                                if (_conversationStarted && !model.isTyping)
-                                  _buildDynamicSuggestions(isMobile, isDarkMode),
-                                
-                                // Your existing input widget
-                                Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: isDarkMode
-                                        ? Theme.of(context).cardTheme.color!
-                                        : Colors.grey.shade200,
-                                    borderRadius: BorderRadius.circular(24),
-                                  ),
-                                  child: RawKeyboardListener(
-                                    focusNode: FocusNode(),
-                                    onKey: (RawKeyEvent event) {
-                                      if (event is RawKeyDownEvent) {
-                                        if (event.logicalKey == LogicalKeyboardKey.enter &&
-                                            !event.isShiftPressed) {
-                                          if (_textController.text.trim().isNotEmpty) {
-                                            _handleSendPressed();
+
+
+    bubbleBuilder: !kIsWeb 
+                                  ? (child, {required message, required nextMessageInGroup}) {
+                                      final isBot = message.author.id == model.bot.id;
+                                      
+                                      // Extract text from message safely
+                                      String messageText = '';
+                                      if (message is types.TextMessage) {
+                                        messageText = message.text;
+                                      }
+                                      
+                                      return Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Flexible(child: child),
+                                          
+                                          // Add TTS button for bot messages with text (mobile only)
+                                          if (isBot && messageText.isNotEmpty) ...[
+                                            const SizedBox(width: 8),
+                                            _buildTtsButton(
+                                              message.id,
+                                              messageText,
+                                              isDarkMode,
+                                            ),
+                                          ],
+                                        ],
+                                      );
+                                    }
+                                  : null, // No custom bubble builder on web
+
+
+
+                            customBottomWidget: Padding(
+                              // KEY FIX: Add padding at bottom to lift input above keyboard
+                              padding: EdgeInsets.only(bottom: keyboardHeight),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (_conversationStarted && !model.isTyping)
+                                    _buildDynamicSuggestions(isMobile, isDarkMode),
+                                  
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: isDarkMode
+                                          ? Theme.of(context).cardTheme.color!
+                                          : Colors.grey.shade200,
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
+                                    child: RawKeyboardListener(
+                                      focusNode: FocusNode(),
+                                      onKey: (RawKeyEvent event) {
+                                        if (event is RawKeyDownEvent) {
+                                          if (event.logicalKey == LogicalKeyboardKey.enter &&
+                                              !event.isShiftPressed) {
+                                            if (_textController.text.trim().isNotEmpty) {
+                                              _handleSendPressed();
+                                            }
                                           }
                                         }
-                                      }
-                                    },
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: TextField(
-                                            controller: _textController,
-                                            focusNode: _focusNode,
-                                            style: TextStyle(
-                                              color: isDarkMode ? Colors.white : Colors.black87,
-                                              fontSize: 16,
-                                            ),
-                                            decoration: InputDecoration(
-                                              hintText: 'Magsulat dito...',
-                                              hintStyle: TextStyle(
-                                                color: isDarkMode
-                                                    ? Colors.grey[500]
-                                                    : Colors.grey[600],
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: TextField(
+                                              controller: _textController,
+                                              focusNode: _focusNode,
+                                              style: TextStyle(
+                                                color: isDarkMode ? Colors.white : Colors.black87,
+                                                fontSize: 16,
                                               ),
-                                              border: InputBorder.none,
-                                              contentPadding: const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 10,
+                                              decoration: InputDecoration(
+                                                hintText: 'Magsulat dito...',
+                                                hintStyle: TextStyle(
+                                                  color: isDarkMode
+                                                      ? Colors.grey[500]
+                                                      : Colors.grey[600],
+                                                ),
+                                                border: InputBorder.none,
+                                                contentPadding: const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 10,
+                                                ),
                                               ),
+                                              maxLines: null,
+                                              textCapitalization: TextCapitalization.sentences,
+                                              // REMOVED: scrollPadding (not needed with proper bottom padding)
                                             ),
-                                            maxLines: null,
-                                            textCapitalization: TextCapitalization.sentences,
                                           ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        IconButton(
-                                          onPressed: _handleSendPressed,
-                                          icon: Icon(
-                                            Icons.send,
-                                            color: isDarkMode ? Colors.grey[400] : Colors.grey,
-                                            size: 22,
+                                          const SizedBox(width: 8),
+                                          IconButton(
+                                            onPressed: _handleSendPressed,
+                                            icon: Icon(
+                                              Icons.send,
+                                              color: isDarkMode ? Colors.grey[400] : Colors.grey,
+                                              size: 22,
+                                            ),
+                                            splashRadius: 20,
                                           ),
-                                          splashRadius: 20,
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             theme: DefaultChatTheme(
                               backgroundColor: isDarkMode
@@ -1089,23 +1234,28 @@ Widget _buildChatInterfaceCard(bool isMobile, bool isDarkMode) {
                                 ),
                               );
                             },
-                            // KEY FIX: Configure keyboard behavior
                             scrollPhysics: const BouncingScrollPhysics(),
-                            listBottomWidget: SizedBox(height: isMobile ? 16 : 0),
+                            listBottomWidget: const SizedBox(height: 16),
                           ),
                   ),
+                  
+                  // Input for empty state with keyboard padding
                   if (model.messages.length <= 1)
-                    _buildCustomInput(isMobile, isDarkMode),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: keyboardHeight),
+                      child: _buildCustomInput(isMobile, isDarkMode),
+                    ),
                 ],
               ),
             ),
           ),
 
+          // Reset button
           if (model.messages.length > 1)
             Positioned(
               top: 8,
               right: 8,
-              child: _ResetButton(
+              child: ResetButton(
                 isDarkMode: isDarkMode,
                 onReset: () {
                   _resetChat();
@@ -1120,6 +1270,7 @@ Widget _buildChatInterfaceCard(bool isMobile, bool isDarkMode) {
     },
   );
 }
+
 
 
 
@@ -1148,228 +1299,46 @@ Widget _buildAnimatedDot(int index, bool isDarkMode, double animationValue) {
 }
 
 
-}
 
 
-
-
-
-
-
-
-
-class _ResetButton extends StatefulWidget {
-  final bool isDarkMode;
-  final VoidCallback onReset;
-
-  const _ResetButton({
-    required this.isDarkMode,
-    required this.onReset,
-  });
-
-  @override
-  State<_ResetButton> createState() => _ResetButtonState();
-}
-
-class _ResetButtonState extends State<_ResetButton> 
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  double _scale = 1.0;
-  bool _isHovering = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onTapDown(TapDownDetails details) {
-    setState(() {
-      _scale = 0.95;
-    });
-  }
-
-  void _onTapUp(TapUpDetails details) {
-    setState(() {
-      _scale = _isHovering ? 1.1 : 1.0;
-    });
-    _controller.forward(from: 0);
-    widget.onReset();
-  }
-
-  void _onTapCancel() {
-    setState(() {
-      _scale = _isHovering ? 1.1 : 1.0;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) {
-        setState(() {
-          _isHovering = true;
-          _scale = 1.1;
-        });
-      },
-      onExit: (_) {
-        setState(() {
-          _isHovering = false;
-          _scale = 1.0;
-        });
-      },
-      child: GestureDetector(
-        onTapDown: _onTapDown,
-        onTapUp: _onTapUp,
-        onTapCancel: _onTapCancel,
-        child: AnimatedScale(
-          duration: const Duration(milliseconds: 150),
-          scale: _scale,
-          curve: Curves.easeInOut,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Ripple effect
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return CustomPaint(
-                    painter: _RipplePainter(
-                      progress: _controller.value,
-                      color: widget.isDarkMode
-                          ? Colors.white.withOpacity(0.1)
-                          : Colors.black.withOpacity(0.1),
-                    ),
-                    size: const Size(56, 56),
-                  );
-                },
+ Widget _buildTtsButton(String messageId, String text, bool isDarkMode) {
+    final isThisMessageSpeaking = _isSpeaking && _currentSpeakingMessageId == messageId;
+    
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Tooltip(
+        message: isThisMessageSpeaking ? 'Itigil' : 'Basahin',
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _speak(text, messageId),
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isThisMessageSpeaking
+                    ? (isDarkMode ? Colors.blue[700] : Colors.blue[100])
+                    : (isDarkMode ? Colors.grey[800] : Colors.grey[200]),
+                borderRadius: BorderRadius.circular(20),
               ),
-              
-              // Button content
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: widget.isDarkMode
-                      ? Colors.grey[850]!.withOpacity(0.95)
-                      : Colors.white.withOpacity(0.95),
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: widget.isDarkMode
-                          ? Colors.black.withOpacity(0.25)
-                          : Colors.grey.withOpacity(0.25),
-                      blurRadius: _isHovering ? 20 : 12,
-                      offset: const Offset(0, 3),
-                      spreadRadius: _isHovering ? 2 : 1,
-                    ),
-                    if (_isHovering)
-                      BoxShadow(
-                        color: (widget.isDarkMode 
-                            ? Colors.blue.withOpacity(0.2) 
-                            : Colors.blueAccent.withOpacity(0.1)),
-                        blurRadius: 15,
-                        spreadRadius: 1,
-                      ),
-                  ],
-                  border: Border.all(
-                    color: _isHovering
-                        ? (widget.isDarkMode 
-                            ? Colors.blue.withOpacity(0.4) 
-                            : Colors.blueAccent.withOpacity(0.3))
-                        : (widget.isDarkMode
-                            ? Colors.grey[700]!.withOpacity(0.6)
-                            : Colors.grey[400]!.withOpacity(0.6)),
-                    width: _isHovering ? 1.8 : 1.5,
-                  ),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: _isHovering
-                        ? [
-                            if (widget.isDarkMode) ...[
-                              Colors.grey[800]!.withOpacity(0.9),
-                              Colors.grey[900]!.withOpacity(0.9),
-                            ] else ...[
-                              Colors.white.withOpacity(0.98),
-                              Colors.grey[100]!.withOpacity(0.98),
-                            ],
-                          ]
-                        : [
-                            if (widget.isDarkMode) ...[
-                              Colors.grey[850]!.withOpacity(0.9),
-                              Colors.grey[800]!.withOpacity(0.9),
-                            ] else ...[
-                              Colors.white.withOpacity(0.95),
-                              Colors.grey[50]!.withOpacity(0.95),
-                            ],
-                          ],
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AnimatedRotation(
-                      duration: const Duration(milliseconds: 300),
-                      turns: _isHovering ? 0.25 : 0.0,
-                      curve: Curves.easeInOut,
-                      child: Icon(
-                        Icons.refresh_rounded,
-                        color: _isHovering
-                            ? (widget.isDarkMode 
-                                ? Colors.blue[300] 
-                                : Colors.blueAccent)
-                            : (widget.isDarkMode 
-                                ? Colors.grey[300]!.withOpacity(0.9)
-                                : Colors.grey[700]!.withOpacity(0.9)),
-                        size: 22,
-                      ),
-                    ),
-                 
-                  ],
-                ),
+              child: Icon(
+                isThisMessageSpeaking ? Icons.stop : Icons.volume_up,
+                size: 18,
+                color: isThisMessageSpeaking
+                    ? (isDarkMode ? Colors.white : Colors.blue[700])
+                    : (isDarkMode ? Colors.grey[400] : Colors.grey[700]),
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
+
+
+
 }
 
-class _RipplePainter extends CustomPainter {
-  final double progress;
-  final Color color;
 
-  _RipplePainter({required this.progress, required this.color});
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (progress == 0) return;
 
-    final center = Offset(size.width / 2, size.height / 2);
-    final maxRadius = math.sqrt(size.width * size.width + size.height * size.height) / 2;
-    final currentRadius = maxRadius * progress;
-
-    final paint = Paint()
-      ..color = color.withOpacity(1.0 - progress)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-
-    canvas.drawCircle(center, currentRadius, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _RipplePainter oldDelegate) {
-    return progress != oldDelegate.progress || color != oldDelegate.color;
-  }
-}

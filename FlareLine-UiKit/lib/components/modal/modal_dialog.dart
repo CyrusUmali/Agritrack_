@@ -31,7 +31,7 @@ class ModalDialog {
     required BuildContext context,
     String? title,
     bool? showTitle = false,
-    bool? showTitleDivider = false,
+    bool? showTitleDivider = false, bool? showCloseIcon = true, 
     Alignment? titleAlign = Alignment.center,
     Widget? child,
     Widget? footer,
@@ -106,7 +106,7 @@ class ModalDialog {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (showTitle != null)
+                if (showTitle != null && showTitle && title != null)
                 Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: screenWidth < 600 ? 10 : 20,
@@ -126,6 +126,8 @@ class ModalDialog {
                             ),
                           ),
                         ),
+                     
+                       if (showCloseIcon!)
                       Align(
                         alignment: Alignment.centerRight,
                         child: InkWell(
@@ -135,6 +137,8 @@ class ModalDialog {
                           },
                         ),
                       ),
+                    
+                    
                     ],
                   ),
                 ),

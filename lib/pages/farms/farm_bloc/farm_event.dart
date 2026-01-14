@@ -76,10 +76,9 @@ class GetFarmById extends FarmEvent {
 
 class GetFarmsByProduct extends FarmEvent {
   final int productId;
-
-  const GetFarmsByProduct(
-    this.productId,
-  );
+final int? year; // Add year parameter
+  const GetFarmsByProduct(this.productId, {this.year});
+ 
 
   @override
   List<Object> get props => [];

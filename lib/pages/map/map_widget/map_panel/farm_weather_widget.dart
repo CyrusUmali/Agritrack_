@@ -514,7 +514,7 @@ Widget _buildReporterSummary() {
               ),
               const SizedBox(width: 8),
               Text(
-                'AI Weather Report',
+                'Weather Report',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -575,7 +575,7 @@ Widget _buildReporterSummary() {
             ),
             const SizedBox(width: 8),
             Text(
-              'AI Weather Report',
+              'Weather Report',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,

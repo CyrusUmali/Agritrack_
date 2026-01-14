@@ -43,10 +43,10 @@ Future<Map<String, dynamic>> generateWeatherSummary({
   );
 
   // 1. Check cache first
-  final cached = _cache[requestKey];
-  if (cached != null && !cached.isExpired()) {
-    return cached.data;
-  }
+  // final cached = _cache[requestKey];
+  // if (cached != null && !cached.isExpired()) {
+  //   return cached.data;
+  // }
 
   // 2. Check for debouncing
   final now = DateTime.now();

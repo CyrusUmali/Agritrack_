@@ -107,8 +107,7 @@ class FarmerRepository extends BaseRepository {
       'email': farmer.email ?? "---",
       'phone': farmer.phone ?? "---",
       'barangay': farmer.barangay!,
-      'sectorId': getSectorId(farmer.sector), // Use inherited method
-      'imageUrl': farmer.imageUrl ?? "---",
+      'sectorId': getSectorId(farmer.sector), // Use inherited method 
       // Add other optional fields if needed
     };
   }

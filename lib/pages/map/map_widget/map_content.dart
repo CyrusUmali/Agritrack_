@@ -1,6 +1,11 @@
 // File: map_content.dart - Updated to pass zoom level to icon layers
 
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flareline/pages/map/map_widget/cached_tile_provider.dart';
 import 'package:flareline/pages/map/map_widget/map_measurement.dart';
+import 'package:flareline/pages/map/map_widget/mobile_map_measurement.dart';
+import 'package:flareline/pages/map/map_widget/tile_cache_service.dart';
 import 'package:flareline/pages/map/map_widget/view_port_helper.dart' as view_port_helper;
 import 'package:flareline/pages/map/map_widget/view_port_helper.dart';
 import 'package:flareline/providers/user_provider.dart';
@@ -8,8 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_map_dragmarker/flutter_map_dragmarker.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
+import 'package:latlong2/latlong.dart'; 
 import 'package:flareline/services/lanugage_extension.dart';
 import 'package:provider/provider.dart';
 import 'map_layers.dart';
@@ -103,6 +107,13 @@ class _MapContentState extends State<MapContent> {
     super.initState();
     _currentZoom = widget.zoomLevel;
     _lastZoomUpdate = widget.zoomLevel;
+
+ WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Initialize cache without waiting for it
+    TileCacheService.initialize().catchError((e) {
+      debugPrint('⚠️ Tile cache initialization failed (non-critical): $e');
+    });
+  });
 
      _loadInitialPosition();
 
@@ -492,7 +503,7 @@ bool _shouldUpdateViewport(LatLngBounds newViewport) {
   @override
   Widget build(BuildContext context) {
     return Stack(
-      children: [
+      children: [ 
         // Main map content
         SizedBox(
           height: MediaQuery.of(context).size.height * 0.92,
@@ -659,18 +670,26 @@ bool _shouldUpdateViewport(LatLngBounds newViewport) {
     );
   }
 
-  Widget _buildCachedTileLayer() {
-    if (_cachedTileLayer == null || _lastSelectedMap != widget.selectedMap) {
-      _lastSelectedMap = widget.selectedMap;
-      _cachedTileLayer = TileLayer(
-        tileProvider: CancellableNetworkTileProvider(),
-        urlTemplate: MapLayersHelper.availableLayers[widget.selectedMap]!,
-        maxNativeZoom: 18,
-        keepBuffer: 2,
-      );
-    }
-    return _cachedTileLayer!;
+
+
+
+Widget _buildCachedTileLayer() {
+  if (_cachedTileLayer == null || _lastSelectedMap != widget.selectedMap) {
+    _lastSelectedMap = widget.selectedMap;
+    _cachedTileLayer = TileLayer(
+      tileProvider: CachedTileProvider(), // Use cached provider
+      urlTemplate: MapLayersHelper.availableLayers[widget.selectedMap]!,
+      maxNativeZoom: 18,
+      keepBuffer: 2,
+      // Optional: Add these for better offline behavior
+      errorTileCallback: (tile, error, stackTrace) {
+        debugPrint('⚠️ Tile load error: ${tile.coordinates}');
+      },
+      fallbackUrl: MapLayersHelper.availableLayers[widget.selectedMap]!,
+    );
   }
+  return _cachedTileLayer!;
+}
 
   Widget _buildCachedBarangayLayer(List<PolygonData> filteredBarangays) {
     // Always show when any barangay is selected
@@ -833,27 +852,69 @@ bool _shouldUpdateViewport(LatLngBounds newViewport) {
     );
   }
 
-  Widget _buildLiveMeasurementOverlay() {
-    return ValueListenableBuilder<LatLng?>(
-      valueListenable: widget.previewPointNotifier,
-      builder: (context, previewPoint, child) {
-        if (!widget.polygonManager.isDrawing ||
-            widget.polygonManager.currentPolygon.isEmpty) {
-          return const SizedBox.shrink();
-        }
+  bool get isMobilePlatform {
+  // Native mobile apps
+  if (Platform.isAndroid || Platform.isIOS) return true;
+  
+  // Mobile web browsers
+  final mediaQuery = MediaQuery.of(context);
+  final screenWidth = mediaQuery.size.width;
+  final isMobileWeb = screenWidth < 768; // Tablet breakpoint
+  
+  return isMobileWeb;
+}
 
+
+// Replace your _buildLiveMeasurementOverlay method with this:
+
+Widget _buildLiveMeasurementOverlay() {
+  return ValueListenableBuilder<LatLng?>(
+    valueListenable: widget.previewPointNotifier,
+    builder: (context, previewPoint, child) {
+      if (!widget.polygonManager.isDrawing) {
+        return const SizedBox.shrink();
+      }
+      
+      // DEBUG: Print current state
+      print('DEBUG: isDrawing: ${widget.polygonManager.isDrawing}');
+      print('DEBUG: currentPolygon length: ${widget.polygonManager.currentPolygon.length}');
+      print('DEBUG: previewPoint: $previewPoint');
+      
+      // Platform detection - web-safe version
+      final bool isMobile = _isMobilePlatform();
+      
+      if (isMobile) {
+        // Use mobile-friendly overlay with STABLE KEY
+        print('DEBUG: Using MobileMeasurementOverlay');
+        return MobileMeasurementOverlay(
+          key: const ValueKey('mobile_measurement_overlay'), // CRITICAL: Stable key
+          currentPolygon: widget.polygonManager.currentPolygon,
+        );
+      } else {
+        // Use original overlay with preview point for web/desktop
+        print('DEBUG: Using MeasurementOverlay with preview');
         return MeasurementOverlay(
+          key: const ValueKey('desktop_measurement_overlay'), // Add key here too
           currentPolygon: widget.polygonManager.currentPolygon,
           previewPoint: previewPoint,
         );
-      },
-    );
+      }
+    },
+  );
+}
+
+// Web-safe platform detection helper
+bool _isMobilePlatform() {
+  // Check if running on web first
+  if (kIsWeb) {
+    // For web, use screen size to detect mobile
+    final screenWidth = MediaQuery.of(context).size.width;
+    return screenWidth < 768; // Mobile if width < 768px
   }
-
-  // ========== EVENT HANDLERS ==========
-
-
-
+  
+  // For native apps
+  return Platform.isAndroid || Platform.isIOS;
+}
 
 // ========== EVENT HANDLERS ==========
 
@@ -992,4 +1053,8 @@ void _handleLakeMarkerTap(PolygonData lake) {
       },
     );
   }
+ 
+
+
+
 }

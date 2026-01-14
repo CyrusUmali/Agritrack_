@@ -114,7 +114,7 @@ class LanguageService {
       'Low Confidence': 'Low Confidence',
       'Crop Requirements': 'Crop Requirements',
       'SUITABLE': 'SUITABLE',
-      'NOT_SUITABLE': 'NOT_SUITABLE',
+      'NOT SUITABLE': 'NOT SUITABLE',
       'Confidence Level': 'Confidence Level',
       'AI Models Used': 'AI Models Used',
       'Parameter Analysis': 'Parameter Analysis',
@@ -235,11 +235,13 @@ class LanguageService {
   'Try different search terms':'Try different search terms',
   'You dont have any notifications yet':'You dont have any notifications yet',
   'Clear Search':'Clear Search',
+  'Learn about the Model' :'Learn about the Model',
 
 
     },
     'fil': {
 
+'Learn about the Model':'Alamin ang tungkol sa Modelo',
 'Clear Search': 'I-clear ang Paghahanap',
 'You dont have any notifications yet':'Wala ka pang mga notification',
 'Try different search terms':'Subukan ang ibat ibang mga termino sa paghahanap',
@@ -352,7 +354,7 @@ class LanguageService {
       'Parameter Analysis': 'Pagsusuri ng Parameter',
       'AI Models Used': 'Mga Ginamit na Modelo ng AI',
       'Confidence Level': 'Antas ng Kumpiyansa',
-      'NOT_SUITABLE': 'HINDI ANGKOP',
+      'NOT SUITABLE': 'HINDI ANGKOP',
       'SUITABLE': 'ANGKOP',
       'Crop Requirements': 'Mga Kinakailangan sa Pananim',
       'Low Confidence': 'Mababang Kumpiyansa',

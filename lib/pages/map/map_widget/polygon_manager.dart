@@ -912,6 +912,9 @@ if (!context.mounted) return;
       selectedPolygonNotifier.value = selectedPolygon;
      }
   }
+  
+  
+  
   @override
   void didPush() {
     removeInfoCardOverlay();
@@ -1189,6 +1192,10 @@ void handleDrawingTap(LatLng point) {
     }
   }
 }
+
+
+
+
 Future<void> completeCurrentPolygon(BuildContext context) async {
  
   try {

@@ -16,7 +16,8 @@ class UserModel {
   final int? farmerId;
   final String? authProvider; // 'email' or 'google'
   final bool? hasPassword; // true for email/password users
-  final DateTime? createdAt; // New field
+  final DateTime? createdAt; 
+  final bool? termsAccepted; // New field for terms acceptance
 
   UserModel({
     required this.id,
@@ -36,7 +37,8 @@ class UserModel {
     this.farmerId,
     this.authProvider,
     this.hasPassword,
-    this.createdAt, // New field
+    this.createdAt,
+     this.termsAccepted, // Added new field
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -59,7 +61,8 @@ class UserModel {
       hasPassword: (json['hasPassword'] as bool?) ?? true,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
-          : null, // Parse DateTime
+          : null,
+      termsAccepted: (json['termsAccepted'] as bool?) ?? false, // Default to false
     );
   }
 
@@ -82,7 +85,8 @@ class UserModel {
       'farmerId': farmerId,
       'authProvider': authProvider,
       'hasPassword': hasPassword,
-      'createdAt': createdAt?.toIso8601String(), // Convert to ISO string
+      'createdAt': createdAt?.toIso8601String(),
+      'termsAccepted': termsAccepted, // Added to JSON
     };
   }
 
@@ -103,7 +107,8 @@ class UserModel {
         farmerId,
         authProvider,
         hasPassword,
-        createdAt, // Include new field
+        createdAt,
+        termsAccepted, // Added to props
       ];
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
@@ -126,11 +131,11 @@ class UserModel {
       hasPassword: map['hasPassword'] ?? true,
       createdAt: map['createdAt'] != null
           ? DateTime.parse(map['createdAt'] as String)
-          : null, // Parse DateTime
+          : null,
+      termsAccepted: map['termsAccepted'] ?? false, // Added to fromMap
     );
   }
 
-// Add the copyWith method
   UserModel copyWith({
     int? id,
     String? email,
@@ -150,6 +155,7 @@ class UserModel {
     String? authProvider,
     bool? hasPassword,
     DateTime? createdAt,
+    bool? termsAccepted, // Added to copyWith
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -170,6 +176,7 @@ class UserModel {
       authProvider: authProvider ?? this.authProvider,
       hasPassword: hasPassword ?? this.hasPassword,
       createdAt: createdAt ?? this.createdAt,
+      termsAccepted: termsAccepted ?? this.termsAccepted, // Added
     );
   }
 
@@ -191,7 +198,8 @@ class UserModel {
       'farmerId': farmerId,
       'authProvider': authProvider,
       'hasPassword': hasPassword,
-      'createdAt': createdAt?.toIso8601String(), // Convert to ISO string
+      'createdAt': createdAt?.toIso8601String(),
+      'termsAccepted': termsAccepted, // Added to map
     };
   }
 }

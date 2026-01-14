@@ -25,6 +25,7 @@ class FarmerBloc extends Bloc<FarmerEvent, FarmerState> {
   String _searchQuery = '';
   String _sectorFilter = "All";
   String _associationFilter = "All";
+   String _statusFilter = "All";
   String? _sortColumn;
   bool _sortAscending = true;
   String _barangayFilter = "All"; // Add this alongside other filter fields
@@ -32,6 +33,7 @@ class FarmerBloc extends Bloc<FarmerEvent, FarmerState> {
   String get barangayFilter => _barangayFilter; // Add this getter
   List<Farmer> get allFarmers => _farmers;
   String get sectorFilter => _sectorFilter;
+   String get statusFilter => _statusFilter;
   String get searchQuery => _searchQuery;
   String? get sortColumn => _sortColumn;
   bool get sortAscending => _sortAscending;
@@ -150,6 +152,13 @@ class FarmerBloc extends Bloc<FarmerEvent, FarmerState> {
             ? "All"
             : event.association!;
 
+
+          _statusFilter =
+        (event.status == null || event.status!.isEmpty)
+            ? "All"
+            : event.status!;
+
+
     emit(FarmersLoaded(_applyFilters()));
   }
 
@@ -176,93 +185,137 @@ class FarmerBloc extends Bloc<FarmerEvent, FarmerState> {
     emit(FarmersLoaded(filteredFarmers));
   }
 
-  List<Farmer> _applyFilters() {
-    List<Farmer> filteredFarmers = _farmers.where((farmer) {
-      // Sector filter
-      final matchesSector = _sectorFilter == "All" ||
-          _sectorFilter.isEmpty ||
-          (farmer.sector == _sectorFilter);
 
-      if (!matchesSector) {
-        return false;
-      }
 
-      // Barangay filter
-      final matchesBarangay = _barangayFilter == "All" ||
-          _barangayFilter.isEmpty ||
-          (farmer.barangay != null &&
-              farmer.barangay!.toLowerCase() == _barangayFilter.toLowerCase());
+List<Farmer> _applyFilters() {
+  List<Farmer> filteredFarmers = _farmers.where((farmer) {
+    // Debug information for each farmer
+    bool debug = false; // Set to true for specific farmers you want to debug
+    
+    // Sector filter
+    final matchesSector = _sectorFilter == "All" ||
+        _sectorFilter.isEmpty ||
+        (farmer.sector == _sectorFilter);
 
-      if (!matchesBarangay) {
-        return false;
-      }
-
-      // Association filter
-      final matchesAssociation = _associationFilter == "All" ||
-          _associationFilter.isEmpty ||
-          (farmer.association != null &&
-              farmer.association!.toLowerCase() ==
-                  _associationFilter.toLowerCase());
-
-      if (!matchesAssociation) {
-        return false;
-      }
-
-      // Search filter
-      if (_searchQuery.isEmpty) {
-        return true;
-      }
-
-      final matchesSearch = farmer.name.toLowerCase().contains(_searchQuery) ||
-          (farmer.email?.toLowerCase().contains(_searchQuery) ?? false) ||
-          (farmer.phone?.toLowerCase().contains(_searchQuery) ?? false) ||
-          (farmer.barangay?.toLowerCase().contains(_searchQuery) ?? false) ||
-          (farmer.sector.toLowerCase().contains(_searchQuery)) ||
-          (farmer.association?.toLowerCase().contains(_searchQuery) ?? false);
-
-      return matchesSearch;
-    }).toList();
-
-    // Log filter results
-    // print('Filter Results:');
-    // print('  Total farmers: ${_farmers.length}');
-    // print('  Filtered farmers: ${filteredFarmers.length}');
-    // print('  Active filters:');
-    // print('    - Sector: $_sectorFilter');
-    // print('    - Barangay: $_barangayFilter');
-    // print('    - Association: $_associationFilter');
-    // print('    - Search query: "$_searchQuery"');
-    // print('    - Sort column: $_sortColumn');
-    // print('    - Sort ascending: $_sortAscending');
-
-    // Sorting logic
-    if (_sortColumn != null) {
-      filteredFarmers.sort((a, b) {
-        int compareResult;
-        switch (_sortColumn) {
-          case 'Name':
-            compareResult = (a.name).compareTo(b.name);
-            break;
-          case 'Sector':
-            compareResult = (a.sector).compareTo(b.sector);
-            break;
-          case 'Barangay':
-            compareResult = (a.barangay ?? '').compareTo(b.barangay ?? '');
-            break;
-          case 'Association':
-            compareResult =
-                (a.association ?? '').compareTo(b.association ?? '');
-            break;
-          default:
-            compareResult = 0;
-        }
-        return _sortAscending ? compareResult : -compareResult;
-      });
-
-      // print(
-      //     '  Sorting applied: $_sortColumn (${_sortAscending ? 'ascending' : 'descending'})');
+    if (!matchesSector) {
+      if (debug) print('❌ Filtered out by sector');
+      return false;
     }
 
-    return filteredFarmers;
+    // Barangay filter
+    final matchesBarangay = _barangayFilter == "All" ||
+        _barangayFilter.isEmpty ||
+        (farmer.barangay != null &&
+            farmer.barangay!.toLowerCase() == _barangayFilter.toLowerCase());
+
+    if (!matchesBarangay) {
+      if (debug) print('❌ Filtered out by barangay');
+      return false;
+    }
+
+    // Association filter
+    final matchesAssociation = _associationFilter == "All" ||
+        _associationFilter.isEmpty ||
+        (farmer.association != null &&
+            farmer.association!.toLowerCase() ==
+                _associationFilter.toLowerCase());
+
+    if (!matchesAssociation) {
+      if (debug) print('❌ Filtered out by association');
+      return false;
+    }
+
+    // Status filter - ADDED DEBUGGING
+    final matchesStatus = _statusFilter == "All" ||
+        _statusFilter.isEmpty ||
+        (farmer.accountStatus != null &&
+            farmer.accountStatus!.toLowerCase() ==
+                _statusFilter.toLowerCase());
+
+    if (!matchesStatus) {
+      if (debug) {
+        print('❌ Filtered out by status filter');
+        print('   Farmer status: "${farmer.accountStatus}"');
+        print('   Filter status: "$_statusFilter"');
+        print('   Compare result: ${farmer.accountStatus?.toLowerCase() == _statusFilter.toLowerCase()}');
+      }
+      return false;
+    }
+
+    // Search filter - FIXED THE SYNTAX ERROR
+    if (_searchQuery.isNotEmpty) {
+      final searchLower = _searchQuery.toLowerCase();
+      final matchesSearch = 
+          farmer.name.toLowerCase().contains(searchLower) ||
+          (farmer.email?.toLowerCase().contains(searchLower) ?? false) ||
+          (farmer.phone?.toLowerCase().contains(searchLower) ?? false) ||
+          (farmer.barangay?.toLowerCase().contains(searchLower) ?? false) ||
+          (farmer.sector.toLowerCase().contains(searchLower)) ||
+          (farmer.association?.toLowerCase().contains(searchLower) ?? false) ||
+          (farmer.accountStatus?.toLowerCase().contains(searchLower) ?? false); // FIXED: Removed extra semicolon
+
+      if (!matchesSearch) {
+        if (debug) print('❌ Filtered out by search query');
+        return false;
+      }
+    }
+
+    if (debug) print('✅ All filters passed');
+    return true;
+  }).toList();
+
+  // Log filter results
+  // print('Filter Results:');
+  // print('  Total farmers: ${_farmers.length}');
+  // print('  Filtered farmers: ${filteredFarmers.length}');
+  // print('  Active filters:');
+  // print('    - Sector: "$_sectorFilter"');
+  // print('    - Barangay: "$_barangayFilter"');
+  // print('    - Association: "$_associationFilter"');
+  // print('    - Status: "$_statusFilter"');
+  // print('    - Search query: "$_searchQuery"');
+
+  // // Debug: Show status values of filtered farmers
+  // print('  Status distribution in filtered results:');
+  final statusCounts = <String, int>{};
+  for (final farmer in filteredFarmers) {
+    final status = farmer.accountStatus ?? 'null';
+    statusCounts[status] = (statusCounts[status] ?? 0) + 1;
   }
+  statusCounts.forEach((status, count) {
+    // print('    - "$status": $count farmers');
+  });
+
+  // Sorting logic
+  if (_sortColumn != null) {
+    filteredFarmers.sort((a, b) {
+      int compareResult;
+      switch (_sortColumn) {
+        case 'Name':
+          compareResult = (a.name).compareTo(b.name);
+          break;
+        case 'Sector':
+          compareResult = (a.sector).compareTo(b.sector);
+          break;
+        case 'Barangay':
+          compareResult = (a.barangay ?? '').compareTo(b.barangay ?? '');
+          break;
+        case 'Status':
+          compareResult = (a.accountStatus ?? '').compareTo(b.accountStatus ?? '');
+          break;
+        case 'Association':
+          compareResult =
+              (a.association ?? '').compareTo(b.association ?? '');
+          break;
+        default:
+          compareResult = 0;
+      }
+      return _sortAscending ? compareResult : -compareResult;
+    });
+  }
+
+  return filteredFarmers;
+}
+
+
 }

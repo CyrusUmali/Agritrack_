@@ -37,20 +37,50 @@ class FarmBloc extends Bloc<FarmEvent, FarmState> {
   String? get sortColumn => _sortColumn;
   bool get sortAscending => _sortAscending;
 
-  Future<void> _onGetFarmsByProduct(
-    GetFarmsByProduct event,
-    Emitter<FarmState> emit,
-  ) async {
-    emit(FarmsLoading());
-    try {
-      final farms = await farmRepository.getFarmsByProductId(event.productId);
 
-      emit(FarmsLoaded(farms));
-    } catch (e) {
-      emit(FarmsError(e.toString()));
+
+Future<void> _onGetFarmsByProduct(
+  GetFarmsByProduct event,
+  Emitter<FarmState> emit,
+) async {
+  print('Getting farms for product: ${event.productId}, year: ${event.year}');
+  emit(FarmsLoading());
+  try {
+    final farms = await farmRepository.getFarmsByProductId(
+      event.productId, 
+      year: event.year
+    );
+
+    print('Farms received from repository: ${farms.length} farms');
+    
+     print('=== DEBUG: Farms received from repository ===');
+    print('Total farms: ${farms.length}');
+    
+    // Loop through all farms and print details
+    for (int i = 0; i < farms.length; i++) {
+      final farm = farms[i];
+      print('--- Farm ${i + 1} ---');
+      print('ID: ${farm.id}');
+      print('Name: ${farm.name}');
+      print('Owner: ${farm.owner}');
+      print('Farmer ID: ${farm.farmerId}');
+      print('Products: ${farm.products}');
+      print('Volume: ${farm.volume}');
+    
+      print('Area/Hectare: ${farm.hectare}'); 
+      print('');
     }
-  }
+    
+    print('=== END DEBUG ===');
 
+    emit(FarmsLoaded(farms));
+  } catch (e) {
+    print('Error fetching farms: $e');
+    emit(FarmsError(e.toString()));
+  }
+}
+  
+  
   Future<void> _onUpdateFarm(
     UpdateFarm event,
     Emitter<FarmState> emit,

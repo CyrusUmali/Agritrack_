@@ -31,6 +31,7 @@ class _FarmersPerSectorWidgetState extends State<FarmersPerSectorWidget> {
   String selectedSector = '';
   String selectedAssociation = '';
   String selectedBarangay = '';
+  String selectedStatus = '';
   late List<String> barangayNames;
   String _barangayFilter = ''; // Add this as a class variable
 
@@ -273,6 +274,7 @@ if (screenHeight < 400) {
                       sector: (value == 'All' || value.isEmpty) ? null : value,
                       barangay: selectedBarangay,
                       association: selectedAssociation,
+                        status: selectedStatus,
                     ));
               },
               width: 150,
@@ -297,6 +299,32 @@ if (screenHeight < 400) {
                       name: '',
                       barangay: value == 'All' ? null : value,
                       sector: selectedSector,
+                      association: selectedAssociation,
+                      status: selectedStatus,
+                    ));
+              },
+              width: 150,
+            ),
+
+
+  buildComboBox(
+              context: context,
+              hint: 'Status',
+              options: const [
+                'All',
+                    'Active',
+                'Pending',
+                'Inactive',
+                'Unregistered', 
+              ],
+              selectedValue: selectedStatus,
+              onSelected: (value) {
+                setState(() => selectedStatus = value);
+                context.read<FarmerBloc>().add(FilterFarmers(
+                      name: '',
+                      sector: selectedSector,
+                      barangay: selectedBarangay,
+                      status: selectedStatus,
                       association: selectedAssociation,
                     ));
               },
@@ -425,6 +453,7 @@ if (screenHeight < 400) {
                             (value == 'All' || value.isEmpty) ? null : value,
                         sector: selectedSector,
                         barangay: selectedBarangay,
+                        status: selectedStatus,
                       ));
                 },
                 width: 150,
@@ -454,6 +483,7 @@ if (screenHeight < 400) {
                     sector: (value == 'All' || value.isEmpty) ? null : value,
                     barangay: selectedBarangay,
                     association: selectedAssociation,
+                    status: selectedStatus,
                   ));
             },
             width: 150,
@@ -483,11 +513,38 @@ if (screenHeight < 400) {
                         : value, // This will trigger "All" in bloc
                     sector: selectedSector,
                     association: selectedAssociation,
+                    status: selectedStatus,
                   ));
             },
             width: 150,
           ),
           const SizedBox(width: 8),
+
+
+            buildComboBox(
+              context: context,
+              hint: 'Status',
+              options: const [
+                'All',
+                    'Active',
+                'Pending',
+                'Inactive',
+                'Unregistered', 
+              ],
+              selectedValue: selectedStatus,
+              onSelected: (value) {
+                setState(() => selectedStatus = value);
+                context.read<FarmerBloc>().add(FilterFarmers(
+                      name: '',
+                      sector: selectedSector,
+                      barangay: selectedBarangay,
+                      status: selectedStatus,
+                      association: selectedAssociation,
+                    ));
+              },
+              width: 150,
+            ),
+   const SizedBox(width: 8),
 
           // Search Field
           Expanded(

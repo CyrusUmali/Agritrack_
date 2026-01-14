@@ -1,12 +1,13 @@
 import 'package:flareline/pages/recommendation/ai_models_info_widget.dart'; 
 import 'package:flareline/pages/recommendation/recommendation_page.dart';
-import 'package:flareline/pages/recommendation/requirement_page.dart';
+import 'package:flareline/pages/recommendation/requirement_page.dart'; 
 import 'package:flareline/pages/recommendation/suitability/suitabilty_model.dart';
+import 'package:flareline/pages/recommendation/suitability/widgets/result_guide_content.dart';
 import 'package:flareline/pages/toast/toast_helper.dart';
 import 'package:flareline/providers/language_provider.dart';
 import 'package:flareline/providers/user_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Add this import
+import 'package:provider/provider.dart';
 import 'suitability_inputs.dart';
 import 'suitability_results.dart'; 
 import 'package:flareline/services/lanugage_extension.dart';
@@ -20,13 +21,10 @@ class SuitabilityContent extends StatefulWidget {
 
 class SuitabilityContentState extends State<SuitabilityContent> {
   final GlobalKey _navigationMenuKey = GlobalKey();
-
-  // Remove the local languageProvider and model declarations
   SuitabilityModel? model;
 
   final List<String> availableCrops = [
     "Ampalaya",
-    // "Apple",
     "Avocado",
     "Banana",
     "Bamboo",
@@ -36,49 +34,31 @@ class SuitabilityContentState extends State<SuitabilityContent> {
     "Cassava",
     "Coconut",
     "Coffee",
-    // "Durian",
     "Eggplant",
     "Forage Grass",
     "Gabi",
     "Ginger",
-    // "Grapes",
-    // "Guyabano",
     "Ipil Ipil",
     "Jackfruit",
-    // "Kamoteng Baging",
     "Katuray",
     "Kulo",
     "Lanzones",
     "Lipote",
     "Maize",
     "Mango",
-    // "Mungbean",
-    // "Mustard",
-    // "Okra",
-    // "Onion",
-    // "Orange",
     "Orchid",
-    // "Oyster Mushroom",
     "Papaya",
-    // "Patola",
     "Pechay",
     "Pineapple",
-    // "Radish",
     "Rambutan",
     "Rice",
-    // "Sigarilyas",
-    // "Sili Panigang",
-    // "Sili Tingala",
     "Sili Labuyo",
-    // "Snap Bean",
     "Squash",
     "String Bean",
     "Sweet Potato",
     "Sweet Sorghum",
-    // "Tomato",
     "Ube",
     "Upo",
-    // "Watermelon",
   ];
 
   void _navigateToRequirements() {
@@ -94,18 +74,32 @@ class SuitabilityContentState extends State<SuitabilityContent> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Initialize model with the provider from context
-    if (model == null) {
-      final languageProvider =
-          Provider.of<LanguageProvider>(context, listen: false);
-      model = SuitabilityModel(languageProvider: languageProvider);
-      model!.addListener(_onModelChanged);
+    try {
+      if (model == null) {
+        final languageProvider =
+            Provider.of<LanguageProvider>(context, listen: false);
+        model = SuitabilityModel(languageProvider: languageProvider);
+        model!.addListener(_onModelChanged);
+      }
+    } catch (e) {
+      debugPrint('Error initializing model: $e');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.translate('Failed to initialize. Please restart.')),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      });
     }
   }
 
   @override
   void dispose() {
     model?.removeListener(_onModelChanged);
+    model?.dispose();
     super.dispose();
   }
 
@@ -115,14 +109,13 @@ class SuitabilityContentState extends State<SuitabilityContent> {
     }
   }
 
- 
   @override
   Widget build(BuildContext context) {
-    // Use Consumer to listen to language changes
     return Consumer<LanguageProvider>(
       builder: (context, languageProvider, child) {
-        if (model == null)
+        if (model == null) {
           return const Center(child: CircularProgressIndicator());
+        }
 
         final bool isMobile = MediaQuery.of(context).size.width < 600;
         final bool isTablet = MediaQuery.of(context).size.width < 900;
@@ -144,39 +137,28 @@ class SuitabilityContentState extends State<SuitabilityContent> {
                     _buildResponsiveHeader(isMobile, isTablet),
                     const SizedBox(height: 24),
                     _buildCropSelectionDropdown(),
-                    // const SizedBox(height: 10),
-                    // _buildModelSelectionCard(),
                     const SizedBox(height: 24),
                     _buildInputParametersCard(isMobile),
+                    
+                    // Error Display
+                    if (model!.hasError && model!.errorMessage != null) ...[
+                      const SizedBox(height: 16),
+                      _buildErrorCard(),
+                    ],
+                    
+                    // Loading Indicator
                     if (model!.isLoading) ...[
                       const SizedBox(height: 24),
                       const Center(child: CircularProgressIndicator()),
                     ],
+                    
+                    // Results
                     if (model!.suitabilityResult != null &&
                         model!.suitabilityResult!.isNotEmpty) ...[
                       const SizedBox(height: 24),
                       SuitabilityResults(
                         suitabilityResult: model!.suitabilityResult!,
-                        onGetSuggestions: () async {
-                          try {
-                            // Convert to List<String> explicitly
-                            final deficientParams = (model!.suitabilityResult![
-                                    'parameters_analysis'] as Map)
-                                .entries
-                                .where((e) => e.value['status'] != 'optimal')
-                                .map((e) => e.key.toString())
-                                .toList();
-
-                            await model!.getSuggestionsStream(
-                              deficientParams,
-                          );
-                          } catch (e) {
-                            ToastHelper.showErrorToast(
-                              'Error: ${e.toString()}',
-                              context,
-                            );
-                          }
-                        },
+                        onGetSuggestions: () => _handleGetSuggestions(),
                         isLoadingSuggestions: model!.isStreamingSuggestions,
                       )
                     ]
@@ -190,231 +172,254 @@ class SuitabilityContentState extends State<SuitabilityContent> {
     );
   }
 
-
-
-Widget _buildCropSelectionDropdown() {
-  return Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                context.translate('Select Crop'),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 20,
-                    ),
-              ),
-             
-            ],
-          ),
-          const SizedBox(height: 8),
-          Autocomplete<String>(
-            optionsBuilder: (TextEditingValue textEditingValue) {
-              if (textEditingValue.text.isEmpty) {
-                return availableCrops;
-              }
-              return availableCrops.where((String option) {
-                return option
-                    .toLowerCase()
-                    .contains(textEditingValue.text.toLowerCase());
-              });
-            },
-            onSelected: (String selection) {
-              setState(() {
-                model!.selectedCrop = selection;
-                model!.suitabilityResult = null;
-              });
-            },
-            fieldViewBuilder: (BuildContext context,
-                TextEditingController textEditingController,
-                FocusNode focusNode,
-                VoidCallback onFieldSubmitted) {
-              // Set initial value if a crop is already selected
-              if (model!.selectedCrop != null &&
-                  textEditingController.text.isEmpty) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  textEditingController.text = model!.selectedCrop!;
-                });
-              }
-
-              return TextFormField(
-                controller: textEditingController,
-                focusNode: focusNode,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                        color: Theme.of(context).cardTheme.surfaceTintColor ??
-                            Colors.grey[300]!),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                        color: Theme.of(context).cardTheme.surfaceTintColor ??
-                            Colors.grey[300]!),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.blue, width: 1),
-                  ),
-                  filled: true,
-                  fillColor: Theme.of(context).cardTheme.color,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
-                  ),
-                  hintText: 'Type to search crops...',
-                  hintStyle: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
-                  ),
-                  suffixIcon: model!.selectedCrop != null
-                      ? IconButton(
-                          icon: Icon(Icons.clear, size: 18),
-                          onPressed: () {
-                            setState(() {
-                              model!.selectedCrop = null;
-                              model!.suitabilityResult = null;
-                              textEditingController.clear();
-                            });
-                          },
-                        )
-                      : null,
-                ),
-              );
-            },
-            optionsViewBuilder: (BuildContext context,
-                AutocompleteOnSelected<String> onSelected,
-                Iterable<String> options) {
-              return Align(
-                alignment: Alignment.topLeft,
-                child: Material(
-                  elevation: 4.0,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    width: MediaQuery.of(context).size.width - 64, // Matches input field width
-                    constraints: const BoxConstraints(maxWidth: 770),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 200),
-                      child: ListView.builder(
-                        padding: EdgeInsets.zero,
-                        shrinkWrap: true,
-                        itemCount: options.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          final String option = options.elementAt(index);
-                          return InkWell(
-                            onTap: () {
-                              onSelected(option);
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(16.0),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardTheme.color,
-                              ),
-                              child: Text(
-                                option,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
+  Widget _buildErrorCard() {
+    return Card(
+      color: Colors.red.shade50,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.red.shade200, width: 1),
       ),
-    ),
-  );
-}
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: Colors.red.shade700,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.translate('Error'),
+                    style: TextStyle(
+                      color: Colors.red.shade700,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    model!.errorMessage!,
+                    style: TextStyle(
+                      color: Colors.red.shade900,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.close, color: Colors.red.shade700),
+              onPressed: () {
+                setState(() {
+                  model!.clearError();
+                });
+              },
+              tooltip: context.translate('Dismiss'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
+  Future<void> _handleGetSuggestions() async {
+    try {
+      if (model!.suitabilityResult == null) {
+        throw Exception('No suitability results available');
+      }
 
-  Widget _buildModelSelectionCard() {
+      final paramAnalysis = model!.suitabilityResult!['parameters_analysis'];
+      if (paramAnalysis == null || paramAnalysis is! Map) {
+        throw Exception('Parameter analysis not available');
+      }
+
+      final deficientParams = paramAnalysis.entries
+          .where((e) => e.value['status'] != 'optimal')
+          .map((e) => e.key.toString())
+          .toList();
+
+      if (deficientParams.isEmpty) {
+        ToastHelper.showErrorToast(
+          context.translate('No deficient parameters to improve'),
+          context,
+        );
+        return;
+      }
+
+      await model!.getSuggestionsStream(deficientParams);
+      
+    } catch (e) {
+      debugPrint('Error getting suggestions: $e');
+      if (mounted) {
+        ToastHelper.showErrorToast(
+          context.translate('Failed to get suggestions. Please try again.'),
+          context,
+        );
+      }
+    }
+  }
+
+  Widget _buildCropSelectionDropdown() {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              context.translate('Select Model'),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 20,
-                  ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  context.translate('Select Crop'),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
+                      ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: model!.selectedModel,
-              items: model!.models.keys.map((String modelName) {
-                return DropdownMenuItem<String>(
-                  value: modelName,
-                  child: Text(
-                    modelName,
-                    style: TextStyle(
+            Autocomplete<String>(
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                if (textEditingValue.text.isEmpty) {
+                  return availableCrops;
+                }
+                return availableCrops.where((String option) {
+                  return option
+                      .toLowerCase()
+                      .contains(textEditingValue.text.toLowerCase());
+                });
+              },
+              onSelected: (String selection) {
+                try {
+                  setState(() {
+                    model!.selectedCrop = selection;
+                    model!.suitabilityResult = null;
+                    model!.clearError();
+                  });
+                } catch (e) {
+                  debugPrint('Error selecting crop: $e');
+                }
+              },
+              fieldViewBuilder: (BuildContext context,
+                  TextEditingController textEditingController,
+                  FocusNode focusNode,
+                  VoidCallback onFieldSubmitted) {
+                if (model!.selectedCrop != null &&
+                    textEditingController.text.isEmpty) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (textEditingController.text.isEmpty) {
+                      textEditingController.text = model!.selectedCrop!;
+                    }
+                  });
+                }
+
+                return TextFormField(
+                  controller: textEditingController,
+                  focusNode: focusNode,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                          color: Theme.of(context).cardTheme.surfaceTintColor ??
+                              Colors.grey[300]!),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                          color: Theme.of(context).cardTheme.surfaceTintColor ??
+                              Colors.grey[300]!),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.blue, width: 1),
+                    ),
+                    filled: true,
+                    fillColor: Theme.of(context).cardTheme.color,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
+                    hintText: context.translate('Type to search crops...'),
+                    hintStyle: TextStyle(
+                      color: Colors.grey[600],
                       fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    suffixIcon: model!.selectedCrop != null
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 18),
+                            onPressed: () {
+                              try {
+                                setState(() {
+                                  model!.selectedCrop = null;
+                                  model!.suitabilityResult = null;
+                                  model!.clearError();
+                                  textEditingController.clear();
+                                });
+                              } catch (e) {
+                                debugPrint('Error clearing selection: $e');
+                              }
+                            },
+                          )
+                        : null,
+                  ),
+                );
+              },
+              optionsViewBuilder: (BuildContext context,
+                  AutocompleteOnSelected<String> onSelected,
+                  Iterable<String> options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 4.0,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 64,
+                      constraints: const BoxConstraints(maxWidth: 770),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 200),
+                        child: ListView.builder(
+                          padding: EdgeInsets.zero,
+                          shrinkWrap: true,
+                          itemCount: options.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final String option = options.elementAt(index);
+                            return InkWell(
+                              onTap: () {
+                                onSelected(option);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(16.0),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).cardTheme.color,
+                                ),
+                                child: Text(
+                                  option,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     ),
                   ),
                 );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  model!.selectedModel = newValue!;
-                  model!.modelAccuracy = newValue == 'All Models'
-                      ? 'Ensemble average will be calculated'
-                      : 'Accuracy: ${(model!.models[newValue]!['accuracy']! * 100).toStringAsFixed(2)}%';
-                });
               },
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                      color: Theme.of(context).cardTheme.surfaceTintColor ??
-                          Colors.grey[300]!),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                      color: Theme.of(context).cardTheme.surfaceTintColor ??
-                          Colors.grey[300]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blue, width: 1),
-                ),
-                filled: true,
-                fillColor: Theme.of(context).cardTheme.color,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 0,
-                ),
-              ),
-              dropdownColor: Theme.of(context).cardTheme.color,
-              borderRadius: BorderRadius.circular(12),
-              elevation: 2,
-              icon: Icon(Icons.arrow_drop_down, color: Colors.grey[700]),
-              iconSize: 24,
             ),
           ],
         ),
@@ -429,9 +434,7 @@ Widget _buildCropSelectionDropdown() {
         child: Column(
           children: [
             Text(
-              // 'Enter Environmental Parameters',
               context.translate('Enter Environmental Parameters'),
-
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w600,
                     fontSize: isMobile ? 20 : 24,
@@ -447,43 +450,50 @@ Widget _buildCropSelectionDropdown() {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: model!.selectedCrop == null
+                onPressed: (model!.selectedCrop == null || model!.isLoading)
                     ? null
-                    : () async {
-                        try {
-                          setState(() {
-                            model!.isLoading = true;
-                          });
-
-                          await model!.checkSuitability();
-                        } catch (e) {
-                          ToastHelper.showErrorToast(
-                            'Error: $e',
-                            context,
-                          );
-                        }
-                      },
+                    : () => _handleCheckSuitability(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      model!.selectedCrop == null ? Colors.grey : Colors.blue,
+                  backgroundColor: model!.selectedCrop == null 
+                      ? Colors.grey 
+                      : Colors.blue,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  disabledForegroundColor: Colors.grey.shade600,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
-                  context.translate('Check Suitability'),
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
+                child: model!.isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        context.translate('Check Suitability'),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
             if (model!.suitabilityResult != null) ...[
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () {
-                  setState(() {
-                    model!.suitabilityResult = null;
-                  });
+                  try {
+                    setState(() {
+                      model!.suitabilityResult = null;
+                      model!.clearError();
+                    });
+                  } catch (e) {
+                    debugPrint('Error resetting results: $e');
+                  }
                 },
                 child: Text(context.translate('Check Another Configuration')),
               ),
@@ -492,6 +502,35 @@ Widget _buildCropSelectionDropdown() {
         ),
       ),
     );
+  }
+
+  Future<void> _handleCheckSuitability() async {
+    // Clear previous errors
+    model!.clearError();
+
+    try {
+      setState(() {});
+
+      await model!.checkSuitability();
+
+ 
+
+      setState(() {});
+
+    } catch (e) {
+      debugPrint('Error in _handleCheckSuitability: $e');
+      
+      if (mounted) {
+        ToastHelper.showErrorToast(
+          context.translate('An error occurred. Please try again.'),
+          context,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {});
+      }
+    }
   }
 
   Widget _buildResponsiveHeader(bool isMobile, bool isTablet) {
@@ -515,9 +554,8 @@ Widget _buildCropSelectionDropdown() {
                     ),
               ),
               const SizedBox(height: 4),
-            
               Tooltip(
-                message:     context.translate('Crop Recommendation'),  
+                message: context.translate('Crop Recommendation'),
                 child: IconButton(
                   key: _navigationMenuKey,
                   icon: Transform(
@@ -529,25 +567,7 @@ Widget _buildCropSelectionDropdown() {
                       color: Colors.grey,
                     ),
                   ),
-                  onPressed: () {
-
-Navigator.push(
-  context,
-  PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => const RecommendationPage(),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return child;
-    },
-    transitionDuration: Duration.zero,
-  ),
-);
-
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //       builder: (context) => const RecommendationPage()),
-                    // );
-                  },
+                  onPressed: () => _navigateToRecommendation(),
                   splashRadius: 16,
                   padding: EdgeInsets.zero,
                 ),
@@ -558,68 +578,66 @@ Navigator.push(
           ),
 
           // Right side buttons
-//           Row(
-//             children: [
-//               // AI Models Info Button (Question Mark)
-//               Tooltip(
-//                 message: context.translate('Learn about AI Models'),
-//                 child: InkWell(
-//                   onTap: _showAiModelsInfo,
-//                   borderRadius: BorderRadius.circular(50),
-//                   hoverColor: Colors.grey.withOpacity(0.1),
-//                   child: Container(
-//                     width: 50,
-//                     height: 50,
-//                     padding: const EdgeInsets.all(8),
-//                     decoration: BoxDecoration(
-//                       shape: BoxShape.circle,
-//                       border: Border.all(
-//                         color: Colors.grey[500]!,
-//                         width: 2,
-//                       ),
-//                       color: Theme.of(context).cardTheme.color,
-//                     ),
-//                     child: Icon(
-//                       Icons.lightbulb_outline,
-//                       size: 24,
-//                       // color: Colors.grey[700],
-//                     ),
-//                   ),
-//                 ),
-//               ),
-//               const SizedBox(width: 12),
-// if(!isFarmer) 
-//               // Requirements Button
-//               Tooltip(
-//                 message: context.translate('View Requirements'),
-//                 child: InkWell(
-//                   onTap: _navigateToRequirements,
-//                   borderRadius: BorderRadius.circular(50),
-//                   hoverColor: Colors.grey.withOpacity(0.1),
-//                   child: Container(
-//                     width: 50,
-//                     height: 50,
-//                     padding: const EdgeInsets.all(8),
-//                     decoration: BoxDecoration(
-//                       shape: BoxShape.circle,
-//                       border: Border.all(
-//                         color: Colors.grey[500]!,
-//                         width: 2,
-//                       ),
-//                       color: Colors.white,
-//                     ),
-//                     child: Icon(
-//                       Icons.menu_book_outlined,
-//                       size: 24,
-//                       color: Colors.grey[700],
-//                     ),
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           ),
-     
-     
+          Row(
+            children: [
+              // // AI Models Info Button (Question Mark)
+              // Tooltip(
+              //   message: context.translate('How to read your result'),
+              //   child: InkWell(
+              //     onTap: () => ResultGuideDialog.show(context),
+              //     borderRadius: BorderRadius.circular(50),
+              //     hoverColor: Colors.grey.withOpacity(0.1),
+              //     child: Container(
+              //       width: 50,
+              //       height: 50,
+              //       padding: const EdgeInsets.all(8),
+              //       decoration: BoxDecoration(
+              //         shape: BoxShape.circle,
+              //         border: Border.all(
+              //           color: Colors.grey[500]!,
+              //           width: 2,
+              //         ),
+              //         color: Colors.white,
+              //       ),
+              //       child: Icon(
+              //         Icons.lightbulb_outline,
+              //         size: 24,
+              //         color: Colors.grey[700],
+              //       ),
+              //     ),
+              //   ),
+              // ),
+              // const SizedBox(width: 12),
+if(isFarmer) 
+              // Requirements Button
+              Tooltip(
+                message: context.translate('View Requirements'),
+                child: InkWell(
+                  onTap: _navigateToRequirements,
+                  borderRadius: BorderRadius.circular(50),
+                  hoverColor: Colors.grey.withOpacity(0.1),
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.grey[500]!,
+                        width: 2,
+                      ),
+                      color: Colors.white,
+                    ),
+                    child: Icon(
+                      Icons.menu_book_outlined,
+                      size: 24,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       );
     }
@@ -630,10 +648,7 @@ Navigator.push(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              // 'Crop Suitability ',
-
               context.translate('Crop Suitability'),
-
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: isMobile ? 24 : 28,
@@ -646,7 +661,7 @@ Navigator.push(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Tooltip(
-                  message:   context.translate('Crop Recommendation'), 
+                  message: context.translate('Crop Recommendation'),
                   child: IconButton(
                     key: _navigationMenuKey,
                     icon: Transform(
@@ -658,99 +673,103 @@ Navigator.push(
                         color: Colors.grey,
                       ),
                     ),
-                    onPressed: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //       builder: (context) => const RecommendationPage()),
-                      // );
-
-
-Navigator.push(
-  context,
-  PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => const RecommendationPage(),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return child;
-    },
-    transitionDuration: Duration.zero,
-  ),
-);
-
-
-                    },
+                    onPressed: () => _navigateToRecommendation(),
                     splashRadius: 16,
                     padding: EdgeInsets.zero,
                   ),
                 ),
+                Row(
+                  children: [
+   
+              // Tooltip(
+              //   message: context.translate('How to read your result'),
+              //   child: InkWell(
+              //     onTap: () => ResultGuideDialog.show(context),
+              //           borderRadius: BorderRadius.circular(50),
+              //           child: Container(
+              //             width: 25,
+              //             height: 25,
+              //             padding: const EdgeInsets.all(0),
+              //             decoration: BoxDecoration(
+              //               shape: BoxShape.circle,
+              //               border: Border.all(
+              //                 color: Colors.grey[500]!,
+              //                 width: 1,
+              //               ),
+              //               color: Colors.white,
+              //             ),
+              //             child: Icon(
+              //               Icons.lightbulb_outline,
+              //               size: 15,
+              //               color: Colors.grey[700],
+              //             ),
+              //           ),
+              //         ),
+              //       ),
 
+              //       const SizedBox(width: 8),
 
-//                 Row(
-//                   children: [
-//                     // AI Models Info Button (Question Mark)
-//                     Tooltip(
-//                       message: context.translate('Learn about AI Models'),
-//                       child: InkWell(
-//                         onTap: _showAiModelsInfo,
-//                         borderRadius: BorderRadius.circular(50),
-//                         child: Container(
-//                           width: 25,
-//                           height: 25,
-//                           padding: const EdgeInsets.all(0),
-//                           decoration: BoxDecoration(
-//                             shape: BoxShape.circle,
-//                             border: Border.all(
-//                               color: Colors.grey[500]!,
-//                               width: 1,
-//                             ),
-//                             color: Theme.of(context).cardTheme.color,
-//                           ),
-//                           child: Icon(
-//                             Icons.lightbulb_outline,
-//                             size: 15,
-//                             // color: Colors.grey[700],
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                     const SizedBox(width: 8),
-
-// if(!isFarmer) 
-//                     // Requirements Button
-//                     Tooltip(
-//                       message: context.translate('View Requirements'),
-//                       child: InkWell(
-//                         onTap: _navigateToRequirements,
-//                         borderRadius: BorderRadius.circular(50),
-//                         child: Container(
-//                           width: 25,
-//                           height: 25,
-//                           padding: const EdgeInsets.all(0),
-//                           decoration: BoxDecoration(
-//                             shape: BoxShape.circle,
-//                             border: Border.all(
-//                               color: Colors.grey[500]!,
-//                               width: 1,
-//                             ),
-//                             color: Colors.white,
-//                           ),
-//                           child: Icon(
-//                             Icons.menu_book_outlined,
-//                             size: 15,
-//                             color: Colors.grey[700],
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-          
-          
+if(isFarmer) 
+                    // Requirements Button
+                    Tooltip(
+                      message: context.translate('View Requirements'),
+                      child: InkWell(
+                        onTap: _navigateToRequirements,
+                        borderRadius: BorderRadius.circular(50),
+                        child: Container(
+                          width: 25,
+                          height: 25,
+                          padding: const EdgeInsets.all(0),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.grey[500]!,
+                              width: 1,
+                            ),
+                            color: Colors.white,
+                          ),
+                          child: Icon(
+                            Icons.menu_book_outlined,
+                            size: 15,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ],
         ),
       ],
     );
+  }
+
+  void _navigateToRecommendation() {
+    try {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const RecommendationPage(),
+          transitionsBuilder:
+              (context, animation, secondaryAnimation, child) {
+            return child;
+          },
+          transitionDuration: Duration.zero,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Navigation error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.translate('Navigation failed. Please try again.')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

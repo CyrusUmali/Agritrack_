@@ -190,6 +190,21 @@ class _FarmListPanelState extends State<FarmListPanel>
     );
   }
 
+
+ String cleanProductName(String product) {
+                  // Remove everything before the colon and the colon itself
+                  // This will transform "122 : Bangus" to "Bangus"
+                  final colonIndex = product.indexOf(':');
+                  if (colonIndex != -1) {
+                    return product.substring(colonIndex + 1).trim();
+                  }
+                  return product.trim();
+                }
+
+                // Function to get cleaned product list
+                List<String> getCleanedProducts(List<String> products) {
+                  return products.map(cleanProductName).toList();
+                }
   @override
   Widget build(BuildContext context) {
     super.build(context); // Needed for AutomaticKeepAliveClientMixin
@@ -369,16 +384,22 @@ class _FarmListPanelState extends State<FarmListPanel>
                                   'Barangay: ${polygon.parentBarangay}',
                                   style: TextStyle(fontSize: 12),
                                 ),
-                              if (polygon.products.isNotEmpty)
-                                Text(
-                                  'Products: ${polygon.products.join(', ')}',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                            
+                          
+
+  if (polygon.products.isNotEmpty)
+                          Text(
+                            'Products: ${getCleanedProducts(polygon.products).join(', ')}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey.shade600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+
+
+
                               if (exceedsLimit)
                                 Row(
                                   children: [

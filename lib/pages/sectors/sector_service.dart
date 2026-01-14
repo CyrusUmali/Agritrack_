@@ -13,6 +13,37 @@ class SectorService {
 // sector_service.dart
 
 
+  Future<Map<String, dynamic>> acceptTerms(int userId) async {
+    try {
+      final response = await _apiService.post(
+        '/auth/accept-terms',
+        data: {
+          'userId': userId,
+          'acceptedAt': DateTime.now().toIso8601String(),
+         
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'data': response.data['data'],
+          'message': response.data['message'] ?? 'Terms accepted successfully',
+        };
+      }
+
+      throw Exception('Failed to accept terms: ${response.statusCode}');
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw Exception('Server error: ${e.response!.data['message'] ?? e.response!.statusMessage}');
+      } else {
+        throw Exception('Network error: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('Failed to accept terms: ${e.toString()}');
+    }
+  }
+
 Future<Map<String, dynamic>> getUnreadNotificationsCount(int farmerId) async {
   try {
     final response = await _apiService.get(
