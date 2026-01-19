@@ -10,7 +10,6 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_core
   flutter_localization
   flutter_tts
-  objectbox_flutter_libs
   permission_handler_windows
   printing
   screen_retriever_windows

@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'agritrack-fb6cf.firebasestorage.app',
     measurementId: 'G-NRNNL2T9TX',
   );
+
 }

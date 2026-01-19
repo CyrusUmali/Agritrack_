@@ -23,7 +23,7 @@ class _MobileMeasurementOverlayState extends State<MobileMeasurementOverlay> {
   @override
   void initState() {
     super.initState();
-    print('MobileMeasurementOverlay: initState');
+ 
     _lastPointCount = widget.currentPolygon.length;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -36,13 +36,12 @@ class _MobileMeasurementOverlayState extends State<MobileMeasurementOverlay> {
   void didUpdateWidget(MobileMeasurementOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
     
-    print('MobileMeasurementOverlay: didUpdateWidget - old: ${oldWidget.currentPolygon.length}, new: ${widget.currentPolygon.length}');
-    
+     
     // Check if polygon actually changed
     if (widget.currentPolygon.length != _lastPointCount ||
         _hasPolygonChanged(oldWidget.currentPolygon, widget.currentPolygon)) {
       _lastPointCount = widget.currentPolygon.length;
-      print('Polygon changed, updating measurements immediately');
+   
       _updateMeasurements();
     }
   }
@@ -62,11 +61,9 @@ class _MobileMeasurementOverlayState extends State<MobileMeasurementOverlay> {
   }
 
   void _updateMeasurements() {
-    print('_updateMeasurements called with ${widget.currentPolygon.length} points');
-    
+  
     if (!mounted) {
-      print('Widget not mounted, skipping update');
-      return;
+     return;
     }
 
     final pointCount = widget.currentPolygon.length;
@@ -80,16 +77,16 @@ class _MobileMeasurementOverlayState extends State<MobileMeasurementOverlay> {
       // 3+ points: Show area and perimeter
       newArea = _calculateArea(widget.currentPolygon);
       newPerimeter = _calculatePerimeter(widget.currentPolygon);
-      print('Calculated: Area=${newArea}ha, Perimeter=${newPerimeter}m');
+     
     } else if (pointCount == 2) {
       // 2 points: Show distance
       newDistance = const Distance().distance(
         widget.currentPolygon[0],
         widget.currentPolygon[1],
       );
-      print('Calculated: Distance=${newDistance}m');
+ 
     } else {
-      print('Cleared measurements');
+     
     }
     
     // Only setState if values actually changed
@@ -101,9 +98,9 @@ class _MobileMeasurementOverlayState extends State<MobileMeasurementOverlay> {
         _cachedPerimeter = newPerimeter;
         _cachedDistance = newDistance;
       });
-      print('State updated with new measurements');
+      
     } else {
-      print('Values unchanged, skipping setState');
+ 
     }
   }
 
@@ -121,7 +118,7 @@ class _MobileMeasurementOverlayState extends State<MobileMeasurementOverlay> {
 
       return double.parse(areaInHectares.toStringAsFixed(3));
     } catch (e) {
-      print('Error calculating area: $e');
+ 
       return 0.0;
     }
   }
@@ -138,15 +135,13 @@ class _MobileMeasurementOverlayState extends State<MobileMeasurementOverlay> {
       }
       return perimeter;
     } catch (e) {
-      print('Error calculating perimeter: $e');
-      return 0.0;
+     return 0.0;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    print('MobileMeasurementOverlay: build - points: ${widget.currentPolygon.length}');
-    
+   
     return Container(
       color: Colors.transparent,
       child: IgnorePointer(
@@ -261,7 +256,7 @@ class _MobileMeasurementOverlayState extends State<MobileMeasurementOverlay> {
 
   @override
   void dispose() {
-    print('MobileMeasurementOverlay: dispose');
+ 
     super.dispose();
   }
 }

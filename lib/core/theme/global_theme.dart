@@ -14,33 +14,43 @@ class GlobalTheme {
   static ThemeData darkThemeData = theme(darkColorScheme, _darkFocusColor,
       darkAppBarThemd, GlobalColors.darkText, darkCardTheme);
 
-  static ThemeData theme(ColorScheme colorScheme, Color focusColor,
-      AppBarTheme appBarTheme, Color hintColor, CardTheme cardTheme) {
-    return ThemeData(
-        useMaterial3: true,
-        colorScheme: colorScheme,
-        focusColor: focusColor,
-        appBarTheme: appBarTheme,
-        textTheme: _textTheme,
-        hintColor: hintColor,
-        cardTheme: cardTheme);
-  }
 
-  static CardTheme lightCardTheme = const CardTheme(
-    margin: EdgeInsets.zero,
-    color: Colors.white,
-    surfaceTintColor:  Color(0xFFE2E8F0),
-    shadowColor: Color(0x11000000),
-    elevation: 0,
+static ThemeData theme(
+  ColorScheme colorScheme,
+  Color focusColor,
+  AppBarTheme appBarTheme,
+  Color hintColor,
+  CardThemeData cardTheme,
+) {
+  return ThemeData(
+    useMaterial3: true,
+    colorScheme: colorScheme,
+    focusColor: focusColor,
+    appBarTheme: appBarTheme,
+    textTheme: _textTheme,
+    hintColor: hintColor,
+    cardTheme: cardTheme,
   );
+}
 
-  static CardTheme darkCardTheme = CardTheme(
-    margin: EdgeInsets.zero,
-    color: GlobalColors.darkAppBar,
-    surfaceTintColor: GlobalColors.border.withOpacity(0.05),
-    shadowColor: GlobalColors.darkAppBar.withOpacity(0.2),
-    elevation: 0,
-  );
+
+  static CardThemeData lightCardTheme = const CardThemeData(
+  margin: EdgeInsets.zero,
+  color: Colors.white,
+  surfaceTintColor: Color(0xFFE2E8F0),
+  shadowColor: Color(0x11000000),
+  elevation: 0,
+);
+
+
+  static CardThemeData darkCardTheme = CardThemeData(
+  margin: EdgeInsets.zero,
+  color: GlobalColors.darkAppBar,
+  surfaceTintColor: GlobalColors.border.withOpacity(0.05),
+  shadowColor: GlobalColors.darkAppBar.withOpacity(0.2),
+  elevation: 0,
+);
+
 
   static const AppBarTheme lightAppBarTheme = AppBarTheme(
     backgroundColor: Colors.white,

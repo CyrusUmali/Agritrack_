@@ -1,13 +1,5 @@
 # Project-level configuration.
-cmake_minimum_required(VERSION 3.22)
-
-# Ensure all included projects respect this minimum CMake version
-if(POLICY CMP0074)
-  cmake_policy(SET CMP0074 NEW)
-endif()
-set(CMAKE_POLICY_VERSION 3.22)  # Matches your cmake_minimum_required
-
-
+cmake_minimum_required(VERSION 3.14)
 project(flareline LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
@@ -17,6 +9,21 @@ set(BINARY_NAME "flareline")
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
 cmake_policy(VERSION 3.14...3.25)
+
+# Allow subprojects (like Firebase SDK) to declare older cmake_minimum_required versions
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
+endif()
+if(POLICY CMP0091)
+  cmake_policy(SET CMP0091 NEW)
+endif()
+if(POLICY CMP0126)
+  cmake_policy(SET CMP0126 NEW)
+endif()
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
+
 
 # Define build configuration option.
 get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -65,12 +72,16 @@ add_subdirectory("runner")
 # them to the application.
 include(flutter/generated_plugins.cmake)
 
-
+ 
 # === Installation ===
 # Support files are copied into place next to the executable, so that it can
 # run in place. This is done instead of making a separate bundle (as on Linux)
 # so that building and running from within Visual Studio will work.
 set(BUILD_BUNDLE_DIR "$<TARGET_FILE_DIR:${BINARY_NAME}>")
+
+# Force install to build folder (like the test project)
+set(CMAKE_INSTALL_PREFIX "${BUILD_BUNDLE_DIR}" CACHE PATH "..." FORCE)
+
 # Make the "install" step default, as it's required to run.
 set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -114,3 +125,5 @@ install(DIRECTORY "${PROJECT_BUILD_DIR}/${FLUTTER_ASSET_DIR_NAME}"
 install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
   CONFIGURATIONS Profile;Release
   COMPONENT Runtime)
+
+ 
